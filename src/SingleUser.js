@@ -16,13 +16,22 @@ const SingleUser = () => {
     { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
     { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
     { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
-  
-];
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+    { name: 'Airi Satou', position: 'Accountant', office: 'Tokyo', age: 30, startDate: '2015/04/25', salary: '$120,000' },
+  ];
 
   const [pageNumber, setPageNumber] = useState(0);
   const scrollViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const itemsPerPage = 7;
+  const itemsPerPage = 10;
 
   // Filtered data based on search query
   const filteredData = data.filter(item =>
@@ -78,26 +87,28 @@ const SingleUser = () => {
       >
         {Array.from(Array(totalPages).keys()).map((page, index) => (
           <View key={index} style={styles.page}>
-            <View style={styles.table}>
-              <View style={[styles.row, styles.header]}>
-                <Text style={styles.cell}>Name</Text>
-                <Text style={styles.cell}>Position</Text>
-                <Text style={styles.cell}>Office</Text>
-                <Text style={styles.cell}>Age</Text>
-                <Text style={styles.cell}>Start Date</Text>
-                <Text style={styles.cell}>Salary</Text>
-              </View>
-              {paginatedData.map((item, idx) => (
-                <View key={idx} style={styles.row}>
-                  <Text style={styles.cell}>{item.name}</Text>
-                  <Text style={styles.cell}>{item.position}</Text>
-                  <Text style={styles.cell}>{item.office}</Text>
-                  <Text style={styles.cell}>{item.age}</Text>
-                  <Text style={styles.cell}>{item.startDate}</Text>
-                  <Text style={styles.cell}>{item.salary}</Text>
+            <ScrollView>
+              <View style={styles.table}>
+                <View style={[styles.row, styles.header]}>
+                  <Text style={styles.cell}>Name</Text>
+                  <Text style={styles.cell}>Position</Text>
+                  <Text style={styles.cell}>Office</Text>
+                  <Text style={styles.cell}>Age</Text>
+                  <Text style={styles.cell}>Start Date</Text>
+                  <Text style={styles.cell}>Salary</Text>
                 </View>
-              ))}
-            </View>
+                {paginatedData.map((item, idx) => (
+                  <View key={idx} style={styles.row}>
+                    <Text style={styles.cell}>{item.name}</Text>
+                    <Text style={styles.cell}>{item.position}</Text>
+                    <Text style={styles.cell}>{item.office}</Text>
+                    <Text style={styles.cell}>{item.age}</Text>
+                    <Text style={styles.cell}>{item.startDate}</Text>
+                    <Text style={styles.cell}>{item.salary}</Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
           </View>
         ))}
       </ScrollView>
