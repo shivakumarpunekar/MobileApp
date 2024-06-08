@@ -50,7 +50,7 @@ const ProfileScreenEdit = ({ route }) => {
   };
 
   return (
-    <ScrollView>
+    
     <View style={styles.container}>
       <View style={styles.curvedBackground}>
         <ImageBackground
@@ -130,7 +130,7 @@ const ProfileScreenEdit = ({ route }) => {
         </TouchableOpacity>
       </View>
     </View>
-    </ScrollView>
+    
   );
 };
 
