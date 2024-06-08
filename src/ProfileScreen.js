@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, ImageBackground, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ImageBackground, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const ProfilePage = () => {
@@ -16,15 +17,15 @@ const ProfilePage = () => {
   };
 
   return (
+    <ScrollView>
     <View style={styles.container}>
-        
       <View style={styles.curvedBackground}>
         <ImageBackground
           source={require('../assets/J43.png')}
           style={styles.backgroundImage}
         >
             <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile', { profileData })}>
-                <Text style={styles.editButtonText}>Edit</Text>
+                <Icon  name="edit" size={30} color="#000" />
             </TouchableOpacity>
           <View style={styles.header}>
             
@@ -42,23 +43,28 @@ const ProfilePage = () => {
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Field School</Text>
           <Text style={styles.sectionContent}>{profileData.fieldSchool}</Text>
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="user" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Nick Name</Text>
           <Text style={styles.sectionContent}>{profileData.nickName}</Text>
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Emergency Contact</Text>
           <Text style={styles.sectionContent}>{profileData.emergencyContact}</Text>
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Emergency Number</Text>
           <Text style={styles.sectionContent}>{profileData.emergencyNumber}</Text>
         </View>
       </View>
     </View>
+    </ScrollView>
   );
 };
 
@@ -82,11 +88,10 @@ const styles = StyleSheet.create({
   editButton: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#000', 
     borderRadius: 5,
     width:70,
     alignSelf:'flex-end',
-    marginRight:20,
+    marginRight:10,
     
   },
   editButtonText: {
@@ -128,8 +133,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 50,
   },
+  sectionIcon: {
+    marginRight:10,
+    width:40,
+  },
   sectionTitle: {
-    width: 150,
+    width: 150, 
     fontWeight: 'bold',
   },
   sectionContent: {

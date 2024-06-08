@@ -11,5 +11,6 @@
         "Satou",
         "setconform",
         "Signin"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

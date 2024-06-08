@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, ImageBackground, Image, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ImageBackground, Image, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
@@ -12,6 +14,7 @@ const ProfileScreenEdit = ({ route }) => {
   const [nickName, setNickName] = useState(profileData.nickName);
   const [emergencyContact, setEmergencyContact] = useState(profileData.emergencyContact);
   const [emergencyNumber, setEmergencyNumber] = useState(profileData.emergencyNumber);
+  const [profileImage, setProfileImage] = useState(profileData.profileImage || null);
 
   const handleSave = () => {
     // Perform save operation here (e.g., update state, make API call)
@@ -36,7 +39,18 @@ const ProfileScreenEdit = ({ route }) => {
     ]);
   };
 
+  //For Profile Image Change
+  const handleChoosePhoto = () => {
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (!response.didCancel && !response.errorCode) {
+        const source = { uri: response.assets[0].uri };
+        setProfileImage(source);
+      }
+    });
+  };
+
   return (
+    <ScrollView>
     <View style={styles.container}>
       <View style={styles.curvedBackground}>
         <ImageBackground
@@ -60,15 +74,18 @@ const ProfileScreenEdit = ({ route }) => {
                 placeholderTextColor="#ffffff"
               />
             </View>
-            <Image
-              source={require('../assets/User-Avatar-Profile-PNG.png')}
-              style={styles.profileImage}
-            />
+            <TouchableOpacity onPress={handleChoosePhoto}>
+              <Image
+                source={profileImage ? { uri: profileImage.uri } : require('../assets/User-Avatar-Profile-PNG.png')}
+                style={styles.profileImage}
+              />
+            </TouchableOpacity>
           </View>
         </ImageBackground>
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Field School</Text>
           <TextInput
             style={styles.sectionContent}
@@ -78,6 +95,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="user" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Nick Name</Text>
           <TextInput
             style={styles.sectionContent}
@@ -87,6 +105,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Emergency Contact</Text>
           <TextInput
             style={styles.sectionContent}
@@ -96,6 +115,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
           <Text style={styles.sectionTitle}>Emergency Number</Text>
           <TextInput
             style={styles.sectionContent}
@@ -110,6 +130,7 @@ const ProfileScreenEdit = ({ route }) => {
         </TouchableOpacity>
       </View>
     </View>
+    </ScrollView>
   );
 };
 
@@ -119,7 +140,7 @@ const styles = StyleSheet.create({
   },
   curvedBackground: {
     width: '100%',
-    height: '25%',
+    height: '30%',
     overflow: 'hidden',
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 100,
@@ -147,6 +168,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+    marginTop:40,
   },
   name: {
     fontSize: 24,
@@ -161,7 +183,11 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 50,
+  },
+  sectionIcon: {
+    marginRight:10,
+    width:40,
   },
   sectionTitle: {
     width: 150,
