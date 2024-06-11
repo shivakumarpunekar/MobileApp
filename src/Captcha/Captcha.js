@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity} from 'react-native';
 
 const Captcha = ({ onVerify }) => {
   const [input, setInput] = useState('');
@@ -24,7 +24,12 @@ const Captcha = ({ onVerify }) => {
         value={input}
         onChangeText={setInput}
       />
-      <Button title="Verify" onPress={verifyCaptcha} />
+      <TouchableOpacity 
+        style={styles.captchabutton}
+          onPress={verifyCaptcha}
+        >
+        <Text style={styles.captchabuttonText}>Verify</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -49,6 +54,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingLeft: 8,
     borderRadius: 5,
+  },
+  captchabutton: {
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '45%',
+  },
+  captchabuttonText: {
+    color: '#BFA100',
+    fontSize: 25,
   },
 });
 
