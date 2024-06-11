@@ -19,6 +19,12 @@ const RegistrationPage = () => {
   const [otp, setOtp] = useState("");
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
+  const [pincode, setPincode] = useState('');
   const phoneInput = useRef(null);
 
   //Date Picker for dob
@@ -97,6 +103,30 @@ const RegistrationPage = () => {
       alert('Password and Confirm Password do not match');
       return false;
     }
+    if (!email.trim()) {
+      alert('Please Enter Email');
+      return false;
+    }
+    if (!country.trim()) {
+      alert('Please Enter Country');
+      return false;
+    }
+    if (!state.trim()) {
+      alert('Please Enter State');
+      return false;
+    }
+    if (!city.trim()) {
+      alert('Please Enter City');
+      return false;
+    }
+    if (!district.trim()) {
+      alert('Please Enter District');
+      return false;
+    }
+    if (!pincode.trim()) {
+      alert('Please Enter Pincode');
+      return false;
+    }
     return true;
   };
 
@@ -113,6 +143,12 @@ const RegistrationPage = () => {
         username,
         password,
         conformpassword,
+        email,
+        country,
+        state,
+        city,
+        district,
+        pincode,
       });
     }
   };
@@ -245,6 +281,52 @@ const RegistrationPage = () => {
           secureTextEntry={true}
           value={conformpassword}
           onChangeText={(value) => setconformPassword(value)}
+        />
+        <Text style={{ fontSize: 20 }}>
+          Email
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={(value) => setEmail(value)}
+        />
+        <Text style={{ fontSize: 20 }}>
+          Country
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Country"
+          value={country}
+          onChangeText={(value) => setCountry(value)}
+        />
+        <Text style={{ fontSize: 20 }}>
+          State
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="State"
+          value={state}
+          onChangeText={(value) => setState(value)}
+        />
+        <Text style={{ fontSize: 20 }}>
+          City
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="City"
+          value={city}
+          onChangeText={(value) => setCity(value)}
+        />
+        <Text style={{ fontSize: 20 }}>
+          District
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="District"
+          value={district}
+          onChangeText={(value) => setDistrict(value)}
         />
         <View style={styles.RegButton}>
           <Button title="Register" onPress={handleRegistration} />
