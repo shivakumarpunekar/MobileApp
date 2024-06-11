@@ -11,7 +11,6 @@ const RegistrationPage = () => {
   const [dob, setDob] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [conformpassword, setconformPassword] = useState('');
@@ -83,10 +82,6 @@ const RegistrationPage = () => {
       alert('Please Enter Phone Number');
       return false;
     }
-    if (!address.trim()) {
-      alert('Please Enter Address');
-      return false;
-    }
     if (!username.trim()) {
       alert('Please Enter Username');
       return false;
@@ -132,14 +127,18 @@ const RegistrationPage = () => {
 
   const handleRegistration = () => {
     if (checkTextInput()) {
-      alert('SUCCESS');
-      console.log({
+      fetch('http://localhost:5000/Registation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+      // console.log({
         firstName,
         middleName,
         lastName,
         dob,
         phoneNumber,
-        address,
         username,
         password,
         conformpassword,
@@ -149,8 +148,17 @@ const RegistrationPage = () => {
         city,
         district,
         pincode,
+      }),
+    })
+    .then((response) => response.text())
+      .then((data) => {
+        alert(data); // Show success or error message from backend
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Error registering user');
       });
-    }
+  }
   };
 
   return (
@@ -245,15 +253,6 @@ const RegistrationPage = () => {
           <Text style={styles.buttonText}>Verify OTP</Text>
         </TouchableOpacity>
         <Text style={{ fontSize: 20 }}>
-          Address
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Address"
-          value={address}
-          onChangeText={(value) => setAddress(value)}
-        />
-        <Text style={{ fontSize: 20 }}>
           Username
         </Text>
         <TextInput
@@ -283,14 +282,14 @@ const RegistrationPage = () => {
           onChangeText={(value) => setconformPassword(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          Email
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={(value) => setEmail(value)}
+            Email
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={(value) => setEmail(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Country
@@ -328,9 +327,21 @@ const RegistrationPage = () => {
           value={district}
           onChangeText={(value) => setDistrict(value)}
         />
-        <View style={styles.RegButton}>
-          <Button title="Register" onPress={handleRegistration} />
-        </View>
+        <Text style={{ fontSize: 20 }}>
+        Pincode
+      </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Pincode"
+          value={pincode}
+          onChangeText={(value) => setPincode(value)}
+        />
+        <TouchableOpacity 
+          style={styles.RegButton} 
+          onPress={handleRegistration}
+        >
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -362,7 +373,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   RegButton: {
+    alignItems:'center',
+    width:100,
+    marginTop:10,
     marginBottom:30,
+    backgroundColor: '#BFA100',
   },
   input: {
     height: 40,
