@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   captchabutton: {
+    backgroundColor: '#d3d3d3',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
