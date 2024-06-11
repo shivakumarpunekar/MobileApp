@@ -7,11 +7,14 @@ import appleAuth, {
   AppleAuthRequestOperation,
   AppleAuthRequestScope,
 } from '@invertase/react-native-apple-authentication';
-
+import Captcha from './Captcha/Captcha';
 
 
 
 export default function LoginPage({navigation}) {
+
+
+const [captchaVerified, setCaptchaVerified] = useState(false);
 
   
 
@@ -71,7 +74,14 @@ const signInWithGoogle = async () => {
     }
   }
 
-
+  //This is a Captcha
+  const handleLogin = () => {
+    if (captchaVerified) {
+      navigation.navigate('Welcome');
+    } else {
+      Alert.alert('Captcha Verification', 'Please verify the CAPTCHA first.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -89,13 +99,14 @@ const signInWithGoogle = async () => {
         secureTextEntry 
       />
 
+      <Captcha onVerify={setCaptchaVerified} />
 
-<View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => navigation.navigate('Welcome')}
+          onPress={handleLogin}
         >
-          <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.button} 
