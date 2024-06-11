@@ -56,15 +56,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   captchabutton: {
-    backgroundColor: '#d3d3d3',
+    backgroundColor: '#BFA100',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     width: '45%',
   },
   captchabuttonText: {
-    color: '#BFA100',
-    fontSize: 25,
+    color: '#fff',
+    fontSize: 15,
   },
 });
 

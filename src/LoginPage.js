@@ -177,15 +177,15 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   button: {
-    backgroundColor: '#d3d3d3',
+    backgroundColor: '#BFA100',
     padding: 10,
     borderRadius: 40,
     alignItems: 'center',
     width: '45%',
   },
   buttonText: {
-    color: '#BFA100',
-    fontSize: 25,
+    color: '#fff',
+    fontSize: 15,
   },
   socialContainer: {
     flexDirection: 'row',

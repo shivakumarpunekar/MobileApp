@@ -137,6 +137,7 @@ const ProfileScreenEdit = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F6F3E7',
   },
   curvedBackground: {
     width: '100%',
