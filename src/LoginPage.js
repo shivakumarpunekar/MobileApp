@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleSheet, TextInput, View, Button, Image } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text } from 'react-native';
 import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import appleAuth, {
   AppleButton,
@@ -90,38 +90,46 @@ const signInWithGoogle = async () => {
       />
 
 
-       <View style={styles.buttonContainer}>
-        <Button 
-          title="Login" 
-          onPress={() => navigation.navigate('Welcome') } 
-        />
-        <Button 
-          title="Signup" 
-          onPress={() => navigation.navigate('RegistrationPage')} 
-        />
+<View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => navigation.navigate('Welcome')}
+        >
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => navigation.navigate('RegistrationPage')}
+        >
+          <Text style={styles.buttonText}>Signup</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.socialContainer}>
-        <GoogleSigninButton
-        style={styles.googleButton}
-        size={GoogleSigninButton.Size.Wide}
-        color={GoogleSigninButton.Color.Dark}
-        onPress={signInWithGoogle}
-        />
-      </View>
+      {Platform.OS !== 'ios' && (
+        <View style={styles.socialContainer}>
+          <GoogleSigninButton
+          style={styles.googleButton}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={signInWithGoogle}
+          />
+        </View>
+      )}
 
-      <View>
-        <AppleButton
-          buttonStyle={AppleButton.Style.BLACK}
-          buttonType={AppleButton.Type.SIGN_IN}
-          style={{
-            width: 192,
-            height: 48,
-            top:6,
-          }}
-          onPress={onAppleButtonPress}
-        />
-      </View>    
+      {Platform.OS !== 'android' && (
+        <View>
+          <AppleButton
+            buttonStyle={AppleButton.Style.BLACK}
+            buttonType={AppleButton.Type.SIGN_IN}
+            style={{
+              width: 192,
+              height: 48,
+              top:6,
+            }}
+            onPress={onAppleButtonPress}
+          />
+        </View>  
+       )}  
     </View>
   );
 }
@@ -153,8 +161,20 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     marginTop: 20,
+    marginBottom:20,
     justifyContent: 'space-between',
-    width: '80%',
+    width: '70%',
+  },
+  button: {
+    backgroundColor: '#000',
+    padding: 10,
+    borderRadius: 40,
+    alignItems: 'center',
+    width: '45%',
+  },
+  buttonText: {
+    color: '#BFA100',
+    fontSize: 25,
   },
   socialContainer: {
     flexDirection: 'row',

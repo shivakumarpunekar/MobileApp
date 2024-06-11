@@ -54,7 +54,7 @@ const ProfileScreenEdit = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.curvedBackground}>
         <ImageBackground
-          source={require('../assets/J43.png')}
+          source={require('../assets/123.jpeg')}
           style={styles.backgroundImage}
         >
           <View style={styles.header}>
@@ -64,14 +64,14 @@ const ProfileScreenEdit = ({ route }) => {
                 value={name}
                 onChangeText={setName}
                 placeholder="Name"
-                placeholderTextColor="#ffffff"
+                placeholderTextColor="#000"
               />
               <TextInput
                 style={styles.email}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Email"
-                placeholderTextColor="#ffffff"
+                placeholderTextColor="#000"
               />
             </View>
             <TouchableOpacity onPress={handleChoosePhoto}>
@@ -85,7 +85,7 @@ const ProfileScreenEdit = ({ route }) => {
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Field School</Text>
           <TextInput
             style={styles.sectionContent}
@@ -95,7 +95,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="user" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="user" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Nick Name</Text>
           <TextInput
             style={styles.sectionContent}
@@ -105,7 +105,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Emergency Contact</Text>
           <TextInput
             style={styles.sectionContent}
@@ -115,7 +115,7 @@ const ProfileScreenEdit = ({ route }) => {
           />
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Emergency Number</Text>
           <TextInput
             style={styles.sectionContent}
@@ -174,11 +174,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#ffffff',
+    color: '#000',
   },
   email: {
     fontSize: 16,
-    color: '#ffffff',
+    color: '#000',
   },
   section: {
     flexDirection: 'row',
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   saveButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#BFA100',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

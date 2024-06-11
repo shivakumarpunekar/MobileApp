@@ -57,7 +57,7 @@ function App(): React.JSX.Element {
                     color="#BFA100"
                   />
                 ),
-                headerTitle:'Aairos',
+                headerTitle:'aairos',
                 headerLeftContainerStyle: { marginLeft: 15 },
                 headerRightContainerStyle: {marginRight: 20},
                 headerBackTitleVisible: false,

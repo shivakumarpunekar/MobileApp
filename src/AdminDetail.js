@@ -57,7 +57,7 @@ const AdminDetail = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const scrollViewRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   // Filtered data based on search query
   const filteredData = data.filter(item =>
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   button: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#BFA100',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 5,

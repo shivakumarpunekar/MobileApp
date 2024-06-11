@@ -23,19 +23,7 @@
     );
     }
 
-    function AboutScreen() {
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Image 
-            source={require('../assets/aairos.png')}
-            style={{height:400,width:400}}
-        />
-            <Text style={{fontSize:20}}>
-               About the aairos !
-            </Text>
-        </View>
-    );
-    }
+   
 
     function AdminScreen() {
         return (
@@ -53,6 +41,19 @@
             <ProfilePage/>
         );
     }
+    function AboutScreen() {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Image 
+                source={require('../assets/aairos.png')}
+                style={{height:400,width:400}}
+            />
+                <Text style={{fontSize:20}}>
+                   About the aairos !
+                </Text>
+            </View>
+        );
+        }
 
     export default function WelcomePage() {
     return (
@@ -63,13 +64,13 @@
         
                 if (route.name === 'Home') {
                     iconName = focused ? 'home' : 'home';
-                } else if (route.name === 'About') {
+                } else if (route.name === 'Admin') {
                     iconName = focused ? 'info-circle' : 'info-circle';
-                }else if (route.name === 'Admin') {
-                    iconName = focused ? 'database' : 'database';
                 }else if (route.name === 'User') {
-                    iconName = focused ? 'user' : 'user';
+                    iconName = focused ? 'database' : 'database';
                 }else if (route.name === 'ProfileScreen') {
+                    iconName = focused ? 'user' : 'user';
+                }else if (route.name === 'About') {
                     iconName = focused ? 'user' : 'user';
                 }
         
@@ -77,15 +78,15 @@
                 },
             })}
             tabBarOptions={{
-                activeTintColor: 'tomato',
+                activeTintColor: '#BFA100',
                 inactiveTintColor: 'gray',
             }}
         >
         <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}  />
-        <Tab.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
         <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
         <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} />
         <Tab.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
+        <Tab.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
     }

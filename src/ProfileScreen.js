@@ -21,7 +21,7 @@ const ProfilePage = () => {
     <View style={styles.container}>
       <View style={styles.curvedBackground}>
         <ImageBackground
-          source={require('../assets/J43.png')}
+          source={require('../assets/123.jpeg')}
           style={styles.backgroundImage}
         >
             <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile', { profileData })}>
@@ -43,22 +43,22 @@ const ProfilePage = () => {
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Field School</Text>
           <Text style={styles.sectionContent}>{profileData.fieldSchool}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="user" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="user" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Nick Name</Text>
           <Text style={styles.sectionContent}>{profileData.nickName}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Emergency Contact</Text>
           <Text style={styles.sectionContent}>{profileData.emergencyContact}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#900" />
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Emergency Number</Text>
           <Text style={styles.sectionContent}>{profileData.emergencyNumber}</Text>
         </View>
@@ -122,11 +122,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#ffffff', 
+    color: '#000', 
   },
   email: {
     fontSize: 16,
-    color: '#ffffff', 
+    color: '#000', 
   },
   section: {
     flexDirection: 'row',
