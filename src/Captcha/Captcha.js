@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   captchaText: {
     fontSize: 24,
     marginBottom: 10,
-    backgroundColor: '#EEE',
+    backgroundColor: '#F6F3E7',
     padding: 10,
     borderRadius: 5,
   },

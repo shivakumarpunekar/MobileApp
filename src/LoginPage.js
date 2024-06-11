@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert } from 'react-native';
 import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import appleAuth, {
   AppleButton,
