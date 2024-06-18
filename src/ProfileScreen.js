@@ -35,7 +35,7 @@ const ProfilePage = () => {
           source={require('../assets/123.jpeg')}
           style={styles.backgroundImage}
         >
-            <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile', { profileData })}>
+            <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile', { userProfile })}>
                 <Icon  name="edit" size={30} color="#000" />
             </TouchableOpacity>
           <View style={styles.header}>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: 11,
   },
   sectionIcon: {
     marginRight:10,

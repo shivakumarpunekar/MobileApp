@@ -6,32 +6,40 @@ import { launchImageLibrary } from 'react-native-image-picker';
 
 const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
-  const { profileData } = route.params;
+  const { userProfile } = route.params;
 
-  const [name, setName] = useState(profileData.name);
-  const [email, setEmail] = useState(profileData.email);
-  const [fieldSchool, setFieldSchool] = useState(profileData.fieldSchool);
-  const [nickName, setNickName] = useState(profileData.nickName);
-  const [emergencyContact, setEmergencyContact] = useState(profileData.emergencyContact);
-  const [emergencyNumber, setEmergencyNumber] = useState(profileData.emergencyNumber);
-  const [profileImage, setProfileImage] = useState(profileData.profileImage || null);
+  const [name, setName] = useState(userProfile.FirstName + ' ' + userProfile.MiddleName + ' ' + userProfile.LastName);
+  const [email, setEmail] = useState(userProfile.Email);
+  const [DateOfBirth, setDateOfBirth] = useState(userProfile.DateOfBirth);
+  const [MobileNumber, seMobileNumber] = useState(userProfile.MobileNumber);
+  const [UserName, setUserName] = useState(userProfile.UserName);
+  const [Password, setPassword] = useState(userProfile.Password);
+  const [Country, setCountry] = useState(userProfile.Country);
+  const [State, setState] = useState(userProfile.State);
+  const [City, setCity] = useState(userProfile.City);
+  const [Pincode, setPincode] = useState(userProfile.Pincode);
+  const [profileImage, setProfileImage] = useState(userProfile.profileImage || null);
 
   const handleSave = () => {
     // Perform save operation here (e.g., update state, make API call)
     // For now, we'll simply show an alert and navigate back
 
-    // Example of updating profileData (if it were managed via context or props)
-    const updatedProfileData = {
+    // Example of updating userProfile (if it were managed via context or props)
+    const updateduserProfile = {
       name,
       email,
-      fieldSchool,
-      nickName,
-      emergencyContact,
-      emergencyNumber,
+      DateOfBirth,
+      MobileNumber,
+      UserName,
+      Password,
+      Country,
+      State,
+      City,
+      Pincode,
     };
 
     // Navigate back to the profile page
-    navigation.navigate('ProfilePage', { updatedProfileData });
+    navigation.navigate('ProfilePage', { updateduserProfile });
 
     // Alternatively, show an alert as a placeholder for save operation
     Alert.alert('Profile Saved', 'Your profile has been updated successfully!', [
@@ -50,87 +58,129 @@ const ProfileScreenEdit = ({ route }) => {
   };
 
   return (
-    
-    <View style={styles.container}>
-      <View style={styles.curvedBackground}>
-        <ImageBackground
-          source={require('../assets/123.jpeg')}
-          style={styles.backgroundImage}
-        >
-          <View style={styles.header}>
-            <View style={styles.leftHeader}>
-              <TextInput
-                style={styles.name}
-                value={name}
-                onChangeText={setName}
-                placeholder="Name"
-                placeholderTextColor="#000"
-              />
-              <TextInput
-                style={styles.email}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Email"
-                placeholderTextColor="#000"
-              />
+    <ScrollView>
+      <View style={styles.container}>
+        <View style={styles.curvedBackground}>
+          <ImageBackground
+            source={require('../assets/123.jpeg')}
+            style={styles.backgroundImage}
+          >
+            <View style={styles.header}>
+              <View style={styles.leftHeader}>
+                <TextInput
+                  style={styles.name}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Name"
+                  placeholderTextColor="#000"
+                />
+                <TextInput
+                  style={styles.email}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Email"
+                  placeholderTextColor="#000"
+                />
+              </View>
+              <TouchableOpacity onPress={handleChoosePhoto}>
+                <Image
+                  source={profileImage ? { uri: profileImage.uri } : require('../assets/User-Avatar-Profile-PNG.png')}
+                  style={styles.profileImage}
+                />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={handleChoosePhoto}>
-              <Image
-                source={profileImage ? { uri: profileImage.uri } : require('../assets/User-Avatar-Profile-PNG.png')}
-                style={styles.profileImage}
-              />
+          </ImageBackground>
+        </View>
+        <View style={styles.content}>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="calendar" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>DateOfBirth</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={DateOfBirth}
+              onChangeText={setDateOfBirth}
+              placeholder="DateOfBirth"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>MobileNumber</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={MobileNumber}
+              onChangeText={seMobileNumber}
+              placeholder="MobileNumber"
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="user" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>UserName</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={UserName}
+              onChangeText={setUserName}
+              placeholder="UserName"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="lock" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>Password</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={Password}
+              onChangeText={setPassword}
+              placeholder="Password"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="globe" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>Country</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={Country}
+              onChangeText={setCountry}
+              placeholder="Country"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="map-marker" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>State</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={State}
+              onChangeText={setState}
+              placeholder="State"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="map" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>City</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={City}
+              onChangeText={setCity}
+              placeholder="City"
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="map-pin" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>Pincode</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={Pincode}
+              onChangeText={setPincode}
+              placeholder="Pincode"
+            />
+          </View>
+          <View style={styles.saveButtonView}>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
-        </ImageBackground>
+        </View>
       </View>
-      <View style={styles.content}>
-        <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Field School</Text>
-          <TextInput
-            style={styles.sectionContent}
-            value={fieldSchool}
-            onChangeText={setFieldSchool}
-            placeholder="Field School"
-          />
-        </View>
-        <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="user" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Nick Name</Text>
-          <TextInput
-            style={styles.sectionContent}
-            value={nickName}
-            onChangeText={setNickName}
-            placeholder="Nick Name"
-          />
-        </View>
-        <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Emergency Contact</Text>
-          <TextInput
-            style={styles.sectionContent}
-            value={emergencyContact}
-            onChangeText={setEmergencyContact}
-            placeholder="Emergency Contact"
-          />
-        </View>
-        <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Emergency Number</Text>
-          <TextInput
-            style={styles.sectionContent}
-            value={emergencyNumber}
-            onChangeText={setEmergencyNumber}
-            placeholder="Emergency Number"
-            keyboardType="numeric"
-          />
-        </View>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-    
+    </ScrollView>
   );
 };
 
@@ -184,7 +234,7 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: 13,
   },
   sectionIcon: {
     marginRight:10,
@@ -200,6 +250,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
     paddingBottom: 5,
+  },
+  saveButtonView: {
+    backgroundColor: '#F6F3E7',
   },
   saveButton: {
     backgroundColor: '#BFA100',
