@@ -22,7 +22,6 @@ const RegistrationPage = () => {
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
-  const [district, setDistrict] = useState('');
   const [pincode, setPincode] = useState('');
   const phoneInput = useRef(null);
 

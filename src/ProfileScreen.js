@@ -54,7 +54,7 @@ const ProfilePage = () => {
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="dateofbirth" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="calendar" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>DateOfBirth</Text>
           <Text style={styles.sectionContent}>{userProfile.DateOfBirth}</Text>
         </View>
@@ -69,27 +69,27 @@ const ProfilePage = () => {
           <Text style={styles.sectionContent}>{userProfile.UserName}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="password" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="lock" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Password</Text>
           <Text style={styles.sectionContent}>{userProfile.Password}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="country" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="globe" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Country</Text>
           <Text style={styles.sectionContent}>{userProfile.Country}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="state" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="map-marker" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>State</Text>
           <Text style={styles.sectionContent}>{userProfile.State}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="city" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="map" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>City</Text>
           <Text style={styles.sectionContent}>{userProfile.City}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="pincode" size={30} color="#BFA100" />
+          <Icon style={styles.sectionIcon} name="map-pin" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Pincode</Text>
           <Text style={styles.sectionContent}>{userProfile.Pincode}</Text>
         </View>
