@@ -319,15 +319,6 @@ const RegistrationPage = () => {
           onChangeText={(value) => setCity(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          District
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="District"
-          value={district}
-          onChangeText={(value) => setDistrict(value)}
-        />
-        <Text style={{ fontSize: 20 }}>
         Pincode
       </Text>
         <TextInput

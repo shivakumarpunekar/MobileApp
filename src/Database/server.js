@@ -27,9 +27,9 @@ db.connect((err) => {
 
 // Routes
 app.post('/Registation', (req, res) => {
-  const { firstName, middleName, lastName, dob, phoneNumber, username, password, email, country, state, city, district, pincode } = req.body;
-  const INSERT_USER_QUERY = `INSERT INTO Registration (FirstName, MiddleName, LastName, DateOfBirth, MobileNumber, UserName, Password, Email, Country, State, City, Distric, Pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  db.query(INSERT_USER_QUERY, [firstName, middleName, lastName, dob, phoneNumber, username, password, email, country, state, city, district, pincode], (err, result) => {
+  const { firstName, middleName, lastName, dob, phoneNumber, username, password, email, country, state, city, pincode } = req.body;
+  const INSERT_USER_QUERY = `INSERT INTO Registration (FirstName, MiddleName, LastName, DateOfBirth, MobileNumber, UserName, Password, Email, Country, State, City, Pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  db.query(INSERT_USER_QUERY, [firstName, middleName, lastName, dob, phoneNumber, username, password, email, country, state, city, pincode], (err, result) => {
     if (err) {
       console.log(err);
       res.status(400).send('Error registering user');
