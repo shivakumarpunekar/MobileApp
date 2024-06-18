@@ -7,13 +7,24 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 const ProfilePage = () => {
   const navigation = useNavigation();
 
-  const profileData = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    fieldSchool: 'Some Field School',
-    nickName: 'Johnny',
-    emergencyContact: 'Jane Doe',
-    emergencyNumber: '12345 - 67890',
+    const userProfile = {
+    UserProfileId: '1',
+    GuId: '1234-5678-9012',
+    FirstName: 'John',
+    MiddleName: 'A',
+    LastName: 'Doe',
+    DateOfBirth: '1990-01-01',
+    MobileNumber: '+1234567890',
+    NumberOfDevices: 3,
+    UserName: 'johndoe',
+    Password: 'password',  // Note: Do not display password in the profile
+    CreatedDate: '2022-01-01',
+    UpdatedDate: '2023-01-01',
+    Country: 'USA',
+    State: 'California',
+    City: 'Los Angeles',
+    Pincode: '90001',
+    Email: 'john.doe@example.com',
   };
 
   return (
@@ -30,8 +41,8 @@ const ProfilePage = () => {
           <View style={styles.header}>
             
             <View style={styles.leftHeader}>
-              <Text style={styles.name}>{profileData.name}</Text>
-              <Text style={styles.email}>{profileData.email}</Text>
+              <Text style={styles.name}>{userProfile.FirstName} {userProfile.MiddleName} {userProfile.LastName}</Text>
+              <Text style={styles.email}>{userProfile.Email}</Text>
             </View>
             <Image
               source={require('../assets/User-Avatar-Profile-PNG.png')}
@@ -43,24 +54,44 @@ const ProfilePage = () => {
       </View>
       <View style={styles.content}>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="graduation-cap" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Field School</Text>
-          <Text style={styles.sectionContent}>{profileData.fieldSchool}</Text>
+          <Icon style={styles.sectionIcon} name="dateofbirth" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>DateOfBirth</Text>
+          <Text style={styles.sectionContent}>{userProfile.DateOfBirth}</Text>
+        </View>
+        <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>MobileNumber</Text>
+          <Text style={styles.sectionContent}>{userProfile.MobileNumber}</Text>
         </View>
         <View style={styles.section}>
           <Icon style={styles.sectionIcon} name="user" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Nick Name</Text>
-          <Text style={styles.sectionContent}>{profileData.nickName}</Text>
+          <Text style={styles.sectionTitle}>UserName</Text>
+          <Text style={styles.sectionContent}>{userProfile.UserName}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Emergency Contact</Text>
-          <Text style={styles.sectionContent}>{profileData.emergencyContact}</Text>
+          <Icon style={styles.sectionIcon} name="password" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>Password</Text>
+          <Text style={styles.sectionContent}>{userProfile.Password}</Text>
         </View>
         <View style={styles.section}>
-          <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
-          <Text style={styles.sectionTitle}>Emergency Number</Text>
-          <Text style={styles.sectionContent}>{profileData.emergencyNumber}</Text>
+          <Icon style={styles.sectionIcon} name="country" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>Country</Text>
+          <Text style={styles.sectionContent}>{userProfile.Country}</Text>
+        </View>
+        <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="state" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>State</Text>
+          <Text style={styles.sectionContent}>{userProfile.State}</Text>
+        </View>
+        <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="city" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>City</Text>
+          <Text style={styles.sectionContent}>{userProfile.City}</Text>
+        </View>
+        <View style={styles.section}>
+          <Icon style={styles.sectionIcon} name="pincode" size={30} color="#BFA100" />
+          <Text style={styles.sectionTitle}>Pincode</Text>
+          <Text style={styles.sectionContent}>{userProfile.Pincode}</Text>
         </View>
       </View>
     </View>
