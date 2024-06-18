@@ -16,7 +16,8 @@
         "Satou",
         "setconform",
         "setphone",
-        "Signin"
+        "Signin",
+        "updateduser"
     ],
     "java.configuration.updateBuildConfiguration": "automatic"
 }
