@@ -3,6 +3,7 @@ import { View, Text, ImageBackground, Image, StyleSheet, TouchableOpacity, Scrol
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
+import { getUsers } from '../server';
 
 //This is for date format
 const formatDate = (dateString) => {
@@ -36,19 +37,35 @@ const ProfilePage = () => {
   // };
 
   //This is for dynamic
-  const [userProfile, setUserProfile] = useState(null);
+  // const [userProfile, setUserProfile] = useState(null);
+
+  // useEffect(() => {
+  //   fetch('http://192.168.1.4:3001/api/aairos?userProfileId=2')
+  //     .then(response => response.json())
+  //     .then(data => setUserProfile(data))
+  //     .catch(error => console.error('Error fetching data:', error));
+  // }, []);
+
+  // if (!userProfile) {
+  //   return <Text>Loading...</Text>;
+    
+  // }
+
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch('http://192.168.1.4:3001/api/aairos?userProfileId=2')
-      .then(response => response.json())
-      .then(data => setUserProfile(data))
-      .catch(error => console.error('Error fetching data:', error));
+    fetchUsers();
   }, []);
 
-  if (!userProfile) {
-    return <Text>Loading...</Text>;
-    
-  }
+  const fetchUsers = async () => {
+    try {
+      const response = await getUsers();
+      setUsers(response.data); 
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
 
   return (
     <ScrollView>
@@ -64,8 +81,8 @@ const ProfilePage = () => {
           <View style={styles.header}>
             
             <View style={styles.leftHeader}>
-              <Text style={styles.name}>{userProfile.FirstName} {userProfile.MiddleName} {userProfile.LastName}</Text>
-              <Text style={styles.email}>{userProfile.Email}</Text>
+              <Text key={user.name} style={styles.name}>{user.FirstName} {user.MiddleName} {user.LastName}</Text>
+              <Text key={user.Email} style={styles.email}>{user.Email}</Text>
             </View>
             <Image
               source={require('../assets/User-Avatar-Profile-PNG.png')}
