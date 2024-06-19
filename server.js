@@ -4,38 +4,36 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
+const port = 3001;
 
-// Middleware
 app.use(bodyParser.json());
 app.use(cors());
 
-// MySQL Connection
 const db = mysql.createConnection({
-  host: 'localhost',      // Your MySQL host (e.g., localhost)
-  user: 'root',           // Your MySQL username
-  password: 'Jesus@123', // Your MySQL password
-  database: 'aairos', // Your MySQL database name
+    host: 'localhost',
+    user: 'newuser', 
+    password: 'NewUserPassword123!', 
+    database: 'aairos'
 });
 
-// Connect to MySQL
-db.connect((err) => {
-  if (err) {
-    throw err;
-  }
-  console.log('MySQL Connected...');
-});
-
-// Example route
-app.get('/userprofile', (req, res) => {
-  const SELECT_ALL_USERS_QUERY = 'SELECT * FROM userprofile'; 
-  db.query(SELECT_ALL_USERS_QUERY, (err, results) => {
+db.connect(err => {
     if (err) {
-      return res.status(500).json({ error: err.message });
+        throw err;
     }
-    res.json(results);
-  });
+    console.log('MySQL Connected...');
 });
 
-// Start server
-const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.get('/api/aairos', (req, res) => {
+    const userProfileId = req.query.userProfileId;
+    const query = 'SELECT * FROM userprofile WHERE UserProfileId = ?';
+    db.query(query, [userProfileId], (err, result) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        res.json(result[0]);
+    });
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});

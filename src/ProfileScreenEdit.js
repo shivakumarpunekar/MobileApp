@@ -4,6 +4,16 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { launchImageLibrary } from 'react-native-image-picker';
 
+
+
+//This is for date format
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+
+
 const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
   const { userProfile } = route.params;
@@ -97,8 +107,8 @@ const ProfileScreenEdit = ({ route }) => {
             <Text style={styles.sectionTitle}>DateOfBirth</Text>
             <TextInput
               style={styles.sectionContent}
-              value={DateOfBirth}
-              onChangeText={setDateOfBirth}
+              value={formatDate(DateOfBirth)}
+              onChangeText={formatDate(setDateOfBirth)}
               placeholder="DateOfBirth"
             />
           </View>

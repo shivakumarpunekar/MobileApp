@@ -1,31 +1,54 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, ImageBackground, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+
+//This is for date format
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
 
 
 const ProfilePage = () => {
+  // This is for static
   const navigation = useNavigation();
 
-    const userProfile = {
-    UserProfileId: '1',
-    GuId: '1234-5678-9012',
-    FirstName: 'John',
-    MiddleName: 'A',
-    LastName: 'Doe',
-    DateOfBirth: '1990-01-01',
-    MobileNumber: '+1234567890',
-    NumberOfDevices: 3,
-    UserName: 'johndoe',
-    Password: 'password',  // Note: Do not display password in the profile
-    CreatedDate: '2022-01-01',
-    UpdatedDate: '2023-01-01',
-    Country: 'USA',
-    State: 'California',
-    City: 'Los Angeles',
-    Pincode: '90001',
-    Email: 'john.doe@example.com',
-  };
+  //   const userProfile = {
+  //   UserProfileId: '1',
+  //   GuId: '1234-5678-9012',
+  //   FirstName: 'John',
+  //   MiddleName: 'A',
+  //   LastName: 'Doe',
+  //   DateOfBirth: '1990-01-01',
+  //   MobileNumber: '+1234567890',
+  //   NumberOfDevices: 3,
+  //   UserName: 'johndoe',
+  //   Password: 'password',  // Note: Do not display password in the profile
+  //   CreatedDate: '2022-01-01',
+  //   UpdatedDate: '2023-01-01',
+  //   Country: 'USA',
+  //   State: 'California',
+  //   City: 'Los Angeles',
+  //   Pincode: '90001',
+  //   Email: 'john.doe@example.com',
+  // };
+
+  //This is for dynamic
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    fetch('http://192.168.1.4:3001/api/aairos?userProfileId=1')
+      .then(response => response.json())
+      .then(data => setUserProfile(data))
+      .catch(error => console.error('Error fetching data:', error));
+  }, []);
+
+  if (!userProfile) {
+    return <Text>Loading...</Text>;
+    
+  }
 
   return (
     <ScrollView>
@@ -56,7 +79,7 @@ const ProfilePage = () => {
         <View style={styles.section}>
           <Icon style={styles.sectionIcon} name="calendar" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>DateOfBirth</Text>
-          <Text style={styles.sectionContent}>{userProfile.DateOfBirth}</Text>
+          <Text style={styles.sectionContent}>{formatDate(userProfile.DateOfBirth)}</Text>
         </View>
         <View style={styles.section}>
           <Icon style={styles.sectionIcon} name="phone" size={30} color="#BFA100" />
