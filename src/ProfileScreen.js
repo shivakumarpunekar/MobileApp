@@ -39,7 +39,7 @@ const ProfilePage = () => {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    fetch('http://192.168.1.4:3001/api/aairos?userProfileId=1')
+    fetch('http://192.168.1.4:3001/api/aairos?userProfileId=2')
       .then(response => response.json())
       .then(data => setUserProfile(data))
       .catch(error => console.error('Error fetching data:', error));
@@ -94,7 +94,7 @@ const ProfilePage = () => {
         <View style={styles.section}>
           <Icon style={styles.sectionIcon} name="lock" size={30} color="#BFA100" />
           <Text style={styles.sectionTitle}>Password</Text>
-          <Text style={styles.sectionContent}>{userProfile.Password}</Text>
+          <Text style={styles.sectionContent} >{userProfile.Password}</Text>
         </View>
         <View style={styles.section}>
           <Icon style={styles.sectionIcon} name="globe" size={30} color="#BFA100" />

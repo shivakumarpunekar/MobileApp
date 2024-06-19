@@ -3,25 +3,22 @@ import { View, Text, ImageBackground, Image, TextInput, StyleSheet, TouchableOpa
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { launchImageLibrary } from 'react-native-image-picker';
+import axios from 'axios';
 
-
-
-//This is for date format
+// This is for date format
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-
-
 const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
-  const { userProfile } = route.params;
 
+  const { userProfile } = route.params;
   const [name, setName] = useState(userProfile.FirstName + ' ' + userProfile.MiddleName + ' ' + userProfile.LastName);
   const [email, setEmail] = useState(userProfile.Email);
   const [DateOfBirth, setDateOfBirth] = useState(userProfile.DateOfBirth);
-  const [MobileNumber, seMobileNumber] = useState(userProfile.MobileNumber);
+  const [MobileNumber, setMobileNumber] = useState(userProfile.MobileNumber);
   const [UserName, setUserName] = useState(userProfile.UserName);
   const [Password, setPassword] = useState(userProfile.Password);
   const [Country, setCountry] = useState(userProfile.Country);
@@ -31,33 +28,38 @@ const ProfileScreenEdit = ({ route }) => {
   const [profileImage, setProfileImage] = useState(userProfile.profileImage || null);
 
   const handleSave = () => {
-    // Perform save operation here (e.g., update state, make API call)
-    // For now, we'll simply show an alert and navigate back
-
-    // Example of updating userProfile (if it were managed via context or props)
-    const updateduserProfile = {
-      name,
-      email,
-      DateOfBirth,
-      MobileNumber,
-      UserName,
-      Password,
-      Country,
-      State,
-      City,
-      Pincode,
+    const updatedProfile = {
+      FirstName: name.split(' ')[0],
+      MiddleName: name.split(' ')[1] || '',
+      LastName: name.split(' ')[2] || '',
+      Email: email,
+      DateOfBirth: DateOfBirth,
+      MobileNumber: MobileNumber,
+      UserName: UserName,
+      Password: Password,
+      Country: Country,
+      State: State,
+      City: City,
+      Pincode: Pincode,
+      profileImage: profileImage
     };
 
-    // Navigate back to the profile page
-    navigation.navigate('ProfilePage', { updateduserProfile });
+    const requestUrl = `http://192.168.1.4:3001/api/aairos/Userprofile/${userProfile.UserProfileId}`;
+    console.log('Request URL:', requestUrl);
 
-    // Alternatively, show an alert as a placeholder for save operation
-    Alert.alert('Profile Saved', 'Your profile has been updated successfully!', [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+    axios.put(requestUrl, updatedProfile)
+      .then(response => {
+        Alert.alert('Profile Updated', 'Your profile has been updated successfully!', [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
+      })
+      .catch(error => {
+        console.error('Error updating profile:', error);
+        Alert.alert('Error', 'Failed to update profile. Please try again later.');
+      });
   };
 
-  //For Profile Image Change
+  // For Profile Image Change
   const handleChoosePhoto = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
       if (!response.didCancel && !response.errorCode) {
@@ -108,7 +110,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={formatDate(DateOfBirth)}
-              onChangeText={formatDate(setDateOfBirth)}
+              onChangeText={setDateOfBirth}
               placeholder="DateOfBirth"
             />
           </View>
@@ -118,7 +120,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={MobileNumber}
-              onChangeText={seMobileNumber}
+              onChangeText={setMobileNumber}
               placeholder="MobileNumber"
               keyboardType="numeric"
             />
@@ -181,11 +183,12 @@ const ProfileScreenEdit = ({ route }) => {
               value={Pincode}
               onChangeText={setPincode}
               placeholder="Pincode"
+              keyboardType="numeric"
             />
           </View>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -228,7 +231,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     marginTop:40,
-    marginBottom:200,
   },
   name: {
     fontSize: 24,
@@ -243,10 +245,11 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom:10,
   },
   sectionIcon: {
-    marginRight:10,
-    width:40,
+    marginRight: 10,
+    width: 40,
   },
   sectionTitle: {
     width: 150,
@@ -259,7 +262,6 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     paddingBottom: 5,
   },
-  
   saveButton: {
     backgroundColor: '#BFA100',
     paddingVertical: 10,
