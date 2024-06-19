@@ -183,11 +183,9 @@ const ProfileScreenEdit = ({ route }) => {
               placeholder="Pincode"
             />
           </View>
-          <View style={styles.saveButtonView}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
+                <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
-          </View>
         </View>
       </View>
     </ScrollView>
@@ -244,7 +242,6 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 13,
   },
   sectionIcon: {
     marginRight:10,
@@ -261,9 +258,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     paddingBottom: 5,
   },
-  saveButtonView: {
-    backgroundColor: '#F6F3E7',
-  },
+  
   saveButton: {
     backgroundColor: '#BFA100',
     paddingVertical: 10,
