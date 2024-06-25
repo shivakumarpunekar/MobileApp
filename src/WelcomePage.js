@@ -38,6 +38,7 @@
 
     function ProfileScreen() {
         return (
+        
             <ProfilePage/>
         );
     }
