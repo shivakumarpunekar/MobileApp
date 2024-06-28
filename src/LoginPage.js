@@ -13,7 +13,8 @@ import Captcha from './Captcha/Captcha';
 
 export default function LoginPage({navigation}) {
 
-
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 const [captchaVerified, setCaptchaVerified] = useState(false);
 
   
@@ -74,14 +75,43 @@ const signInWithGoogle = async () => {
     }
   }
 
-  //This is a Captcha
-  const handleLogin = () => {
+  //This is a Captcha and Login 
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Validation Error', 'Username and password are required.');
+      return;
+    }
+
     if (captchaVerified) {
-      navigation.navigate('Welcome');
+      try {
+        const response = await fetch('http://10.0.2.2:2030/api/Auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            Username: username,
+            password: password,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+
+        const data = await response.json();
+        const token = data.token;
+
+        navigation.navigate('Welcome');
+      } catch (error) {
+        console.error('Login Error:', error.message);
+        Alert.alert('Login Failed', 'Unable to log in. Please try again later.');
+      }
     } else {
       Alert.alert('Captcha Verification', 'Please verify the CAPTCHA first.');
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -89,14 +119,19 @@ const signInWithGoogle = async () => {
         source={require('../assets/aairos.png')}
         style={styles.profileImage} 
       />
+      
       <TextInput 
         style={styles.input} 
         placeholder="Username" 
+        value={username}
+        onChangeText={setUsername}
       />
       <TextInput 
         style={styles.input} 
         placeholder="Password" 
         secureTextEntry 
+        value={password}
+        onChangeText={setPassword}
       />
 
       <Captcha onVerify={setCaptchaVerified} />

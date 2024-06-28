@@ -5,21 +5,14 @@
     import AdminDetail from './AdminDetail';
     import SingleUser from './SingleUser';
     import ProfilePage from './ProfileScreen';
+import DeviceTable from './DeviceTable';
 
 
     const Tab = createBottomTabNavigator();
 
     function HomeScreen() {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Image 
-            source={require('../assets/aairos.png')}
-            style={{height:400,width:400}}
-        />
-            <Text style={{fontSize:20}}>
-                Hi Welcome To aairos !
-            </Text>
-        </View>
+        <DeviceTable/>
     );
     }
 

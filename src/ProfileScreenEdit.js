@@ -3,7 +3,7 @@ import { View, Text, ImageBackground, Image, TextInput, StyleSheet, TouchableOpa
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { launchImageLibrary } from 'react-native-image-picker';
-import axios from 'axios';
+import { updateProfile } from './Api/api';
 
 // This is for date format
 const formatDate = (dateString) => {
@@ -14,40 +14,45 @@ const formatDate = (dateString) => {
 const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
 
-  const { userProfile } = route.params;
-  const [name, setName] = useState(userProfile.FirstName + ' ' + userProfile.MiddleName + ' ' + userProfile.LastName);
-  const [email, setEmail] = useState(userProfile.Email);
-  const [DateOfBirth, setDateOfBirth] = useState(userProfile.DateOfBirth);
-  const [MobileNumber, setMobileNumber] = useState(userProfile.MobileNumber);
-  const [UserName, setUserName] = useState(userProfile.UserName);
-  const [Password, setPassword] = useState(userProfile.Password);
-  const [Country, setCountry] = useState(userProfile.Country);
-  const [State, setState] = useState(userProfile.State);
-  const [City, setCity] = useState(userProfile.City);
-  const [Pincode, setPincode] = useState(userProfile.Pincode);
-  const [profileImage, setProfileImage] = useState(userProfile.profileImage || null);
+  const { data } = route.params;
+
+  const [guId, setguId] = useState(data.guId);
+  const [name, setName] = useState(data.firstName + ' ' + data.middleName + ' ' + data.lastName);
+  const [email, setEmail] = useState(data.email);
+  const [DateOfBirth, setDateOfBirth] = useState(data.dateOfBirth);
+  const [MobileNumber, setMobileNumber] = useState(data.mobileNumber);
+  const [UserName, setUserName] = useState(data.userName);
+  const [Password, setPassword] = useState(data.password);
+  const [Country, setCountry] = useState(data.country);
+  const [State, setState] = useState(data.state);
+  const [City, setCity] = useState(data.city);
+  const [Pincode, setPincode] = useState(data.pincode);
+  const [profileImage, setProfileImage] = useState(data .profileImage || null);
 
   const handleSave = () => {
-    const updatedProfile = {
-      FirstName: name.split(' ')[0],
-      MiddleName: name.split(' ')[1] || '',
-      LastName: name.split(' ')[2] || '',
-      Email: email,
-      DateOfBirth: DateOfBirth,
-      MobileNumber: MobileNumber,
-      UserName: UserName,
-      Password: Password,
-      Country: Country,
-      State: State,
-      City: City,
-      Pincode: Pincode,
-      profileImage: profileImage
+    debugger
+    const data = {
+      userProfileId:userProfileId,
+      guId:guId,
+      firstName: name.split(' ')[0],
+      middleName: name.split(' ')[1] || '',
+      lastName: name.split(' ')[2] || '',
+      email: email,
+      dateOfBirth: DateOfBirth,
+      mobileNumber: MobileNumber,
+      userName: UserName,
+      password: Password,
+      country: Country,
+      state: State,
+      city: City,
+      pincode: Pincode,
+      profileImage: profileImage ? profileImage.uri : null
     };
 
-    const requestUrl = `http://192.168.1.4:3001/api/aairos/Userprofile/${userProfile.UserProfileId}`;
-    console.log('Request URL:', requestUrl);
+    console.log('Request Payload:', data);
 
-    axios.put(requestUrl, updatedProfile)
+    //This is a Update Api Handlar
+    updateProfile(guId, data)
       .then(response => {
         Alert.alert('Profile Updated', 'Your profile has been updated successfully!', [
           { text: 'OK', onPress: () => navigation.goBack() },
@@ -73,6 +78,8 @@ const ProfileScreenEdit = ({ route }) => {
     <ScrollView>
       <View style={styles.container}>
         <View style={styles.curvedBackground}>
+        <View><Text>{data.userProfileId}</Text></View>
+        <View><Text>{data.guId}</Text></View>
           <ImageBackground
             source={require('../assets/123.jpeg')}
             style={styles.backgroundImage}
@@ -104,6 +111,16 @@ const ProfileScreenEdit = ({ route }) => {
           </ImageBackground>
         </View>
         <View style={styles.content}>
+        <View style={styles.section}>
+            <Icon style={styles.sectionIcon} name="calendar" size={30} color="#BFA100" />
+            <Text style={styles.sectionTitle}>guId</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={guId}
+              onChangeText={setguId}
+              placeholder="guID"
+            />
+          </View>
           <View style={styles.section}>
             <Icon style={styles.sectionIcon} name="calendar" size={30} color="#BFA100" />
             <Text style={styles.sectionTitle}>DateOfBirth</Text>
@@ -143,6 +160,7 @@ const ProfileScreenEdit = ({ route }) => {
               value={Password}
               onChangeText={setPassword}
               placeholder="Password"
+              secureTextEntry 
             />
           </View>
           <View style={styles.section}>
@@ -231,6 +249,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     marginTop:40,
+    marginBottom:180,
   },
   name: {
     fontSize: 24,

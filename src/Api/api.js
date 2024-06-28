@@ -1,57 +1,47 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
 
-import { NativeModules, NativeEventEmitter } from 'react-native';
 
-// Custom adapter for Axios in React Native to handle SSL for self-signed certificates
-const customAdapter = (config) => {
-  return new Promise((resolve, reject) => {
-    const request = {
-      ...config,
-      responseType: 'text',
-      // Adjust timeout according to your needs
-      timeout: config.timeout || 10000,
-    };
-
-    // Use NativeModules and NativeEventEmitter for handling network requests
-    NativeModules.CustomNetworking.makeRequest(
-      request,
-      (response) => {
-        resolve({
-          data: response.profiles,
-          status: response.status,
-          headers: response.headers,
-          config: request,
-          request,
-        });
-      },
-      (error) => {
-        reject({
-          message: error.message,
-          request,
-          response: {
-            status: error.status,
-            headers: error.headers,
-          },
-          config: request,
-        });
-      }
-    );
-  });
-};
-
-// Create Axios instance with custom adapter
-const axiosInstance = axios.create({
-  baseURL: 'https://localhost:44341/api/userprofiles',
-  adapter: customAdapter,
+const apiClient = axios.create({
+  baseURL: 'http://10.0.2.2:2030/', // Replace with your Web API port
 });
 
-// Allow insecure requests for development with self-signed certificates
-if (Platform.OS === 'android') {
-  axiosInstance.interceptors.request.use((config) => {
-    config.httpsAgent = new https.Agent({ rejectUnauthorized: false });
-    return config;
-  });
-}
+//Get Method of Userprofile
+export const fetchaDataFromApi = async () => {
+  try {
+    const response = await apiClient.get('/api/userprofiles/1');
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+    throw error;
+  }
+};
 
-export default axiosInstance;
+// Update Method of Userprofile
+export const updateProfile = async (guId, data) => {
+  try {
+    const response = await apiClient.put(`/api/userprofiles/${guId}`, data);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+    throw error;
+  }
+};
+
+
+export default apiClient;
