@@ -10,6 +10,7 @@ const DeviceDetailsScreen = () => {
 
   const fetchDeviceDetails = async () => {
     try {
+        debugger
       const response = await fetch('http://10.0.2.2:2030/api/devicedetails');
       console.log('Request Payload:', data);
       const data = await response.json();
