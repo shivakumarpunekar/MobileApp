@@ -30,7 +30,7 @@ const ProfilePage = ({ loginId }) => {
         debugger
         const userProfileId = await fetchUserProfileIdByLoginId(loginId);
         if (!userProfileId) {
-          setError(new Error(`User profile not found for login ID: ${loginId}`));
+          setError(new Error(`User profile not found`));
           return;
         }
         debugger
