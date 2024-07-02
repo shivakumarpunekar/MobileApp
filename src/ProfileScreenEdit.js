@@ -25,6 +25,7 @@ const ProfileScreenEdit = ({route}) => {
   const {data} = route.params;
 
   const [userProfileId, setuserProfileId] = useState(data.userProfileId);
+  const [loginId, setlognId] = useState(data.loginId);
   const [guId, setguId] = useState(data.guId);
   const [firstName, setfirstName] = useState(data.firstName);
   const [middleName, setmiddleName] = useState(data.middleName);
@@ -41,8 +42,10 @@ const ProfileScreenEdit = ({route}) => {
   const [profileImage, setprofileImage] = useState(data.profileImage || null);
 
   const handleSave = async () => {
+    debugger
     const updateData = {
       userProfileId,
+      loginId,
       guId,
       firstName,
       middleName,
@@ -59,14 +62,8 @@ const ProfileScreenEdit = ({route}) => {
       profileImage: profileImage ? profileImage : null,
     };
   
-    // Remove any empty fields from the updateData object
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === '') {
-        delete updateData[key];
-      }
-    });
-  
     try {
+      debugger
       const url = `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`;
       console.log('Sending data to API:', updateData); 
   

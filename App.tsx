@@ -20,8 +20,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LoginPage from './src/LoginPage';
 import WelcomePage from './src/WelcomePage';
 import RegistrationPage from './src/RegistationPage';
-import ProfilePage from './src/ProfileScreen';
 import ProfileScreenEdit from './src/ProfileScreenEdit';
+import ProfilePage from './src/ProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -69,6 +69,12 @@ function App(): React.JSX.Element {
               name="RegistrationPage" //This is for Registation Page
               component={RegistrationPage}
               options={{ headerTitle: 'Registration' }}
+            />
+
+            <Stack.Screen
+              name="ProfileScreenEdit"
+              component={ProfileScreenEdit}
+              options={{ headerTitle: 'ProfileScreenEdit' }}
             />
           </Stack.Navigator>
       </NavigationContainer>

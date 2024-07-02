@@ -126,7 +126,7 @@ const RegistrationPage = () => {
 
   const handleRegistration = () => {
     if (checkTextInput()) {
-      fetch('http://localhost:5000/Registation', {
+      fetch('http://10.0.2.2:2030/api/userprofiles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

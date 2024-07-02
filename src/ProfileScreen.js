@@ -33,6 +33,7 @@ const ProfilePage = ({ loginId }) => {
           setError(new Error(`User profile not found for login ID: ${loginId}`));
           return;
         }
+        debugger
         const result = await fetchDataByIdFromApi(userProfileId);
         setData(result);
       } catch (error) {
@@ -62,7 +63,7 @@ const ProfilePage = ({ loginId }) => {
                 style={styles.backgroundImage}>
                 <TouchableOpacity
                   style={styles.editButton}
-                  onPress={() => navigation.navigate('EditProfile', {data})}>
+                  onPress={() => navigation.navigate('ProfileScreenEdit', {data})}>
                   <Icon name="edit" size={30} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.header}>
@@ -82,16 +83,6 @@ const ProfilePage = ({ loginId }) => {
               </ImageBackground>
             </View>
             <View style={styles.content}>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="user"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>userProfileId</Text>
-                <Text style={styles.sectionContent}>{data.userProfileId}</Text>
-              </View>
               <View style={styles.section}>
                 <Icon
                   style={styles.sectionIcon}
