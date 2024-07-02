@@ -70,17 +70,6 @@ function App(): React.JSX.Element {
               component={RegistrationPage}
               options={{ headerTitle: 'Registration' }}
             />
-           
-            <Stack.Screen
-            name="Profile" //This is for profile page
-            component={ProfilePage}  
-            options={{ headerShown: false }}
-          />
-            <Stack.Screen
-            name="EditProfile" //This is for profile page
-            component={ProfileScreenEdit}  
-            options={{ headerShown: false }}
-          />
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

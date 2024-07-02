@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert, Platform } from 'react-native';
 import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import appleAuth, {
   AppleButton,
@@ -8,61 +8,51 @@ import appleAuth, {
   AppleAuthRequestScope,
 } from '@invertase/react-native-apple-authentication';
 import Captcha from './Captcha/Captcha';
-
-
+import { useNavigation } from '@react-navigation/native';
 
 export default function LoginPage({navigation}) {
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [loginId] = useState('');
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  
+  // Configure Google SignIn
+  GoogleSignin.configure({
+    webClientId: 'YOUR_WEB_CLIENT_ID',
+    iosClientId: 'YOUR_IOS_CLIENT_ID',
+    offlineAccess: true,
+  });
 
-  //This is Google Auth
-GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID',
-  iosClientId: 'YOUR_IOS_CLIENT_ID',
-  offlineAccess: true,
-});
-
-// Function to handle Google Sign-In
-const signInWithGoogle = async () => {
-  try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
-    console.log(userInfo);
-  } catch (error) {
-    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      console.log('User cancelled the login flow');
-    } else if (error.code === statusCodes.IN_PROGRESS) {
-      console.log('Login is already in progress');
-    } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-      console.log('Play services not available or outdated');
-    } else {
-      console.log('Error:', error);
+  // Function to handle Google Sign-In
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      console.log(userInfo);
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('User cancelled the login flow');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('Login is already in progress');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log('Play services not available or outdated');
+      } else {
+        console.log('Error:', error);
+      }
     }
-  }
-};
+  };
 
-  //This is Apple Auth
+  // Function to handle Apple Sign-In
   const onAppleButtonPress = async () => {
     try {
-      // Start the sign-in request
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: AppleAuthRequestOperation.LOGIN,
         requestedScopes: [AppleAuthRequestScope.EMAIL, AppleAuthRequestScope.FULL_NAME],
       });
 
-      // Ensure Apple returned a user identityToken
       if (!appleAuthRequestResponse.identityToken) {
         throw 'Apple Sign-In failed - no identify token returned';
       }
-
-      // You can now send this token to your server to verify the user's identity
-      const { identityToken, nonce } = appleAuthRequestResponse;
-
-      // handle the received data as needed
 
       Alert.alert('Login Success', 'You are logged in with Apple!');
     } catch (error) {
@@ -73,12 +63,13 @@ const signInWithGoogle = async () => {
         console.error(error);
       }
     }
-  }
+  };
 
-  //This is a Captcha and Login 
+  // Function to handle Login
   const handleLogin = async () => {
+    // debugger
     if (!username || !password) {
-      Alert.alert('Validation Error', 'Username and password are required.');
+      Alert.alert('Validation Error', 'Username, password are required.');
       return;
     }
 
@@ -92,6 +83,7 @@ const signInWithGoogle = async () => {
           body: JSON.stringify({
             Username: username,
             password: password,
+            loginId: loginId,
           }),
         });
 
@@ -100,18 +92,16 @@ const signInWithGoogle = async () => {
         }
 
         const data = await response.json();
-        const token = data.token;
-
-        navigation.navigate('Welcome');
+        Alert.alert('Login Successful', `Login ID: ${data.loginId}`);
+        navigation.navigate('Welcome', { loginId: data.loginId } );
       } catch (error) {
         console.error('Login Error:', error.message);
-        Alert.alert('Login Failed', 'Unable to log in. Please try again later.');
+        Alert.alert('Login Failed', 'Please verify username and password.');
       }
     } else {
       Alert.alert('Captcha Verification', 'Please verify the CAPTCHA first.');
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -133,6 +123,12 @@ const signInWithGoogle = async () => {
         value={password}
         onChangeText={setPassword}
       />
+      {/* <TextInput 
+        style={styles.input} 
+        placeholder="Login ID" 
+        value={loginId}
+        onChangeText={setLoginId}
+      /> */}
 
       <Captcha onVerify={setCaptchaVerified} />
 
@@ -141,7 +137,7 @@ const signInWithGoogle = async () => {
           style={styles.button} 
           onPress={handleLogin}
         >
-        <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.button} 
@@ -154,10 +150,10 @@ const signInWithGoogle = async () => {
       {Platform.OS !== 'ios' && (
         <View style={styles.socialContainer}>
           <GoogleSigninButton
-          style={styles.googleButton}
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={signInWithGoogle}
+            style={styles.googleButton}
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={signInWithGoogle}
           />
         </View>
       )}
@@ -207,7 +203,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     marginTop: 20,
-    marginBottom:20,
+    marginBottom: 20,
     justifyContent: 'space-between',
     width: '70%',
   },
@@ -232,6 +228,4 @@ const styles = StyleSheet.create({
     width: 192, 
     height: 48, 
   },
-  
-  
 });

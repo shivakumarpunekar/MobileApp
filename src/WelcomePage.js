@@ -1,22 +1,20 @@
     import React from 'react';
-    import { View, Text, Image, StyleSheet } from 'react-native';
+    import { View, Text, Image } from 'react-native';
     import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
     import Icon from 'react-native-vector-icons/FontAwesome';
     import AdminDetail from './AdminDetail';
     import SingleUser from './SingleUser';
     import ProfilePage from './ProfileScreen';
-import DeviceTable from './DeviceTable';
+    import DeviceTable from './DeviceTable';
 
 
     const Tab = createBottomTabNavigator();
 
     function HomeScreen() {
-    return (
-        <DeviceTable/>
-    );
+        return (
+            <DeviceTable/>
+        );
     }
-
-   
 
     function AdminScreen() {
         return (
@@ -29,10 +27,11 @@ import DeviceTable from './DeviceTable';
         );
     }
 
-    function ProfileScreen() {
+    function ProfileScreen({route}) {
+        const { loginId } = route.params;
         return (
-        
-            <ProfilePage/>
+            // <ProfilePage/>
+            <ProfilePage loginId={loginId} />
         );
     }
     function AboutScreen() {
@@ -49,7 +48,8 @@ import DeviceTable from './DeviceTable';
         );
         }
 
-    export default function WelcomePage() {
+    export default function WelcomePage({route}) {
+        const { loginId } = route.params;
     return (
         <Tab.Navigator 
             screenOptions={({ route }) => ({
@@ -79,7 +79,7 @@ import DeviceTable from './DeviceTable';
         <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}  />
         <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
         <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
+        <Tab.Screen name="ProfileScreen" component={ProfileScreen} initialParams={{ loginId }} options={{ headerShown: false }} />
         <Tab.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
