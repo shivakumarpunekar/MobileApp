@@ -1,31 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, Text, View, StyleSheet } from 'react-native';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
-const DeviceDetailsScreen = () => {
-  const [deviceDetails, setDeviceDetails] = useState([]);
+const DeviceTable = ({ loginId, userprofileId }) => {
+  debugger
+  const [combinedData, setCombinedData] = useState([]);
 
   useEffect(() => {
-    fetchDeviceDetails();
-  }, []);
+    fetchData();
+  }, [loginId, userprofileId]);
 
-  const fetchDeviceDetails = async () => {
+  const fetchData = async () => {
     try {
-      const response = await get('http://10.0.2.2:2030/api/devicedetails/byId/${Id}');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      debugger
+      const [devicesResponse, deviceDetailsResponse] = await Promise.all([
+        fetch(`http://10.0.2.2:2030/api/devices?loginId=${loginId}&userprofileId=${userprofileId}`),
+        fetch(`http://10.0.2.2:2030/api/devicedetails?loginId=${loginId}&userprofileId=${userprofileId}`),
+      ]);
+
+      if (!devicesResponse.ok || !deviceDetailsResponse.ok) {
+        throw new Error('HTTP error! status: ' + devicesResponse.status + ' ' + deviceDetailsResponse.status);
       }
-      const data = await response.json();
-      // console.log('API Response Data:', data); 
-      setDeviceDetails(data);
+
+      const devicesData = await devicesResponse.json();
+      const deviceDetailsData = await deviceDetailsResponse.json();
+
+      // Merge the data based on the common key `Id`
+      const combinedData = deviceDetailsData.map(detail => {
+        const device = devicesData.find(device => device.id === detail.id);
+        return {
+          ...detail,
+          ...device,
+        };
+      });
+
+      // Filter combinedData based on loginId and userprofileId
+      const filteredData = combinedData.filter(item => item.loginId === loginId && item.userprofileId === userprofileId);
+
+      if (filteredData.length === 0) {
+        // Handle case where no devices are available for the loginId and userprofileId
+        console.log('No devices available for this loginId and userprofileId');
+        // You can set an empty state or display a message
+      }
+
+      setCombinedData(filteredData);
     } catch (error) {
-      console.error('Error fetching device details:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.deviceId}</Text>
+      <Text style={styles.cell}>{item.createdDate}</Text>
       <Text style={styles.cell}>{item.sensorId}</Text>
       <Text style={styles.cell}>{item.valveId}</Text>
       <Text style={styles.cell}>{item.valveStatus}</Text>
@@ -36,14 +62,15 @@ const DeviceDetailsScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerCell}>DeviceId</Text>
-        <Text style={styles.headerCell}>SensorId</Text>
-        <Text style={styles.headerCell}>ValveId</Text>
-        <Text style={styles.headerCell}>ValveStatus</Text>
+        <Text style={styles.headerCell}>CreatedDate</Text>
+        <Text style={styles.headerCell}>Sensor Id</Text>
+        <Text style={styles.headerCell}>Valve Id</Text>
+        <Text style={styles.headerCell}>Valve Status</Text>
       </View>
       <FlatList
-        data={deviceDetails}
+        data={combinedData}
         renderItem={renderItem}
-        keyExtractor={(item) => (item.deviceDetailId ? item.deviceDetailId.toString() : Math.random().toString())}
+        keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
       />
     </View>
   );
@@ -78,10 +105,10 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 14,
-    backgroundColor:'#000',
-    color:'#f0f0f0',
-    fontSize:20,
+    backgroundColor: '#000',
+    color: '#f0f0f0',
+    fontSize: 20,
   },
 });
 
-export default DeviceDetailsScreen;
+export default DeviceTable;

@@ -10,9 +10,10 @@
 
     const Tab = createBottomTabNavigator();
 
-    function HomeScreen() {
+    function HomeScreen({route}) {
+        const {loginId, userprofileId} = route.params;
         return (
-            <DeviceTable />
+            <DeviceTable loginId={loginId} userprofileId={userprofileId}/>
         );
     }
 
