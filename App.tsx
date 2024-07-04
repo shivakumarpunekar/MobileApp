@@ -21,7 +21,7 @@ import LoginPage from './src/LoginPage';
 import WelcomePage from './src/WelcomePage';
 import RegistrationPage from './src/RegistationPage';
 import ProfileScreenEdit from './src/ProfileScreenEdit';
-import ProfilePage from './src/ProfileScreen';
+import AdminHome from './src/Admin/AdminHome';
 
 const Stack = createStackNavigator();
 
@@ -45,6 +45,7 @@ function App(): React.JSX.Element {
               component={LoginPage}
               options={{ headerShown: false}}
             />
+            {/* This is a User Database  */}
             <Stack.Screen
               name="Welcome" // This is For Welcome Page
               component={WelcomePage}
@@ -65,6 +66,27 @@ function App(): React.JSX.Element {
                 gestureEnabled: false,
               })}
             />
+            {/* This is a Admin Database  */}
+            <Stack.Screen
+            name="AdminHome" //This is for AdminHome Page
+            component={AdminHome}
+            options={({ navigation }) => ({
+              headerLeft: () => null,
+              headerRight: () => (
+                <Button
+                  onPress={() => navigation.navigate('Login')}
+                  title="Logout"
+                  color="#BFA100"
+                />
+              ),
+              headerTitle:'Admin Database',
+              headerLeftContainerStyle: { marginLeft: 15 },
+              headerRightContainerStyle: {marginRight: 20},
+              headerBackTitleVisible: false,
+              headerBackAccessibilityLabel: 'Back',
+              gestureEnabled: false,
+            })}
+          />
             <Stack.Screen
               name="RegistrationPage" //This is for Registation Page
               component={RegistrationPage}
@@ -72,10 +94,12 @@ function App(): React.JSX.Element {
             />
 
             <Stack.Screen
-              name="ProfileScreenEdit"
+              name="ProfileScreenEdit" //This is for ProfileScreenEdit Page
               component={ProfileScreenEdit}
               options={{ headerTitle: 'ProfileScreenEdit' }}
             />
+
+            
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

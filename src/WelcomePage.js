@@ -12,7 +12,7 @@
 
     function HomeScreen() {
         return (
-            <DeviceTable/>
+            <DeviceTable />
         );
     }
 

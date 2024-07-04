@@ -8,12 +8,11 @@ import appleAuth, {
   AppleAuthRequestScope,
 } from '@invertase/react-native-apple-authentication';
 import Captcha from './Captcha/Captcha';
-import { useNavigation } from '@react-navigation/native';
 
 export default function LoginPage({navigation}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loginId] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
   // Configure Google SignIn
@@ -67,7 +66,6 @@ export default function LoginPage({navigation}) {
 
   // Function to handle Login
   const handleLogin = async () => {
-    // debugger
     if (!username || !password) {
       Alert.alert('Validation Error', 'Username, password are required.');
       return;
@@ -92,8 +90,16 @@ export default function LoginPage({navigation}) {
         }
 
         const data = await response.json();
-        Alert.alert('Login Successful', `Login ID: ${data.loginId}`);
-        navigation.navigate('Welcome', { loginId: data.loginId } );
+
+        //Admin and User Login Handular
+        if (data.isAdmin) {
+          Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
+          navigation.navigate('AdminHome'); // Navigate to Admin Dashboard
+        } else {
+          Alert.alert('Login Successful', `UserName: ${data.username}`);
+          setLoginId(data.loginId); // Update loginId state after successful login
+          navigation.navigate('Welcome', { loginId: data.loginId }); // Navigate to regular user welcome page
+        }
       } catch (error) {
         console.error('Login Error:', error.message);
         Alert.alert('Login Failed', 'Please verify username and password.');
@@ -123,13 +129,6 @@ export default function LoginPage({navigation}) {
         value={password}
         onChangeText={setPassword}
       />
-      {/* <TextInput 
-        style={styles.input} 
-        placeholder="Login ID" 
-        value={loginId}
-        onChangeText={setLoginId}
-      /> */}
-
       <Captcha onVerify={setCaptchaVerified} />
 
       <View style={styles.buttonContainer}>

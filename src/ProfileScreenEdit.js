@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,20 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
+import DatePicker from 'react-native-date-picker';
 
 // This is for date format
 const formatDate = dateString => {
-  const options = {year: 'numeric', month: 'long', day: 'numeric'};
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-const ProfileScreenEdit = ({route}) => {
+const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
-  const {data} = route.params;
+  const { data } = route.params;
 
   const [userProfileId, setuserProfileId] = useState(data.userProfileId);
   const [loginId, setlognId] = useState(data.loginId);
@@ -31,7 +32,7 @@ const ProfileScreenEdit = ({route}) => {
   const [middleName, setmiddleName] = useState(data.middleName);
   const [lastName, setlastName] = useState(data.lastName);
   const [email, setEmail] = useState(data.email);
-  const [dateOfBirth, setdateOfBirth] = useState(data.dateOfBirth);
+  const [dateOfBirth, setdateOfBirth] = useState(new Date(data.dateOfBirth));
   const [mobileNumber, setmobileNumber] = useState(data.mobileNumber);
   const [userName, setuserName] = useState(data.userName);
   const [password, setpassword] = useState(data.password);
@@ -41,68 +42,76 @@ const ProfileScreenEdit = ({route}) => {
   const [pincode, setpincode] = useState(data.pincode);
   const [profileImage, setprofileImage] = useState(data.profileImage || null);
 
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
   const handleSave = async () => {
-    debugger
-    const updateData = {
-      userProfileId,
-      loginId,
-      guId,
-      firstName,
-      middleName,
-      lastName,
-      email,
-      dateOfBirth,
-      mobileNumber,
-      userName,
-      password,
-      country,
-      state,
-      city,
-      pincode,
-      profileImage: profileImage ? profileImage : null,
-    };
-  
     try {
-      debugger
-      const url = `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`;
-      console.log('Sending data to API:', updateData); 
-  
-      let response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      const updateData = {
+        userProfileId,
+        loginId,
+        guId,
+        firstName,
+        middleName,
+        lastName,
+        email,
+        dateOfBirth: dateOfBirth.toISOString(),
+        mobileNumber,
+        userName,
+        password,
+        country,
+        state,
+        city,
+        pincode,
+        profileImage: profileImage ? profileImage : null,
+      };
+
+      // Update user profile
+      const profileUpdateResponse = await fetch(
+        `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData),
         },
-        body: JSON.stringify(updateData),
-      });
-  
-      if (!response.ok) {
-        // Handle non-200 responses
-        let errorText = await response.text();
-        console.log('API Error Response:', errorText);
-        throw new Error(`Server error: ${response.status}`);
+      );
+
+      if (!profileUpdateResponse.ok) {
+        throw new Error('Error updating profile');
       }
-  
-      let result = await response.json();
-      console.log('API Response Data:', result); 
-  
-      if (result.status === 400) {
-        Alert.alert('Validation Error', JSON.stringify(result.errors));
-      } else {
-        Alert.alert('Profile updated successfully');
-        navigation.goBack(); 
+
+      // Update login information
+      const loginUpdateResponse = await fetch(
+        `http://10.0.2.2:2030/api/Auth/update/${loginId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userName,
+            password,
+          }),
+        },
+      );
+
+      if (!loginUpdateResponse.ok) {
+        throw new Error('Error updating login');
       }
+
+      Alert.alert('Profile updated successfully');
+      navigation.goBack(); // Navigate back after successful update
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', error.message);
+      Alert.alert('Error updating profile');
     }
   };
-  
-  
 
   // For Profile Image Change
   const handleImagePicker = async () => {
     try {
-      const result = await launchImageLibrary({mediaType: 'photo'});
+      const result = await launchImageLibrary({ mediaType: 'photo' });
       if (!result.didCancel && result.assets.length > 0) {
         setprofileImage(result.assets[0].uri);
       }
@@ -149,7 +158,7 @@ const ProfileScreenEdit = ({route}) => {
               <TouchableOpacity onPress={handleImagePicker}>
                 {profileImage ? (
                   <Image
-                    source={{uri: profileImage}}
+                    source={{ uri: profileImage }}
                     style={styles.profileImage}
                   />
                 ) : (
@@ -170,12 +179,24 @@ const ProfileScreenEdit = ({route}) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>dateOfBirth</Text>
-            <TextInput
-              style={styles.sectionContent}
-              value={formatDate(dateOfBirth)}
-              onChangeText={setdateOfBirth}
-              placeholder="DateOfBirth"
+            <Text style={styles.sectionTitle}>Date of Birth</Text>
+            <TouchableOpacity onPress={() => setDatePickerOpen(true)}>
+              <Text style={styles.sectionContent}>
+                {formatDate(dateOfBirth)}
+              </Text>
+            </TouchableOpacity>
+            <DatePicker
+              modal
+              open={datePickerOpen}
+              date={dateOfBirth}
+              mode="date"
+              onConfirm={date => {
+                setDatePickerOpen(false);
+                setdateOfBirth(date);
+              }}
+              onCancel={() => {
+                setDatePickerOpen(false);
+              }}
             />
           </View>
           <View style={styles.section}>
@@ -199,7 +220,7 @@ const ProfileScreenEdit = ({route}) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>userName</Text>
+            <Text style={styles.sectionTitle}>user Name</Text>
             <TextInput
               style={styles.sectionContent}
               value={userName}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, Text, View, StyleSheet } from 'react-native';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const DeviceDetailsScreen = () => {
   const [deviceDetails, setDeviceDetails] = useState([]);
@@ -10,12 +11,12 @@ const DeviceDetailsScreen = () => {
 
   const fetchDeviceDetails = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:2030/api/devicedetails');
+      const response = await get('http://10.0.2.2:2030/api/devicedetails/byId/${Id}');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      console.log('API Response Data:', data); 
+      // console.log('API Response Data:', data); 
       setDeviceDetails(data);
     } catch (error) {
       console.error('Error fetching device details:', error);

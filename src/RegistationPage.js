@@ -1,20 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { Text, View, TextInput, Button, StyleSheet, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import PhoneInput from "react-native-phone-number-input";
 import DatePicker from 'react-native-date-picker';
 import Modal from 'react-native-modal';
 
 const RegistrationPage = () => {
+
+  const navigation = useNavigation();
+
+
+  const [guId, setguId] = useState('');
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [dob, setDob] = useState(new Date());
+  const [dateOfBirth, setdateOfBirth] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [mobileNumber, setmobileNumber] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [conformpassword, setconformPassword] = useState('');
-  //This is for Mobile verification OTP
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState("");
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -23,9 +28,11 @@ const RegistrationPage = () => {
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [pincode, setPincode] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const phoneInput = useRef(null);
 
-  //Date Picker for dob
+  //This is a date picker show, hide, handleling
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -35,21 +42,18 @@ const RegistrationPage = () => {
   };
 
   const handleConfirm = (selectedDate) => {
-    setDob(selectedDate);
+    setdateOfBirth(selectedDate);
     hideDatePicker();
   };
 
-  // This is a Phone Number Verify
+  //This is a haldle otp
   const handleVerify = () => {
-    // Validate phone number first
-    if (!phoneInput.current?.isValidNumber(phoneNumber)) {
+    if (!phoneInput.current?.isValidNumber(mobileNumber)) {
       Alert.alert("Invalid Phone Number", "Please enter a valid phone number.");
       return;
     }
 
-    // Placeholder for actual OTP verification logic (should be implemented)
-    // For demonstration, we just compare with a static OTP
-    const staticOTP = "123456"; // Replace with actual OTP from server or static value
+    const staticOTP = "123456";
     if (otp === staticOTP) {
       setValid(true);
       setShowMessage(true);
@@ -59,8 +63,12 @@ const RegistrationPage = () => {
     }
   };
 
-  //check the field is fill or empty
+  //this is a validate the field 
   const checkTextInput = () => {
+    if (!guId.trim()) {
+      alert('Please Enter guId');
+      return false;
+    }
     if (!firstName.trim()) {
       alert('Please Enter First Name');
       return false;
@@ -73,11 +81,11 @@ const RegistrationPage = () => {
       alert('Please Enter Last Name');
       return false;
     }
-    if (!dob) {
+    if (!dateOfBirth) {
       alert('Please Enter Date of Birth');
       return false;
     }
-    if (!phoneNumber.trim()) {
+    if (!mobileNumber.trim()) {
       alert('Please Enter Phone Number');
       return false;
     }
@@ -89,13 +97,17 @@ const RegistrationPage = () => {
       alert('Please Enter Password');
       return false;
     }
-    if (!conformpassword.trim()) {
+    if (!confirmPassword.trim()) {
       alert('Please Enter Confirm Password');
       return false;
     }
-    if (password !== conformpassword) {
-      alert('Password and Confirm Password do not match');
+    if (password !== confirmPassword) {
+      setPasswordError('Password and Confirm Password do not match');
+      setConfirmPasswordError('Password and Confirm Password do not match');
       return false;
+    } else {
+      setPasswordError('');
+      setConfirmPasswordError('');
     }
     if (!email.trim()) {
       alert('Please Enter Email');
@@ -113,10 +125,6 @@ const RegistrationPage = () => {
       alert('Please Enter City');
       return false;
     }
-    if (!district.trim()) {
-      alert('Please Enter District');
-      return false;
-    }
     if (!pincode.trim()) {
       alert('Please Enter Pincode');
       return false;
@@ -124,40 +132,66 @@ const RegistrationPage = () => {
     return true;
   };
 
-  const handleRegistration = () => {
+  //This is a registration Handler 
+  const handleRegistration = async () => {
     if (checkTextInput()) {
-      fetch('http://10.0.2.2:2030/api/userprofiles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-      // console.log({
-        firstName,
-        middleName,
-        lastName,
-        dob,
-        phoneNumber,
-        username,
-        password,
-        conformpassword,
-        email,
-        country,
-        state,
-        city,
-        district,
-        pincode,
-      }),
-    })
-    .then((response) => response.text())
-      .then((data) => {
-        alert(data); // Show success or error message from backend
-      })
-      .catch((error) => {
+      try {
+
+        // Post to the login table
+        const loginResponse = await fetch('http://10.0.2.2:2030/api/Auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        });
+
+        if (!loginResponse.ok) {
+          throw new Error('Error creating login');
+        }
+
+        const loginData = await loginResponse.json();
+        const LoginId = loginData.loginId;
+
+        // Post to the userprofile table
+        const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            guId,
+            firstName,
+            middleName,
+            lastName,
+            dateOfBirth: dateOfBirth.toISOString().split('T')[0], 
+            mobileNumber,
+            username,
+            password,
+            email,
+            country,
+            state,
+            city,
+            pincode,
+            LoginId,
+          }),
+        });
+
+        if (!userProfileResponse.ok) {
+          throw new Error('Error creating user profile');
+        }
+
+        // const data = await userProfileResponse.text();
+        // alert(data);
+        navigation.navigate('Login');
+      } catch (error) {
         console.error('Error:', error);
         alert('Error registering user');
-      });
-  }
+      }
+    }
   };
 
   return (
@@ -169,6 +203,15 @@ const RegistrationPage = () => {
         <Image
           source={require('../assets/aairos.png')}
           style={styles.profileImage}
+        />
+        <Text style={{ fontSize: 20 }}>
+          guId
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="guId"
+          value={guId}
+          onChangeText={(value) => setguId(value)}
         />
         <Text style={{ fontSize: 20 }}>
           First Name
@@ -201,17 +244,17 @@ const RegistrationPage = () => {
           Date of Birth
         </Text>
         <TouchableOpacity onPress={showDatePicker} style={styles.datePickerButton}>
-          <Text style={styles.datePickerText}>{dob.toDateString()}</Text>
+          <Text style={styles.datePickerText}>{dateOfBirth.toDateString()}</Text>
         </TouchableOpacity>
         <Modal isVisible={isDatePickerVisible} onBackdropPress={hideDatePicker}>
           <View style={styles.modalContent}>
             <DatePicker
-              date={dob}
-              onDateChange={setDob}
+              date={dateOfBirth}
+              onDateChange={setdateOfBirth}
               mode="date"
               maximumDate={new Date()}
             />
-            <Button title="Confirm" onPress={() => handleConfirm(dob)} />
+            <Button title="Confirm" onPress={() => handleConfirm(dateOfBirth)} />
           </View>
         </Modal>
         <Text style={{ fontSize: 20, bottom: 5 }}>
@@ -219,17 +262,17 @@ const RegistrationPage = () => {
         </Text>
         <PhoneInput
           ref={phoneInput}
-          defaultValue={phoneNumber}
+          defaultValue={mobileNumber}
           defaultCode="IN"
           onChangeFormattedText={(text) => {
-            setPhoneNumber(text);
+            setmobileNumber(text);
           }}
           withDarkTheme
           withShadow
           autoFocus
           placeholder="Enter phone number"
         />
-        {phoneInput.current?.isValidNumber(phoneNumber) && (
+        {phoneInput.current?.isValidNumber(mobileNumber) && (
           <>
         <TextInput
           style={styles.input}
@@ -270,16 +313,18 @@ const RegistrationPage = () => {
           value={password}
           onChangeText={(value) => setPassword(value)}
         />
+        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
         <Text style={{ fontSize: 20 }}>
-          Conform Password
+          Confirm Password
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="Conform Password"
+          placeholder="Confirm Password"
           secureTextEntry={true}
-          value={conformpassword}
-          onChangeText={(value) => setconformPassword(value)}
+          value={confirmPassword}
+          onChangeText={(value) => setConfirmPassword(value)}
         />
+        {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
         <Text style={{ fontSize: 20 }}>
             Email
           </Text>
@@ -318,8 +363,8 @@ const RegistrationPage = () => {
           onChangeText={(value) => setCity(value)}
         />
         <Text style={{ fontSize: 20 }}>
-        Pincode
-      </Text>
+          Pincode
+        </Text>
         <TextInput
           style={styles.input}
           placeholder="Pincode"
@@ -336,7 +381,6 @@ const RegistrationPage = () => {
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -368,14 +412,6 @@ const styles = StyleSheet.create({
     marginTop:10,
     marginBottom:30,
     backgroundColor: '#BFA100',
-  },
-  input: {
-    height: 40,
-    width: "100%",
-    borderColor: "gray",
-    borderWidth: 1,
-    marginTop: 16,
-    paddingHorizontal: 10,
   },
   button: {
     marginTop: 20,
@@ -414,6 +450,11 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
   },
 });
 

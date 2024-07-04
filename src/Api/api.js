@@ -52,7 +52,7 @@ export const fetchDataByIdFromApi = async (userProfileId) => {
 export const fetchUserProfileIdByLoginId = async (loginId) => {
   try {
     const response = await apiClient.get(`/api/userprofiles/byLoginId/${loginId}`);
-    return response.data.userProfileId; // Assuming the response contains userProfileId
+    return response.data.userProfileId; 
   } catch (error) {
     if (error.response) {
       console.error('Error response:', error.response.data);
@@ -66,10 +66,5 @@ export const fetchUserProfileIdByLoginId = async (loginId) => {
     throw error;
   }
 };
-
-
-
-
-
 
 export default apiClient;

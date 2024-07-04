@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import apiClient, {fetchDataByIdFromApi, fetchUserProfileIdByLoginId} from './Api/api';
 
@@ -24,16 +24,14 @@ const ProfilePage = ({ loginId }) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+    //function to fetch data
     const fetchData = async () => {
       try {
-        debugger
         const userProfileId = await fetchUserProfileIdByLoginId(loginId);
         if (!userProfileId) {
           setError(new Error(`User profile not found`));
           return;
         }
-        debugger
         const result = await fetchDataByIdFromApi(userProfileId);
         setData(result);
       } catch (error) {
@@ -41,8 +39,17 @@ const ProfilePage = ({ loginId }) => {
       }
     };
 
+      // Fetch data initially and on loginId change
+  useEffect(() => {
     fetchData();
   }, [loginId]);
+
+  // Update data on focus (when returning from ProfileScreenEdit)
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   if (error) {
     return (
