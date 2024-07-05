@@ -225,6 +225,7 @@ const ProfileScreenEdit = ({ route }) => {
               style={styles.sectionContent}
               value={userName}
               onChangeText={setuserName}
+              editable={false}
             />
           </View>
           <View style={styles.section}>
@@ -241,6 +242,7 @@ const ProfileScreenEdit = ({ route }) => {
               onChangeText={setpassword}
               placeholder="password"
               secureTextEntry={true}
+              editable={false}
             />
           </View>
           <View style={styles.section}>

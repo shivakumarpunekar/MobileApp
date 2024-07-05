@@ -22,6 +22,7 @@ import WelcomePage from './src/WelcomePage';
 import RegistrationPage from './src/RegistationPage';
 import ProfileScreenEdit from './src/ProfileScreenEdit';
 import AdminHome from './src/Admin/AdminHome';
+import ChartScreen from './src/Admin/Chart';
 
 const Stack = createStackNavigator();
 
@@ -99,6 +100,11 @@ function App(): React.JSX.Element {
               options={{ headerTitle: 'ProfileScreenEdit' }}
             />
 
+            <Stack.Screen
+              name="Chart" //This is for ProfileScreenEdit Page
+              component={ChartScreen}
+              options={{ headerTitle: 'Chart' }}
+            />
             
           </Stack.Navigator>
       </NavigationContainer>
