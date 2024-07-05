@@ -11,9 +11,9 @@
     const Tab = createBottomTabNavigator();
 
     function HomeScreen({route}) {
-        const {loginId, userprofileId} = route.params;
+        const {loginId} = route.params;
         return (
-            <DeviceTable loginId={loginId} userprofileId={userprofileId}/>
+            <DeviceTable loginId={loginId}/>
         );
     }
 
@@ -77,7 +77,7 @@
                 inactiveTintColor: 'gray',
             }}
         >
-        <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}  />
+        <Tab.Screen name="Home" component={HomeScreen} initialParams={{loginId}} options={{ headerShown: false }}  />
         <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
         <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} />
         <Tab.Screen name="ProfileScreen" component={ProfileScreen} initialParams={{ loginId }} options={{ headerShown: false }} />

@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Text, View, StyleSheet } from 'react-native';
+import { FlatList, Text, View, StyleSheet, Alert } from 'react-native';
 
 const DeviceTable = ({ loginId, userprofileId }) => {
-  debugger
   const [combinedData, setCombinedData] = useState([]);
 
   useEffect(() => {
     fetchData();
-  }, [loginId, userprofileId]);
+  }, [loginId]);
 
   const fetchData = async () => {
     try {
-      debugger
       const [devicesResponse, deviceDetailsResponse] = await Promise.all([
-        fetch(`http://10.0.2.2:2030/api/devices?loginId=${loginId}&userprofileId=${userprofileId}`),
-        fetch(`http://10.0.2.2:2030/api/devicedetails?loginId=${loginId}&userprofileId=${userprofileId}`),
+        fetch(`http://10.0.2.2:2030/api/devices?loginId=${loginId}`),
+        fetch(`http://10.0.2.2:2030/api/devicedetails?loginId=${loginId}`),
       ]);
 
       if (!devicesResponse.ok || !deviceDetailsResponse.ok) {
@@ -33,12 +31,12 @@ const DeviceTable = ({ loginId, userprofileId }) => {
         };
       });
 
-      // Filter combinedData based on loginId and userprofileId
+      // Filter combinedData based on loginId 
       const filteredData = combinedData.filter(item => item.loginId === loginId && item.userprofileId === userprofileId);
 
       if (filteredData.length === 0) {
-        // Handle case where no devices are available for the loginId and userprofileId
-        console.log('No devices available for this loginId and userprofileId');
+        console.log('No devices available for this loginId');
+        Alert('No devices available for this loginId ');
         // You can set an empty state or display a message
       }
 
@@ -48,10 +46,20 @@ const DeviceTable = ({ loginId, userprofileId }) => {
     }
   };
 
+  //This is a date formate
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.deviceId}</Text>
-      <Text style={styles.cell}>{item.createdDate}</Text>
+      <Text style={styles.cell}>{formatDate (item.createdDate)}</Text>
       <Text style={styles.cell}>{item.sensorId}</Text>
       <Text style={styles.cell}>{item.valveId}</Text>
       <Text style={styles.cell}>{item.valveStatus}</Text>

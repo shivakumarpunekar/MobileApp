@@ -79,7 +79,7 @@ function App(): React.JSX.Element {
                   color="#BFA100"
                 />
               ),
-              headerTitle:'Admin Database',
+              headerTitle:'Admin',
               headerLeftContainerStyle: { marginLeft: 15 },
               headerRightContainerStyle: {marginRight: 20},
               headerBackTitleVisible: false,
