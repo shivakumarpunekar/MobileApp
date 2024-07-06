@@ -29,7 +29,7 @@ const ChartScreen = () => {
         }),
         datasets: [
             {
-                data: filteredData.map(item => item.deviceId)
+                data: filteredData.map(item => item.UserProfileId)
             }
         ]
     };
@@ -47,7 +47,7 @@ const ChartScreen = () => {
                 width={Dimensions.get('window').width - 20}
                 height={320}
                 fromZero={true} 
-                yAxisInterval={0} 
+                yAxisInterval={1} 
                 yLabelsOffset={15}
                 yAxisSuffix="0"
                 chartConfig={{
