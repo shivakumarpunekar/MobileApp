@@ -5,9 +5,9 @@ import { useRoute } from '@react-navigation/native';
 
 const ChartScreen = () => {
     const route = useRoute();
-    const { combinedData } = route.params;
+    const { combinedData } = route.params || {};
     const [searchDate, setSearchDate] = useState('');
-    
+
     // Function to filter data based on createdDate
     const filteredData = combinedData.filter(item => {
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
@@ -45,18 +45,28 @@ const ChartScreen = () => {
             <BarChart
                 data={barChartData}
                 width={Dimensions.get('window').width - 20}
-                height={220}
-                yAxisLabel=""
+                height={320}
+                fromZero={true} 
+                yAxisInterval={0} 
+                yLabelsOffset={15}
+                yAxisSuffix="0"
                 chartConfig={{
                     backgroundColor: '#1cc910',
                     backgroundGradientFrom: '#eff3ff',
                     backgroundGradientTo: '#0f0f',
-                    decimalPlaces: 2,
+                    decimalPlaces: 0, 
                     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16
+                    },
+                    propsForBackgroundLines: {
+                        strokeDasharray: "" 
+                    },
+                    propsForVerticalLabels: {
+                        fontSize: 10
                     }
                 }}
+                verticalLabelRotation={10} 
                 style={{
                     marginVertical: 8,
                     borderRadius: 16

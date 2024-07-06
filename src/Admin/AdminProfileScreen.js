@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions } from "react-native";
+import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput } from "react-native";
 
 const AdminProfileScreen = () => {
   const [userProfiles, setUserProfiles] = useState([]);
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProfiles, setFilteredProfiles] = useState([]);
 
   useEffect(() => {
     fetchUserProfiles();
   }, []);
+
+  useEffect(() => {
+    filterProfiles();
+  }, [searchQuery, userProfiles]);
 
   const fetchUserProfiles = async () => {
     try {
@@ -17,13 +22,27 @@ const AdminProfileScreen = () => {
       }
       const data = await response.json();
       setUserProfiles(data);
+      setFilteredProfiles(data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  const filterProfiles = () => {
+    if (!searchQuery) {
+      setFilteredProfiles(userProfiles);
+      return;
+    }
+    const query = searchQuery.toLowerCase();
+    const filtered = userProfiles.filter(profile => 
+      Object.values(profile).some(value => 
+        String(value).toLowerCase().includes(query)
+      )
+    );
+    setFilteredProfiles(filtered);
+  };
+
   const renderUserProfile = ({ item, index }) => (
-    
     <View style={[styles.userProfileRow, { backgroundColor: index % 2 === 0 ? '#F6F3E7' : '#fff' }]}>
       <Text style={[styles.cell]}>{item.firstName}</Text>
       <Text style={[styles.cell]}>{item.middleName}</Text>
@@ -37,15 +56,20 @@ const AdminProfileScreen = () => {
       <Text style={[styles.cell]}>{item.state}</Text>
       <Text style={[styles.cell]}>{item.city}</Text>
       <Text style={[styles.cell]}>{item.pincode}</Text>
-      {/* Add more fields as needed */}
     </View>
   );
 
-  const keyExtractor = (item, index) => index.toString(); // Use index as key
+  const keyExtractor = (item, index) => index.toString();
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>User Profiles</Text>
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
       <ScrollView horizontal>
         <View style={{ flex: 1 }}>
           <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
@@ -61,10 +85,9 @@ const AdminProfileScreen = () => {
             <Text style={[styles.headerCell, { width: 100 }]}>State</Text>
             <Text style={[styles.headerCell, { width: 100 }]}>City</Text>
             <Text style={[styles.headerCell, { width: 100 }]}>Pincode</Text>
-            {/* Add more headers as needed */}
           </View>
           <FlatList
-            data={userProfiles}
+            data={filteredProfiles}
             renderItem={renderUserProfile}
             keyExtractor={keyExtractor}
             style={{ flex: 1 }}
@@ -86,6 +109,13 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  searchBar: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
   headerRow: {
     flexDirection: 'row',

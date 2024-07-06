@@ -6,7 +6,7 @@ const DeviceTable = ({ loginId, userprofileId }) => {
 
   useEffect(() => {
     fetchData();
-  }, [loginId]);
+  }, [loginId, userprofileId]);
 
   const fetchData = async () => {
     try {
@@ -37,7 +37,6 @@ const DeviceTable = ({ loginId, userprofileId }) => {
       if (filteredData.length === 0) {
         console.log('No devices available for this loginId');
         Alert('No devices available for this loginId ');
-        // You can set an empty state or display a message
       }
 
       setCombinedData(filteredData);
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     backgroundColor: '#000',
     color: '#f0f0f0',
-    fontSize: 20,
+    fontSize: 14,
   },
 });
 

@@ -9,8 +9,6 @@ const RegistrationPage = () => {
 
   const navigation = useNavigation();
 
-
-  const [guId, setguId] = useState('');
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -65,10 +63,6 @@ const RegistrationPage = () => {
 
   //this is a validate the field 
   const checkTextInput = () => {
-    if (!guId.trim()) {
-      alert('Please Enter guId');
-      return false;
-    }
     if (!firstName.trim()) {
       alert('Please Enter First Name');
       return false;
@@ -163,7 +157,6 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            guId,
             firstName,
             middleName,
             lastName,
@@ -203,15 +196,6 @@ const RegistrationPage = () => {
         <Image
           source={require('../assets/aairos.png')}
           style={styles.profileImage}
-        />
-        <Text style={{ fontSize: 20 }}>
-          guId
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="guId"
-          value={guId}
-          onChangeText={(value) => setguId(value)}
         />
         <Text style={{ fontSize: 20 }}>
           First Name
