@@ -113,6 +113,7 @@ const ProfileScreenEdit = ({ route }) => {
     }
   };
 
+  //This is a MobileNumber Verification
   const validateMobileNumber = () => {
     const mobileRegex = /^\d{10}$/;
     if (!mobileRegex.test(mobileNumber)) {
