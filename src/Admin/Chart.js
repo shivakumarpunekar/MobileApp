@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, StyleSheet, Dimensions, TextInput } from "react-native";
 import { BarChart } from 'react-native-chart-kit';
 import { useRoute } from '@react-navigation/native';
@@ -9,27 +9,36 @@ const ChartScreen = () => {
     const [searchDate, setSearchDate] = useState('');
 
     // Function to filter data based on createdDate
-    const filteredData = combinedData.filter(item => {
+    const filteredData = useMemo(() => combinedData.filter(item => {
+        if (!item.createdDate) return false;
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
         });
         return formattedDate.includes(searchDate);
-    });
+    }), [combinedData, searchDate]);
+
+    // Aggregate data to count logins per date
+    const loginCounts = filteredData.reduce((acc, item) => {
+        const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        acc[formattedDate] = (acc[formattedDate] || 0) + 1;
+        return acc;
+    }, {});
+
+    const dates = Object.keys(loginCounts);
+    const counts = Object.values(loginCounts);
 
     // Prepare data for bar chart
     const barChartData = {
-        labels: filteredData.map(item => {
-            return new Date(item.createdDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-        }),
+        labels: dates,
         datasets: [
             {
-                data: filteredData.map(item => item.UserProfileId)
+                data: counts
             }
         ]
     };
@@ -46,31 +55,30 @@ const ChartScreen = () => {
                 data={barChartData}
                 width={Dimensions.get('window').width - 20}
                 height={320}
-                fromZero={true} 
-                yAxisInterval={1} 
+                fromZero={true}
                 yLabelsOffset={15}
-                yAxisSuffix="0"
                 chartConfig={{
                     backgroundColor: '#1cc910',
                     backgroundGradientFrom: '#eff3ff',
                     backgroundGradientTo: '#0f0f',
-                    decimalPlaces: 0, 
+                    decimalPlaces: 0,
                     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16
                     },
                     propsForBackgroundLines: {
-                        strokeDasharray: "" 
+                        strokeDasharray: ""
                     },
                     propsForVerticalLabels: {
                         fontSize: 10
                     }
                 }}
-                verticalLabelRotation={10} 
+                verticalLabelRotation={10}
                 style={{
                     marginVertical: 8,
                     borderRadius: 16
                 }}
+                yAxisInterval={5} // Correct yAxisInterval
             />
         </View>
     );

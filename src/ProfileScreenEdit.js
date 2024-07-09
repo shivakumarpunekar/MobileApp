@@ -65,6 +65,7 @@ const ProfileScreenEdit = ({ route }) => {
         profileImage: profileImage ? profileImage : null,
       };
 
+      debugger
       // Update user profile
       const profileUpdateResponse = await fetch(
         `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
@@ -101,7 +102,7 @@ const ProfileScreenEdit = ({ route }) => {
       }
 
       Alert.alert('Profile updated successfully');
-      navigation.goBack(); // Navigate back after successful update
+      navigation.goBack(); 
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error updating profile');

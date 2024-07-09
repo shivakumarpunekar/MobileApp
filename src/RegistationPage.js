@@ -128,6 +128,7 @@ const RegistrationPage = () => {
 
   //This is a registration Handler 
   const handleRegistration = async () => {
+     
     if (checkTextInput()) {
       try {
 
@@ -150,6 +151,7 @@ const RegistrationPage = () => {
         const loginData = await loginResponse.json();
         const LoginId = loginData.loginId;
 
+         
         // Post to the userprofile table
         const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
           method: 'POST',
@@ -173,14 +175,23 @@ const RegistrationPage = () => {
           }),
         });
 
+        //This is a chicking Username and Mobilenumber
+         
+        if (userProfileResponse.status === 400) {
+          const errorData = await userProfileResponse.json();
+          if (errorData.message === "UserName already exists.") {
+            alert('Username already exists. Please choose a different username.');
+          } else if (errorData.message === "MobileNumber already exists.") {
+            alert('Mobile number already exists. Please use a different mobile number.');
+          }
+          return;
+        }
         if (!userProfileResponse.ok) {
           throw new Error('Error creating user profile');
         }
-
-        // const data = await userProfileResponse.text();
-        // alert(data);
         navigation.navigate('Login');
       } catch (error) {
+         
         console.error('Error:', error);
         alert('Error registering user');
       }

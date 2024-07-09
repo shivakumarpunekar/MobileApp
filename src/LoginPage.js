@@ -96,7 +96,7 @@ export default function LoginPage({navigation}) {
           Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
           navigation.navigate('AdminHome'); // Navigate to Admin Dashboard
         } else {
-          Alert.alert('Login Successful', `UserName: ${data.username}`);
+          // Alert.alert('Login Successful', `UserName: ${data.username}`);
           setLoginId(data.loginId); // Update loginId state after successful login
           navigation.navigate('Welcome', { loginId: data.loginId }); // Navigate to regular user welcome page
         }
