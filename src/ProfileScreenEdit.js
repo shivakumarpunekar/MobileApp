@@ -114,9 +114,9 @@ const ProfileScreenEdit = ({ route }) => {
   };
 
   const validateMobileNumber = () => {
-    const mobileRegex = /^\d{13}$/;
+    const mobileRegex = /^\d{10}$/;
     if (!mobileRegex.test(mobileNumber)) {
-      setErrorMessage('Mobile number must be exactly 13 digits.');
+      setErrorMessage('Mobile number must be exactly 10 digits.');
       return false;
     }
     setErrorMessage('');

@@ -57,7 +57,7 @@ const ChartScreen = () => {
                 height={320}
                 fromZero={true}
                 yAxisSuffix=""
-                segments={7} // Number of horizontal lines
+                segments={6} // Number of horizontal lines
                 chartConfig={{
                     backgroundColor: '#1cc910',
                     backgroundGradientFrom: '#eff3ff',
@@ -80,7 +80,9 @@ const ChartScreen = () => {
                     marginVertical: 8,
                     borderRadius: 16
                 }}
-                yAxisInterval={5} // Correct yAxisInterval
+                yAxisInterval={0} 
+                yLabelsOffset={10} 
+                showBarTops={false} 
             />
         </View>
     );
