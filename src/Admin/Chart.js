@@ -8,7 +8,7 @@ const ChartScreen = () => {
     const { combinedData } = route.params || {};
     const [searchDate, setSearchDate] = useState('');
 
-    // Function to filter data based on createdDate
+    // This is filter data based on createdDate
     const filteredData = useMemo(() => combinedData.filter(item => {
         if (!item.createdDate) return false;
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
@@ -19,8 +19,8 @@ const ChartScreen = () => {
         return formattedDate.includes(searchDate);
     }), [combinedData, searchDate]);
 
-    // Aggregate data to count logins per date
-    const loginCounts = filteredData.reduce((acc, item) => {
+    // This is a data to count device per date
+    const deviceCounts = filteredData.reduce((acc, item) => {
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
             year: 'numeric',
             month: '2-digit',
@@ -30,8 +30,8 @@ const ChartScreen = () => {
         return acc;
     }, {});
 
-    const dates = Object.keys(loginCounts);
-    const counts = Object.values(loginCounts);
+    const dates = Object.keys(deviceCounts);
+    const counts = Object.values(deviceCounts);
 
     // Prepare data for bar chart
     const barChartData = {

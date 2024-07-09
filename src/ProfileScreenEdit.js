@@ -83,7 +83,7 @@ const ProfileScreenEdit = ({ route }) => {
       );
 
       if (!profileUpdateResponse.ok) {
-        throw new Error('Error updating profile');
+        throw new Error('Error updating profile Change Mobile Number' );
       }
 
       // Update login information
@@ -102,7 +102,7 @@ const ProfileScreenEdit = ({ route }) => {
       );
 
       if (!loginUpdateResponse.ok) {
-        throw new Error('Error updating login');
+        throw new Error('Error updating login Change username');
       }
 
       Alert.alert('Profile updated successfully');
