@@ -56,13 +56,15 @@ const ChartScreen = () => {
                 width={Dimensions.get('window').width - 20}
                 height={320}
                 fromZero={true}
-                yLabelsOffset={15}
+                yAxisSuffix=""
+                segments={7} // Number of horizontal lines
                 chartConfig={{
                     backgroundColor: '#1cc910',
                     backgroundGradientFrom: '#eff3ff',
                     backgroundGradientTo: '#0f0f',
                     decimalPlaces: 0,
                     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                     style: {
                         borderRadius: 16
                     },

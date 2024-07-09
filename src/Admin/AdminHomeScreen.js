@@ -34,7 +34,8 @@ const AdminHomeScreen = () => {
         <Text style={styles.cell}>{item.mobileNumber}</Text>
         <Text style={styles.cell}>{item.deviceId}</Text>
         <Text style={styles.cell}>{formattedDate}</Text>
-        <Text style={styles.cell}>{item.sensorId}</Text>
+        <Text style={styles.cell}>{item.sensor_1}</Text>
+        <Text style={styles.cell}>{item.sensor_2}</Text>
         <Text style={styles.cell}>{item.valveId}</Text>
         <Text style={styles.cell}>{item.valveStatus}</Text>
       </View>
@@ -49,7 +50,8 @@ const AdminHomeScreen = () => {
           <Text style={styles.headerCell}>Mobile Number</Text>
           <Text style={styles.headerCell}>Device ID</Text>
           <Text style={styles.headerCell}>Created Date</Text>
-          <Text style={styles.headerCell}>Sensor ID</Text>
+          <Text style={styles.headerCell}>Sensor 1</Text>
+          <Text style={styles.headerCell}>Sensor 2</Text>
           <Text style={styles.headerCell}>Valve ID</Text>
           <Text style={styles.headerCell}>Valve Status</Text>
         </View>
@@ -58,7 +60,7 @@ const AdminHomeScreen = () => {
           renderItem={renderItem}
           keyExtractor={(item) => item.deviceId.toString()}
         />
-        <Button style={styles.Button}
+        <Button
           title="View Bar Chart"
           onPress={() => navigation.navigate('Chart', { combinedData })}
         />
@@ -100,6 +102,11 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 14,
     width: 100,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
   },
 });
 
