@@ -43,8 +43,13 @@ const ProfileScreenEdit = ({ route }) => {
   const [profileImage, setprofileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSave = async () => {
+    if (!validateMobileNumber()) {
+      return;
+    }
+
     try {
       const updateData = {
         userProfileId,
@@ -65,7 +70,6 @@ const ProfileScreenEdit = ({ route }) => {
         profileImage: profileImage ? profileImage : null,
       };
 
-      debugger
       // Update user profile
       const profileUpdateResponse = await fetch(
         `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
@@ -107,6 +111,16 @@ const ProfileScreenEdit = ({ route }) => {
       console.error('Error:', error);
       Alert.alert('Error updating profile');
     }
+  };
+
+  const validateMobileNumber = () => {
+    const mobileRegex = /^\d{10}$/;
+    if (!mobileRegex.test(mobileNumber)) {
+      setErrorMessage('Mobile number must be exactly 10 digits.');
+      return false;
+    }
+    setErrorMessage('');
+    return true;
   };
 
   // For Profile Image Change
@@ -207,12 +221,16 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>mobileNumber</Text>
+            <Text style={styles.sectionTitle}>Mobile Number</Text>
             <TextInput
               style={styles.sectionContent}
               value={mobileNumber}
               onChangeText={setmobileNumber}
+              keyboardType="numeric"
             />
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
           </View>
           <View style={styles.section}>
             <Icon
@@ -221,7 +239,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>user Name</Text>
+            <Text style={styles.sectionTitle}>User Name</Text>
             <TextInput
               style={styles.sectionContent}
               value={userName}
@@ -236,7 +254,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>password</Text>
+            <Text style={styles.sectionTitle}>Password</Text>
             <TextInput
               style={styles.sectionContent}
               value={password}
@@ -253,7 +271,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>country</Text>
+            <Text style={styles.sectionTitle}>Country</Text>
             <TextInput
               style={styles.sectionContent}
               value={country}
@@ -267,7 +285,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>state</Text>
+            <Text style={styles.sectionTitle}>State</Text>
             <TextInput
               style={styles.sectionContent}
               value={state}
@@ -281,7 +299,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>city</Text>
+            <Text style={styles.sectionTitle}>City</Text>
             <TextInput
               style={styles.sectionContent}
               value={city}
@@ -295,7 +313,7 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>pincode</Text>
+            <Text style={styles.sectionTitle}>Pincode</Text>
             <TextInput
               style={styles.sectionContent}
               value={pincode}
@@ -386,6 +404,10 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
   },
 });
 

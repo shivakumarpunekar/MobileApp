@@ -59,7 +59,8 @@ const DeviceTable = ({ loginId, userprofileId }) => {
     <View style={styles.row}>
       <Text style={styles.cell}>{item.deviceId}</Text>
       <Text style={styles.cell}>{formatDate (item.createdDate)}</Text>
-      <Text style={styles.cell}>{item.sensorId}</Text>
+      <Text style={styles.cell}>{item.sensor_1}</Text>
+      <Text style={styles.cell}>{item.sensor_2}</Text>
       <Text style={styles.cell}>{item.valveId}</Text>
       <Text style={styles.cell}>{item.valveStatus}</Text>
     </View>
@@ -70,7 +71,8 @@ const DeviceTable = ({ loginId, userprofileId }) => {
       <View style={styles.header}>
         <Text style={styles.headerCell}>DeviceId</Text>
         <Text style={styles.headerCell}>CreatedDate</Text>
-        <Text style={styles.headerCell}>Sensor Id</Text>
+        <Text style={styles.headerCell}>Sensor 1</Text>
+        <Text style={styles.headerCell}>Sensor 2</Text>
         <Text style={styles.headerCell}>Valve Id</Text>
         <Text style={styles.headerCell}>Valve Status</Text>
       </View>
