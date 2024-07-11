@@ -16,7 +16,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import DatePicker from 'react-native-date-picker';
 
 // This is for date format
-const formatDate = dateString => {
+const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
@@ -25,31 +25,32 @@ const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
   const { data } = route.params;
 
-  const [profileID, setprofileID] = useState(data.profileID);
-  const [loginId, setlognId] = useState(data.loginId);
-  const [profileGUID, setprofileGUID] = useState(data.profileGUID);
-  const [firstName, setfirstName] = useState(data.firstName);
-  const [middleName, setmiddleName] = useState(data.middleName);
-  const [lastName, setlastName] = useState(data.lastName);
-  const [emailID, setemailID] = useState(data.emailID);
-  const [dateOfBirth, setdateOfBirth] = useState(new Date(data.dateOfBirth));
-  const [mobileNumber, setmobileNumber] = useState(data.mobileNumber);
-  const [userName, setuserName] = useState(data.userName);
-  const [password, setpassword] = useState(data.password);
-  const [country, setcountry] = useState(data.country);
-  const [state, setstate] = useState(data.state);
-  const [city, setcity] = useState(data.city);
-  const [pinCode, setpinCode] = useState(data.pinCode);
-  const [profileImage, setprofileImage] = useState(data.profileImage || null);
+  const [profileID, setProfileID] = useState(data.profileID);
+  const [loginId, setLoginId] = useState(data.loginId);
+  const [profileGUID, setProfileGUID] = useState(data.profileGUID);
+  const [firstName, setFirstName] = useState(data.firstName);
+  const [middleName, setMiddleName] = useState(data.middleName);
+  const [lastName, setLastName] = useState(data.lastName);
+  const [emailID, setEmailID] = useState(data.emailID);
+  const [dateOfBirth, setDateOfBirth] = useState(new Date(data.dateOfBirth));
+  const [mobileNumber, setMobileNumber] = useState(data.mobileNumber);
+  const [userName, setUserName] = useState(data.userName);
+  const [password, setPassword] = useState(data.password);
+  const [country, setCountry] = useState(data.country);
+  const [state, setState] = useState(data.state);
+  const [city, setCity] = useState(data.city);
+  const [address, setAddress] = useState(data.address); // corrected here
+  const [pinCode, setPinCode] = useState(data.pinCode);
+  const [profileImage, setProfileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSave = async () => {
-    if (!validatemobileNumber()) {
+    if (!validateMobileNumber()) {
       return;
     }
-
+  
     try {
       const updateData = {
         profileID,
@@ -66,11 +67,11 @@ const ProfileScreenEdit = ({ route }) => {
         country,
         state,
         city,
+        address,
         pinCode,
         profileImage: profileImage ? profileImage : null,
       };
-
-      // Update user profile
+  
       const profileUpdateResponse = await fetch(
         `http://10.0.2.2:2030/api/userprofiles/${profileID}`,
         {
@@ -81,40 +82,33 @@ const ProfileScreenEdit = ({ route }) => {
           body: JSON.stringify(updateData),
         },
       );
-
+  
+      if (profileUpdateResponse.status === 204) {
+        // No content response, update successful
+        Alert.alert('Profile updated successfully');
+        navigation.goBack();
+        return;
+      }
+  
+      // Handle other status codes (200, etc.) here
+      const profileUpdateResponseJson = await profileUpdateResponse.json();
+  
       if (!profileUpdateResponse.ok) {
-        throw new Error('Error updating profile Change Mobile Number' );
+        console.error('Profile update response:', profileUpdateResponseJson);
+        throw new Error('Error updating profile User');
       }
-
-      // Update login information
-      const loginUpdateResponse = await fetch(
-        `http://10.0.2.2:2030/api/Auth/update/${loginId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userName,
-            password,
-          }),
-        },
-      );
-
-      if (!loginUpdateResponse.ok) {
-        throw new Error('Error updating login Change username');
-      }
-
+  
       Alert.alert('Profile updated successfully');
-      navigation.goBack(); 
+      navigation.goBack();
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error updating profile');
     }
   };
+  
 
-  //This is a mobileNumber Verification
-  const validatemobileNumber = () => {
+  // This is a mobileNumber Verification
+  const validateMobileNumber = () => {
     const mobileRegex = /^\d{10}$/;
     if (!mobileRegex.test(mobileNumber)) {
       setErrorMessage('Mobile number must be exactly 10 digits.');
@@ -129,7 +123,7 @@ const ProfileScreenEdit = ({ route }) => {
     try {
       const result = await launchImageLibrary({ mediaType: 'photo' });
       if (!result.didCancel && result.assets.length > 0) {
-        setprofileImage(result.assets[0].uri);
+        setProfileImage(result.assets[0].uri);
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -142,37 +136,34 @@ const ProfileScreenEdit = ({ route }) => {
         <View style={styles.curvedBackground}>
           <ImageBackground
             source={require('../assets/123.jpeg')}
-            style={styles.backgroundImage}>
+            style={styles.backgroundImage}
+          >
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Icon name="save" size={30} color="#000" />
             </TouchableOpacity>
             <View style={styles.header}>
               <View style={styles.leftHeader}>
-              <TextInput 
-              style = {{backgroundColor: '#000'}}
-                value={profileID}
-              />
                 <View style={styles.inputname}>
                   <TextInput
                     style={styles.input}
                     value={firstName}
-                    onChangeText={setfirstName}
+                    onChangeText={setFirstName}
                   />
                   <TextInput
                     style={styles.input}
                     value={middleName}
-                    onChangeText={setmiddleName}
+                    onChangeText={setMiddleName}
                   />
                   <TextInput
                     style={styles.input}
                     value={lastName}
-                    onChangeText={setlastName}
+                    onChangeText={setLastName}
                   />
                 </View>
                 <TextInput
                   style={styles.emailID}
                   value={emailID}
-                  onChangeText={setemailID}
+                  onChangeText={setEmailID}
                 />
               </View>
               <TouchableOpacity onPress={handleImagePicker}>
@@ -210,9 +201,9 @@ const ProfileScreenEdit = ({ route }) => {
               open={datePickerOpen}
               date={dateOfBirth}
               mode="date"
-              onConfirm={date => {
+              onConfirm={(date) => {
                 setDatePickerOpen(false);
-                setdateOfBirth(date);
+                setDateOfBirth(date);
               }}
               onCancel={() => {
                 setDatePickerOpen(false);
@@ -230,7 +221,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={mobileNumber}
-              onChangeText={setmobileNumber}
+              onChangeText={setMobileNumber}
               keyboardType="numeric"
             />
             {errorMessage ? (
@@ -248,7 +239,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={userName}
-              onChangeText={setuserName}
+              onChangeText={setUserName}
               editable={false}
             />
           </View>
@@ -263,7 +254,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={password}
-              onChangeText={setpassword}
+              onChangeText={setPassword}
               placeholder="password"
               secureTextEntry={true}
               editable={false}
@@ -280,7 +271,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={country}
-              onChangeText={setcountry}
+              onChangeText={setCountry}
             />
           </View>
           <View style={styles.section}>
@@ -294,7 +285,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={state}
-              onChangeText={setstate}
+              onChangeText={setState}
             />
           </View>
           <View style={styles.section}>
@@ -308,7 +299,21 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={city}
-              onChangeText={setcity}
+              onChangeText={setCity}
+            />
+          </View>
+          <View style={styles.section}>
+            <Icon
+              style={styles.sectionIcon}
+              name="address-card"
+              size={30}
+              color="#BFA100"
+            />
+            <Text style={styles.sectionTitle}>Address</Text>
+            <TextInput
+              style={styles.sectionContent}
+              value={address} // corrected here
+              onChangeText={setAddress}
             />
           </View>
           <View style={styles.section}>
@@ -318,11 +323,11 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>pinCode</Text>
+            <Text style={styles.sectionTitle}>Pin Code</Text>
             <TextInput
               style={styles.sectionContent}
               value={pinCode}
-              onChangeText={setpinCode}
+              onChangeText={setPinCode}
               keyboardType="numeric"
             />
           </View>

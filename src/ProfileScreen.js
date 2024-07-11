@@ -167,6 +167,16 @@ const ProfilePage = ({ loginId }) => {
               <View style={styles.section}>
                 <Icon
                   style={styles.sectionIcon}
+                  name="address-card"
+                  size={30}
+                  color="#BFA100"
+                />
+                <Text style={styles.sectionTitle}>Address</Text>
+                <Text style={styles.sectionContent}>{data.address}</Text>
+              </View>
+              <View style={styles.section}>
+                <Icon
+                  style={styles.sectionIcon}
                   name="map-pin"
                   size={30}
                   color="#BFA100"
