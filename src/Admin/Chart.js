@@ -8,7 +8,7 @@ const ChartScreen = () => {
     const { combinedData } = route.params || {};
     const [searchDate, setSearchDate] = useState('');
 
-    // This is filter data based on createdDate
+    // Filter and format data based on search date
     const filteredData = useMemo(() => combinedData.filter(item => {
         if (!item.createdDate) return false;
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
@@ -19,7 +19,7 @@ const ChartScreen = () => {
         return formattedDate.includes(searchDate);
     }), [combinedData, searchDate]);
 
-    // This is a data to count device per date
+    // Count devices per date
     const deviceCounts = filteredData.reduce((acc, item) => {
         const formattedDate = new Date(item.createdDate).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -30,12 +30,12 @@ const ChartScreen = () => {
         return acc;
     }, {});
 
-    const dates = Object.keys(deviceCounts);
-    const counts = Object.values(deviceCounts);
-
     // Prepare data for bar chart
+    const sortedDates = Object.keys(deviceCounts).sort((a, b) => new Date(a) - new Date(b)); 
+    const counts = sortedDates.map(date => deviceCounts[date]);
+
     const barChartData = {
-        labels: dates,
+        labels: sortedDates,
         datasets: [
             {
                 data: counts
@@ -57,6 +57,8 @@ const ChartScreen = () => {
                 height={320}
                 fromZero={true}
                 yAxisSuffix=""
+                yAxisMin={0} // Set minimum y-axis value
+                yAxisMax={30} // Set maximum y-axis value
                 segments={6} // Number of horizontal lines
                 chartConfig={{
                     backgroundColor: '#1cc910',
@@ -80,9 +82,9 @@ const ChartScreen = () => {
                     marginVertical: 8,
                     borderRadius: 16
                 }}
-                yAxisInterval={0} 
-                yLabelsOffset={10} 
-                showBarTops={false} 
+                yAxisInterval={5} // Interval of 5 for y-axis
+                yLabelsOffset={10} // Offset for y-axis labels
+                showBarTops={false} // Hide bar tops
             />
         </View>
     );

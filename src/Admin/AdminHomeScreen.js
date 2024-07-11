@@ -12,7 +12,7 @@ const AdminHomeScreen = () => {
 
   const fetchCombinedData = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:2030/api/combineddata');
+      const response = await fetch('http://10.0.2.2:2030/api/CombinedData');
       if (!response.ok) {
         throw new Error('HTTP error! status: ' + response.status);
       }

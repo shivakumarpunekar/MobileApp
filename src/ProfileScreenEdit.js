@@ -40,7 +40,7 @@ const ProfileScreenEdit = ({ route }) => {
   const [state, setState] = useState(data.state);
   const [city, setCity] = useState(data.city);
   const [address, setAddress] = useState(data.address); // corrected here
-  const [pinCode, setPinCode] = useState(data.pinCode);
+  const [pinCode, setpinCode] = useState(data.pinCode);
   const [profileImage, setProfileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -327,7 +327,7 @@ const ProfileScreenEdit = ({ route }) => {
             <TextInput
               style={styles.sectionContent}
               value={pinCode}
-              onChangeText={setPinCode}
+              onChangeText={setpinCode}
               keyboardType="numeric"
             />
           </View>
