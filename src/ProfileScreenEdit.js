@@ -25,13 +25,13 @@ const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
   const { data } = route.params;
 
-  const [userProfileId, setuserProfileId] = useState(data.userProfileId);
+  const [profileID, setprofileID] = useState(data.profileID);
   const [loginId, setlognId] = useState(data.loginId);
-  const [guId, setguId] = useState(data.guId);
+  const [profileGUID, setprofileGUID] = useState(data.profileGUID);
   const [firstName, setfirstName] = useState(data.firstName);
   const [middleName, setmiddleName] = useState(data.middleName);
   const [lastName, setlastName] = useState(data.lastName);
-  const [email, setEmail] = useState(data.email);
+  const [emailID, setemailID] = useState(data.emailID);
   const [dateOfBirth, setdateOfBirth] = useState(new Date(data.dateOfBirth));
   const [mobileNumber, setmobileNumber] = useState(data.mobileNumber);
   const [userName, setuserName] = useState(data.userName);
@@ -39,26 +39,26 @@ const ProfileScreenEdit = ({ route }) => {
   const [country, setcountry] = useState(data.country);
   const [state, setstate] = useState(data.state);
   const [city, setcity] = useState(data.city);
-  const [pincode, setpincode] = useState(data.pincode);
+  const [pinCode, setpinCode] = useState(data.pinCode);
   const [profileImage, setprofileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSave = async () => {
-    if (!validateMobileNumber()) {
+    if (!validatemobileNumber()) {
       return;
     }
 
     try {
       const updateData = {
-        userProfileId,
+        profileID,
         loginId,
-        guId,
+        profileGUID,
         firstName,
         middleName,
         lastName,
-        email,
+        emailID,
         dateOfBirth: dateOfBirth.toISOString(),
         mobileNumber,
         userName,
@@ -66,13 +66,13 @@ const ProfileScreenEdit = ({ route }) => {
         country,
         state,
         city,
-        pincode,
+        pinCode,
         profileImage: profileImage ? profileImage : null,
       };
 
       // Update user profile
       const profileUpdateResponse = await fetch(
-        `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
+        `http://10.0.2.2:2030/api/userprofiles/${profileID}`,
         {
           method: 'PUT',
           headers: {
@@ -113,8 +113,8 @@ const ProfileScreenEdit = ({ route }) => {
     }
   };
 
-  //This is a MobileNumber Verification
-  const validateMobileNumber = () => {
+  //This is a mobileNumber Verification
+  const validatemobileNumber = () => {
     const mobileRegex = /^\d{10}$/;
     if (!mobileRegex.test(mobileNumber)) {
       setErrorMessage('Mobile number must be exactly 10 digits.');
@@ -148,6 +148,10 @@ const ProfileScreenEdit = ({ route }) => {
             </TouchableOpacity>
             <View style={styles.header}>
               <View style={styles.leftHeader}>
+              <TextInput 
+              style = {{backgroundColor: '#000'}}
+                value={profileID}
+              />
                 <View style={styles.inputname}>
                   <TextInput
                     style={styles.input}
@@ -166,9 +170,9 @@ const ProfileScreenEdit = ({ route }) => {
                   />
                 </View>
                 <TextInput
-                  style={styles.email}
-                  value={email}
-                  onChangeText={setEmail}
+                  style={styles.emailID}
+                  value={emailID}
+                  onChangeText={setemailID}
                 />
               </View>
               <TouchableOpacity onPress={handleImagePicker}>
@@ -314,11 +318,12 @@ const ProfileScreenEdit = ({ route }) => {
               size={30}
               color="#BFA100"
             />
-            <Text style={styles.sectionTitle}>Pincode</Text>
+            <Text style={styles.sectionTitle}>pinCode</Text>
             <TextInput
               style={styles.sectionContent}
-              value={pincode}
-              onChangeText={setpincode}
+              value={pinCode}
+              onChangeText={setpinCode}
+              keyboardType="numeric"
             />
           </View>
         </View>
@@ -387,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#000',
   },
-  email: {
+  emailID: {
     fontSize: 16,
     color: '#000',
   },

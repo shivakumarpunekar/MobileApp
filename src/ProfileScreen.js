@@ -19,7 +19,6 @@ const formatDate = dateString => {
 };
 
 const ProfilePage = ({ loginId }) => {
-  debugger
   const navigation = useNavigation();
 
   const [data, setData] = useState(null);
@@ -28,12 +27,12 @@ const ProfilePage = ({ loginId }) => {
     //function to fetch data
     const fetchData = async () => {
       try {
-        const userProfileId = await fetchUserProfileIdByLoginId(loginId);
-        if (!userProfileId) {
+        const profileID = await fetchUserProfileIdByLoginId(loginId);
+        if (!profileID) {
           setError(new Error(`User profile not found`));
           return;
         }
-        const result = await fetchDataByIdFromApi(userProfileId);
+        const result = await fetchDataByIdFromApi(profileID);
         setData(result);
       } catch (error) {
         console.error(error);
@@ -77,11 +76,11 @@ const ProfilePage = ({ loginId }) => {
                 <View style={styles.header}>
                   <View style={styles.leftHeader}>
                     <View style={styles.inputname}>
-                      <Text style={styles.input}>{data.FirstName}</Text>
-                      <Text style={styles.input}>{data.MiddleName}</Text>
-                      <Text style={styles.input}>{data.LastName}</Text>
+                      <Text style={styles.input}>{data.firstName}</Text>
+                      <Text style={styles.input}>{data.middleName}</Text>
+                      <Text style={styles.input}>{data.lastName}</Text>
                     </View>
-                    <Text style={styles.email}>{data.EmailID}</Text>
+                    <Text style={styles.email}>{data.emailID}</Text>
                   </View>
                   <Image
                     source={require('../assets/User-Avatar-Profile-PNG.png')}
@@ -100,7 +99,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>dateOfBirth</Text>
                 <Text style={styles.sectionContent}>
-                  {formatDate(data.DateOfBirth)}
+                  {formatDate(data.dateOfBirth)}
                 </Text>
               </View>
               <View style={styles.section}>
@@ -111,7 +110,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>MobileNumber</Text>
-                <Text style={styles.sectionContent}>{data.MobileNumber}</Text>
+                <Text style={styles.sectionContent}>{data.mobileNumber}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -121,7 +120,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>UserName</Text>
-                <Text style={styles.sectionContent}>{data.UserName}</Text>
+                <Text style={styles.sectionContent}>{data.userName}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -132,7 +131,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>Password</Text>
                 <Text style={styles.sectionContent}>
-                  {'*'.repeat(data.Password.length)}
+                  {'*'.repeat(data.password.length)}
                 </Text>
               </View>
               <View style={styles.section}>
@@ -143,7 +142,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>Country</Text>
-                <Text style={styles.sectionContent}>{data.Country}</Text>
+                <Text style={styles.sectionContent}>{data.country}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -153,7 +152,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>State</Text>
-                <Text style={styles.sectionContent}>{data.State}</Text>
+                <Text style={styles.sectionContent}>{data.state}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -163,7 +162,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>City</Text>
-                <Text style={styles.sectionContent}>{data.City}</Text>
+                <Text style={styles.sectionContent}>{data.city}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -173,7 +172,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>Pincode</Text>
-                <Text style={styles.sectionContent}>{data.PinCode}</Text>
+                <Text style={styles.sectionContent}>{data.pinCode}</Text>
               </View>
             </View>
           </>
