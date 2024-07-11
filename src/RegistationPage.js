@@ -131,7 +131,6 @@ const RegistrationPage = () => {
      
     if (checkTextInput()) {
       try {
-        debugger
         // Post to the login table
         const loginResponse = await fetch('http://10.0.2.2:2030/api/Auth/register', {
           method: 'POST',
@@ -151,7 +150,6 @@ const RegistrationPage = () => {
         const loginData = await loginResponse.json();
         const LoginId = loginData.loginId;
 
-         debugger
         // Post to the userprofile table
         const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
           method: 'POST',
@@ -189,7 +187,6 @@ const RegistrationPage = () => {
         if (!userProfileResponse.ok) {
           throw new Error('Error creating user profile');
         }
-        debugger
         navigation.navigate('Login');
       } catch (error) {
          
