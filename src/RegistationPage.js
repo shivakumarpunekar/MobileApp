@@ -9,23 +9,23 @@ const RegistrationPage = () => {
 
   const navigation = useNavigation();
 
-  const [firstName, setFirstName] = useState('');
-  const [middleName, setMiddleName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [dateOfBirth, setdateOfBirth] = useState(new Date());
+  const [FirstName, setFirstName] = useState('');
+  const [MiddleName, setMiddleName] = useState('');
+  const [LastName, setLastName] = useState('');
+  const [DateOfBirth, setdateOfBirth] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [mobileNumber, setmobileNumber] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [MobileNumber, setmobileNumber] = useState('');
+  const [UserName, setUsername] = useState('');
+  const [Password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState("");
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
-  const [email, setEmail] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
-  const [pincode, setPincode] = useState('');
+  const [EmailID, setEmail] = useState('');
+  const [Country, setCountry] = useState('');
+  const [State, setState] = useState('');
+  const [City, setCity] = useState('');
+  const [PinCode, setPincode] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const phoneInput = useRef(null);
@@ -46,7 +46,7 @@ const RegistrationPage = () => {
 
   //This is a haldle otp
   const handleVerify = () => {
-    if (!phoneInput.current?.isValidNumber(mobileNumber)) {
+    if (!phoneInput.current?.isValidNumber(MobileNumber)) {
       Alert.alert("Invalid Phone Number", "Please enter a valid phone number.");
       return;
     }
@@ -63,39 +63,39 @@ const RegistrationPage = () => {
 
   //this is a validate the field 
   const checkTextInput = () => {
-    if (!firstName.trim()) {
+    if (!FirstName.trim()) {
       alert('Please Enter First Name');
       return false;
     }
-    if (!middleName.trim()) {
+    if (!MiddleName.trim()) {
       alert('Please Enter Middle Name');
       return false;
     }
-    if (!lastName.trim()) {
+    if (!LastName.trim()) {
       alert('Please Enter Last Name');
       return false;
     }
-    if (!dateOfBirth) {
+    if (!DateOfBirth) {
       alert('Please Enter Date of Birth');
       return false;
     }
-    if (!mobileNumber.trim()) {
+    if (!MobileNumber.trim()) {
       alert('Please Enter Phone Number');
       return false;
     }
-    if (!username.trim()) {
+    if (!UserName.trim()) {
       alert('Please Enter Username');
       return false;
     }
-    if (!password.trim()) {
+    if (!Password.trim()) {
       alert('Please Enter Password');
       return false;
     }
-    if (!confirmPassword.trim()) {
+    if (!confirmPassword.trim()) {  
       alert('Please Enter Confirm Password');
       return false;
     }
-    if (password !== confirmPassword) {
+    if (Password !== confirmPassword) {
       setPasswordError('Password and Confirm Password do not match');
       setConfirmPasswordError('Password and Confirm Password do not match');
       return false;
@@ -103,23 +103,23 @@ const RegistrationPage = () => {
       setPasswordError('');
       setConfirmPasswordError('');
     }
-    if (!email.trim()) {
+    if (!EmailID.trim()) {
       alert('Please Enter Email');
       return false;
     }
-    if (!country.trim()) {
+    if (!Country.trim()) {
       alert('Please Enter Country');
       return false;
     }
-    if (!state.trim()) {
+    if (!State.trim()) {
       alert('Please Enter State');
       return false;
     }
-    if (!city.trim()) {
+    if (!City.trim()) {
       alert('Please Enter City');
       return false;
     }
-    if (!pincode.trim()) {
+    if (!PinCode.trim()) {
       alert('Please Enter Pincode');
       return false;
     }
@@ -139,8 +139,8 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            username,
-            password,
+            UserName,
+            Password,
           }),
         });
 
@@ -159,18 +159,18 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            firstName,
-            middleName,
-            lastName,
-            dateOfBirth: dateOfBirth.toISOString().split('T')[0], 
-            mobileNumber,
-            username,
-            password,
-            email,
-            country,
-            state,
-            city,
-            pincode,
+            FirstName,
+            MiddleName,
+            LastName,
+            DateOfBirth: DateOfBirth.toISOString().split('T')[0], 
+            MobileNumber,
+            UserName,
+            Password,
+            EmailID,
+            Country,
+            State,
+            City,
+            PinCode,
             LoginId,
           }),
         });
@@ -215,7 +215,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="First Name"
-          value={firstName}
+          value={FirstName}
           onChangeText={(value) => setFirstName(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -224,7 +224,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Middle Name"
-          value={middleName}
+          value={MiddleName}
           onChangeText={(value) => setMiddleName(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -233,24 +233,24 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Last Name"
-          value={lastName}
+          value={LastName}
           onChangeText={(value) => setLastName(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Date of Birth
         </Text>
         <TouchableOpacity onPress={showDatePicker} style={styles.datePickerButton}>
-          <Text style={styles.datePickerText}>{dateOfBirth.toDateString()}</Text>
+          <Text style={styles.datePickerText}>{DateOfBirth.toDateString()}</Text>
         </TouchableOpacity>
         <Modal isVisible={isDatePickerVisible} onBackdropPress={hideDatePicker}>
           <View style={styles.modalContent}>
             <DatePicker
-              date={dateOfBirth}
+              date={DateOfBirth}
               onDateChange={setdateOfBirth}
               mode="date"
               maximumDate={new Date()}
             />
-            <Button title="Confirm" onPress={() => handleConfirm(dateOfBirth)} />
+            <Button title="Confirm" onPress={() => handleConfirm(DateOfBirth)} />
           </View>
         </Modal>
         <Text style={{ fontSize: 20, bottom: 5 }}>
@@ -258,7 +258,7 @@ const RegistrationPage = () => {
         </Text>
         <PhoneInput
           ref={phoneInput}
-          defaultValue={mobileNumber}
+          defaultValue={MobileNumber}
           defaultCode="IN"
           onChangeFormattedText={(text) => {
             setmobileNumber(text);
@@ -268,7 +268,7 @@ const RegistrationPage = () => {
           autoFocus
           placeholder="Enter phone number"
         />
-        {phoneInput.current?.isValidNumber(mobileNumber) && (
+        {phoneInput.current?.isValidNumber(MobileNumber) && (
           <>
         <TextInput
           style={styles.input}
@@ -296,7 +296,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Username"
-          value={username}
+          value={UserName}
           onChangeText={(value) => setUsername(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -306,7 +306,7 @@ const RegistrationPage = () => {
           style={styles.input}
           placeholder="Password"
           secureTextEntry={true}
-          value={password}
+          value={Password}
           onChangeText={(value) => setPassword(value)}
         />
         {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
@@ -328,7 +328,7 @@ const RegistrationPage = () => {
             style={styles.input}
             placeholder="Email"
             keyboardType="email-address"
-            value={email}
+            value={EmailID}
             onChangeText={(value) => setEmail(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -337,7 +337,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Country"
-          value={country}
+          value={Country}
           onChangeText={(value) => setCountry(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -346,7 +346,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="State"
-          value={state}
+          value={State}
           onChangeText={(value) => setState(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -355,7 +355,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="City"
-          value={city}
+          value={City}
           onChangeText={(value) => setCity(value)}
         />
         <Text style={{ fontSize: 20 }}>
@@ -364,7 +364,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Pincode"
-          value={pincode}
+          value={PinCode}
           onChangeText={(value) => setPincode(value)}
         />
         <TouchableOpacity 
