@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { PieChart } from 'react-native-chart-kit';
+import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import axios from 'axios';
+import { PieChart } from 'react-native-svg-charts';
+import { G, Text as SvgText } from 'react-native-svg';
 
 const PiChartScreen = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
     // Fetch data from the API
-    axios.get('http://10.0.2.2:2030/api/userprofiles/todayRegistrations')
+    axios.get('http://10.0.2.2:2030/api/userprofiles/registrationsSummary')
       .then(response => {
         const formattedData = response.data.map(item => ({
-          name: item.createdDate,
-          count: item.count,
-          color: getRandomColor(),
-          legendFontColor: "#7F7F7F",
-          legendFontSize: 15
+          key: item.createdDate,
+          value: item.count,
+          svg: { fill: getRandomColor() },
+          arc: { outerRadius: '100%', padAngle: 0 },
+          onPress: () => handlePieChartClick(item)
         }));
         setData(formattedData);
       })
@@ -28,9 +29,47 @@ const PiChartScreen = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
     for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor (Math.random() * 16)];
+      color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+  };
+
+  const handlePieChartClick = (item) => {
+    Alert.alert(`Date: ${item.createdDate}`, `Count: ${item.count}`);
+  };
+
+  const Labels = ({ slices }) => {
+    return slices.map((slice, index) => {
+      const { pieCentroid, data } = slice;
+      return (
+        <G key={index}>
+          <SvgText
+            x={pieCentroid[0]}
+            y={pieCentroid[1] - 10}
+            fill="white"
+            textAnchor="middle"
+            alignmentBaseline="middle"
+            fontSize={14}
+            stroke="black"
+            strokeWidth={0.2}
+          >
+            {data.value}
+          </SvgText>
+          <SvgText
+            x={pieCentroid[0]}
+            y={pieCentroid[1] + 10}
+            fill="white"
+            textAnchor="middle"
+            alignmentBaseline="middle"
+            fontSize={10}
+            stroke="black"
+            strokeWidth={0.2}
+          >
+            {data.key}
+          </SvgText>
+        </G>
+      );
+    });
   };
 
   return (
@@ -38,28 +77,27 @@ const PiChartScreen = () => {
       <Text style={styles.header}>Registrations</Text>
       {data.length > 0 && (
         <PieChart
+          style={{ height: 220, width: 400 }}
           data={data}
-          width={400}
-          height={220}
-          chartConfig={chartConfig}
-          accessor="count"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          absolute
-        />
+          innerRadius="40%"
+          outerRadius="80%"
+          labelRadius="110%"
+        >
+          <Labels />
+        </PieChart>
       )}
+      <View style={styles.legendContainer}>
+        <ScrollView>
+          {data.map((item, index) => (
+            <View key={index} style={styles.legendItem}>
+              <View style={[styles.colorBox, { backgroundColor: item.svg.fill }]} />
+              <Text style={styles.legendText}>{item.key}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
-};
-
-const chartConfig = {
-  backgroundGradientFrom: "#1E2923",
-  backgroundGradientFromOpacity: 0,
-  backgroundGradientTo: "#08130D",
-  backgroundGradientToOpacity: 0.5,
-  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-  strokeWidth: 2, 
-  barPercentage: 0.5
 };
 
 const styles = StyleSheet.create({
@@ -67,11 +105,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff'
+    backgroundColor: '#F6F3E7'
   },
   header: {
     fontSize: 18,
     marginVertical: 10
+  },
+  legendContainer: {
+    marginTop: 20,
+    width: '90%'
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5
+  },
+  colorBox: {
+    width: 20,
+    height: 20,
+    marginRight: 10
+  },
+  legendText: {
+    fontSize: 16
   }
 });
 

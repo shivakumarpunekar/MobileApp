@@ -42,6 +42,7 @@
     "react-native-screens": "^3.32.0",
     "react-native-splash-screen": "^3.3.0",
     "react-native-svg": "^15.3.0",
+    "react-native-svg-charts": "^5.4.0",
     "react-native-vector-icons": "^10.1.0",
     "reactotron-react-native": "^5.1.7",
     "swagger-ui-react": "^5.17.14"

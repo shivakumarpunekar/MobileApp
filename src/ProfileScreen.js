@@ -19,6 +19,7 @@ const formatDate = dateString => {
 };
 
 const ProfilePage = ({ loginId }) => {
+  debugger
   const navigation = useNavigation();
 
   const [data, setData] = useState(null);
@@ -76,11 +77,11 @@ const ProfilePage = ({ loginId }) => {
                 <View style={styles.header}>
                   <View style={styles.leftHeader}>
                     <View style={styles.inputname}>
-                      <Text style={styles.input}>{data.firstName}</Text>
-                      <Text style={styles.input}>{data.middleName}</Text>
-                      <Text style={styles.input}>{data.lastName}</Text>
+                      <Text style={styles.input}>{data.FirstName}</Text>
+                      <Text style={styles.input}>{data.MiddleName}</Text>
+                      <Text style={styles.input}>{data.LastName}</Text>
                     </View>
-                    <Text style={styles.email}>{data.email}</Text>
+                    <Text style={styles.email}>{data.EmailID}</Text>
                   </View>
                   <Image
                     source={require('../assets/User-Avatar-Profile-PNG.png')}
@@ -99,7 +100,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>dateOfBirth</Text>
                 <Text style={styles.sectionContent}>
-                  {formatDate(data.dateOfBirth)}
+                  {formatDate(data.DateOfBirth)}
                 </Text>
               </View>
               <View style={styles.section}>
@@ -110,7 +111,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>MobileNumber</Text>
-                <Text style={styles.sectionContent}>{data.mobileNumber}</Text>
+                <Text style={styles.sectionContent}>{data.MobileNumber}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -120,7 +121,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>UserName</Text>
-                <Text style={styles.sectionContent}>{data.userName}</Text>
+                <Text style={styles.sectionContent}>{data.UserName}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -131,7 +132,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>Password</Text>
                 <Text style={styles.sectionContent}>
-                  {'*'.repeat(data.password.length)}
+                  {'*'.repeat(data.Password.length)}
                 </Text>
               </View>
               <View style={styles.section}>
@@ -142,7 +143,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>Country</Text>
-                <Text style={styles.sectionContent}>{data.country}</Text>
+                <Text style={styles.sectionContent}>{data.Country}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -152,7 +153,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>State</Text>
-                <Text style={styles.sectionContent}>{data.state}</Text>
+                <Text style={styles.sectionContent}>{data.State}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -162,7 +163,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>City</Text>
-                <Text style={styles.sectionContent}>{data.city}</Text>
+                <Text style={styles.sectionContent}>{data.City}</Text>
               </View>
               <View style={styles.section}>
                 <Icon
@@ -172,7 +173,7 @@ const ProfilePage = ({ loginId }) => {
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>Pincode</Text>
-                <Text style={styles.sectionContent}>{data.pincode}</Text>
+                <Text style={styles.sectionContent}>{data.PinCode}</Text>
               </View>
             </View>
           </>
