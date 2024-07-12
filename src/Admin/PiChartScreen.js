@@ -3,9 +3,14 @@ import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import axios from 'axios';
 import { PieChart } from 'react-native-svg-charts';
 import { G, Text as SvgText } from 'react-native-svg';
+import Animated, { Easing } from 'react-native-reanimated';
+
+const { Value, timing } = Animated;
 
 const PiChartScreen = () => {
   const [data, setData] = useState([]);
+  const [selectedSlice, setSelectedSlice] = useState(null);
+  const [selectedOpacity] = useState(new Value(0));
 
   useEffect(() => {
     // Fetch data from the API
@@ -14,9 +19,8 @@ const PiChartScreen = () => {
         const formattedData = response.data.map(item => ({
           key: item.createdDate,
           value: item.count,
-          svg: { fill: getRandomColor() },
+          svg: { fill: getRandomColor(), onPress: () => handlePieChartClick(item) },
           arc: { outerRadius: '100%', padAngle: 0 },
-          onPress: () => handlePieChartClick(item)
         }));
         setData(formattedData);
       })
@@ -35,42 +39,63 @@ const PiChartScreen = () => {
   };
 
   const handlePieChartClick = (item) => {
+    setSelectedSlice(item);
     Alert.alert(`Date: ${item.createdDate}`, `Count: ${item.count}`);
+    animateSelectedOpacity();
+  };
+
+  const animateSelectedOpacity = () => {
+    selectedOpacity.setValue(0);
+    timing(selectedOpacity, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+    }).start();
   };
 
   const Labels = ({ slices }) => {
     return slices.map((slice, index) => {
       const { pieCentroid, data } = slice;
+      const isSelected = selectedSlice && selectedSlice.key === data.key;
+
       return (
         <G key={index}>
-          <SvgText
-            x={pieCentroid[0]}
-            y={pieCentroid[1] - 10}
-            fill="white"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fontSize={14}
-            stroke="black"
-            strokeWidth={0.2}
-          >
-            {data.value}
-          </SvgText>
-          <SvgText
-            x={pieCentroid[0]}
-            y={pieCentroid[1] + 10}
-            fill="white"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fontSize={10}
-            stroke="black"
-            strokeWidth={0.2}
-          >
-            {data.key}
-          </SvgText>
+          {isSelected && (
+            <>
+              <AnimatedSvgText
+                x={pieCentroid[0]}
+                y={pieCentroid[1] - 10}
+                fill="white"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                fontSize={14}
+                stroke="black"
+                strokeWidth={0.2}
+                opacity={selectedOpacity}
+              >
+                {data.value}
+              </AnimatedSvgText>
+              <AnimatedSvgText
+                x={pieCentroid[0]}
+                y={pieCentroid[1] + 10}
+                fill="white"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                fontSize={10}
+                stroke="black"
+                strokeWidth={0.2}
+                opacity={selectedOpacity}
+              >
+                {data.key}
+              </AnimatedSvgText>
+            </>
+          )}
         </G>
       );
     });
   };
+
+  const AnimatedSvgText = Animated.createAnimatedComponent(SvgText);
 
   return (
     <View style={styles.container}>

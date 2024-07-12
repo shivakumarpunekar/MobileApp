@@ -63,31 +63,31 @@ const RegistrationPage = () => {
 
   //this is a validate the field 
   const checkTextInput = () => {
-    if (!FirstName.trim()) {
+    if (!firstName.trim()) {
       alert('Please Enter First Name');
       return false;
     }
-    if (!MiddleName.trim()) {
+    if (!middleName.trim()) {
       alert('Please Enter Middle Name');
       return false;
     }
-    if (!LastName.trim()) {
+    if (!lastName.trim()) {
       alert('Please Enter Last Name');
       return false;
     }
-    if (!DateOfBirth) {
+    if (!dateOfBirth) {
       alert('Please Enter Date of Birth');
       return false;
     }
-    if (!MobileNumber.trim()) {
+    if (!mobileNumber.trim()) {
       alert('Please Enter Phone Number');
       return false;
     }
-    if (!UserName.trim()) {
+    if (!userName.trim()) {
       alert('Please Enter Username');
       return false;
     }
-    if (!Password.trim()) {
+    if (!password.trim()) {
       alert('Please Enter Password');
       return false;
     }
@@ -103,23 +103,23 @@ const RegistrationPage = () => {
       setPasswordError('');
       setConfirmPasswordError('');
     }
-    if (!EmailID.trim()) {
+    if (!email.trim()) {
       alert('Please Enter Email');
       return false;
     }
-    if (!Country.trim()) {
+    if (!country.trim()) {
       alert('Please Enter Country');
       return false;
     }
-    if (!State.trim()) {
+    if (!state.trim()) {
       alert('Please Enter State');
       return false;
     }
-    if (!City.trim()) {
+    if (!city.trim()) {
       alert('Please Enter City');
       return false;
     }
-    if (!PinCode.trim()) {
+    if (!pincode.trim()) {
       alert('Please Enter Pincode');
       return false;
     }
@@ -138,8 +138,9 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            UserName,
-            Password,
+            username,
+            password,
+            userProfileId,
           }),
         });
 
@@ -148,7 +149,7 @@ const RegistrationPage = () => {
         }
 
         const loginData = await loginResponse.json();
-        const LoginId = loginData.loginId;
+        const loginId = loginData.loginId;
 
         // Post to the userprofile table
         const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
@@ -157,19 +158,19 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            FirstName,
-            MiddleName,
-            LastName,
-            DateOfBirth: DateOfBirth.toISOString().split('T')[0], 
-            MobileNumber,
-            UserName,
-            Password,
-            EmailID,
-            Country,
-            State,
-            City,
-            PinCode,
-            LoginId,
+            firstName,
+            middleName,
+            lastName,
+            DateOfBirth: dateOfBirth.toISOString().split('T')[0], 
+            mobileNumber,
+            userName,
+            password,
+            email,
+            country,
+            state,
+            city,
+            pincode,
+            loginId,
           }),
         });
 

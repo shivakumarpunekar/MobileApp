@@ -25,13 +25,13 @@ const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
   const { data } = route.params;
 
-  const [profileID, setProfileID] = useState(data.profileID);
+  const [profileID, setProfileID] = useState(data.userProfileId);
   const [loginId, setLoginId] = useState(data.loginId);
-  const [profileGUID, setProfileGUID] = useState(data.profileGUID);
+  const [profileGUID, setProfileGUID] = useState(data.guId);
   const [firstName, setFirstName] = useState(data.firstName);
   const [middleName, setMiddleName] = useState(data.middleName);
   const [lastName, setLastName] = useState(data.lastName);
-  const [emailID, setEmailID] = useState(data.emailID);
+  const [email, setemail] = useState(data.email);
   const [dateOfBirth, setDateOfBirth] = useState(new Date(data.dateOfBirth));
   const [mobileNumber, setMobileNumber] = useState(data.mobileNumber);
   const [userName, setUserName] = useState(data.userName);
@@ -39,8 +39,7 @@ const ProfileScreenEdit = ({ route }) => {
   const [country, setCountry] = useState(data.country);
   const [state, setState] = useState(data.state);
   const [city, setCity] = useState(data.city);
-  const [address, setAddress] = useState(data.address); // corrected here
-  const [pinCode, setpinCode] = useState(data.pinCode);
+  const [pinCode, setpinCode] = useState(data.pincode);
   const [profileImage, setProfileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -53,13 +52,13 @@ const ProfileScreenEdit = ({ route }) => {
   
     try {
       const updateData = {
-        profileID,
+        userProfileId,
         loginId,
-        profileGUID,
+        guId,
         firstName,
         middleName,
         lastName,
-        emailID,
+        email,
         dateOfBirth: dateOfBirth.toISOString(),
         mobileNumber,
         userName,
@@ -67,13 +66,12 @@ const ProfileScreenEdit = ({ route }) => {
         country,
         state,
         city,
-        address,
-        pinCode,
+        pincode,
         profileImage: profileImage ? profileImage : null,
       };
   
       const profileUpdateResponse = await fetch(
-        `http://10.0.2.2:2030/api/userprofiles/${profileID}`,
+        `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
         {
           method: 'PUT',
           headers: {
@@ -161,9 +159,9 @@ const ProfileScreenEdit = ({ route }) => {
                   />
                 </View>
                 <TextInput
-                  style={styles.emailID}
-                  value={emailID}
-                  onChangeText={setEmailID}
+                  style={styles.email}
+                  value={email}
+                  onChangeText={setemail}
                 />
               </View>
               <TouchableOpacity onPress={handleImagePicker}>
@@ -305,20 +303,6 @@ const ProfileScreenEdit = ({ route }) => {
           <View style={styles.section}>
             <Icon
               style={styles.sectionIcon}
-              name="address-card"
-              size={30}
-              color="#BFA100"
-            />
-            <Text style={styles.sectionTitle}>Address</Text>
-            <TextInput
-              style={styles.sectionContent}
-              value={address} // corrected here
-              onChangeText={setAddress}
-            />
-          </View>
-          <View style={styles.section}>
-            <Icon
-              style={styles.sectionIcon}
               name="map-pin"
               size={30}
               color="#BFA100"
@@ -397,7 +381,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#000',
   },
-  emailID: {
+  email: {
     fontSize: 16,
     color: '#000',
   },

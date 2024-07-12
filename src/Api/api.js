@@ -30,9 +30,9 @@ export const fetchaDataFromApi = async () => {
 
 
 //This is a get method by Id
-export const fetchDataByIdFromApi = async (profileID) => {
+export const fetchDataByIdFromApi = async (userProfileId) => {
   try {
-    const response = await apiClient.get(`/api/userprofiles/${profileID}`);
+    const response = await apiClient.get(`/api/userprofiles/${userProfileId}`);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -52,7 +52,7 @@ export const fetchDataByIdFromApi = async (profileID) => {
 export const fetchUserProfileIdByLoginId = async (loginId) => {
   try {
     const response = await apiClient.get(`/api/userprofiles/byLoginId/${loginId}`);
-    return response.data.profileID; 
+    return response.data.userProfileId; 
   } catch (error) {
     if (error.response) {
       console.error('Error response:', error.response.data);

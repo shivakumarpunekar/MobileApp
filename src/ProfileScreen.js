@@ -27,12 +27,12 @@ const ProfilePage = ({ loginId }) => {
     //function to fetch data
     const fetchData = async () => {
       try {
-        const profileID = await fetchUserProfileIdByLoginId(loginId);
-        if (!profileID) {
+        const userProfileId = await fetchUserProfileIdByLoginId(loginId);
+        if (!userProfileId) {
           setError(new Error(`User profile not found`));
           return;
         }
-        const result = await fetchDataByIdFromApi(profileID);
+        const result = await fetchDataByIdFromApi(userProfileId);
         setData(result);
       } catch (error) {
         console.error(error);
@@ -80,7 +80,7 @@ const ProfilePage = ({ loginId }) => {
                       <Text style={styles.input}>{data.middleName}</Text>
                       <Text style={styles.input}>{data.lastName}</Text>
                     </View>
-                    <Text style={styles.email}>{data.emailID}</Text>
+                    <Text style={styles.email}>{data.email}</Text>
                   </View>
                   <Image
                     source={require('../assets/User-Avatar-Profile-PNG.png')}
@@ -167,22 +167,12 @@ const ProfilePage = ({ loginId }) => {
               <View style={styles.section}>
                 <Icon
                   style={styles.sectionIcon}
-                  name="address-card"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Address</Text>
-                <Text style={styles.sectionContent}>{data.address}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
                   name="map-pin"
                   size={30}
                   color="#BFA100"
                 />
                 <Text style={styles.sectionTitle}>Pincode</Text>
-                <Text style={styles.sectionContent}>{data.pinCode}</Text>
+                <Text style={styles.sectionContent}>{data.pincode}</Text>
               </View>
             </View>
           </>
