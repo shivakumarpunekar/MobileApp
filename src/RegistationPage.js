@@ -9,25 +9,25 @@ const RegistrationPage = () => {
 
   const navigation = useNavigation();
 
-  const [FirstName, setFirstName] = useState('');
-  const [MiddleName, setMiddleName] = useState('');
-  const [LastName, setLastName] = useState('');
-  const [DateOfBirth, setdateOfBirth] = useState(new Date());
+  const [firstName, setfirstName] = useState('');
+  const [middleName, setmiddleName] = useState('');
+  const [lastName, setlastName] = useState('');
+  const [dateOfBirth, setdateOfBirth] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [MobileNumber, setmobileNumber] = useState('');
-  const [UserName, setUsername] = useState('');
-  const [Password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [mobileNumber, setmobileNumber] = useState('');
+  const [userName, setuserName] = useState('');
+  const [password, setpassword] = useState('');
+  const [confirmpassword, setConfirmpassword] = useState('');
   const [otp, setOtp] = useState("");
   const [valid, setValid] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
-  const [EmailID, setEmail] = useState('');
-  const [Country, setCountry] = useState('');
-  const [State, setState] = useState('');
-  const [City, setCity] = useState('');
-  const [PinCode, setPincode] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [email, setemail] = useState('');
+  const [country, setcountry] = useState('');
+  const [state, setstate] = useState('');
+  const [city, setcity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [passwordError, setpasswordError] = useState('');
+  const [confirmpasswordError, setConfirmpasswordError] = useState('');
   const phoneInput = useRef(null);
 
   //This is a date picker show, hide, handleling
@@ -46,7 +46,7 @@ const RegistrationPage = () => {
 
   //This is a haldle otp
   const handleVerify = () => {
-    if (!phoneInput.current?.isValidNumber(MobileNumber)) {
+    if (!phoneInput.current?.isValidNumber(mobileNumber)) {
       Alert.alert("Invalid Phone Number", "Please enter a valid phone number.");
       return;
     }
@@ -88,35 +88,35 @@ const RegistrationPage = () => {
       return false;
     }
     if (!password.trim()) {
-      alert('Please Enter Password');
+      alert('Please Enter password');
       return false;
     }
-    if (!confirmPassword.trim()) {  
-      alert('Please Enter Confirm Password');
+    if (!confirmpassword.trim()) {  
+      alert('Please Enter Confirm password');
       return false;
     }
-    if (Password !== confirmPassword) {
-      setPasswordError('Password and Confirm Password do not match');
-      setConfirmPasswordError('Password and Confirm Password do not match');
+    if (password !== confirmpassword) {
+      setpasswordError('password and Confirm password do not match');
+      setConfirmpasswordError('password and Confirm password do not match');
       return false;
     } else {
-      setPasswordError('');
-      setConfirmPasswordError('');
+      setpasswordError('');
+      setConfirmpasswordError('');
     }
     if (!email.trim()) {
-      alert('Please Enter Email');
+      alert('Please Enter email');
       return false;
     }
     if (!country.trim()) {
-      alert('Please Enter Country');
+      alert('Please Enter country');
       return false;
     }
     if (!state.trim()) {
-      alert('Please Enter State');
+      alert('Please Enter state');
       return false;
     }
     if (!city.trim()) {
-      alert('Please Enter City');
+      alert('Please Enter city');
       return false;
     }
     if (!pincode.trim()) {
@@ -138,9 +138,8 @@ const RegistrationPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            username,
+            userName,
             password,
-            userProfileId,
           }),
         });
 
@@ -161,7 +160,7 @@ const RegistrationPage = () => {
             firstName,
             middleName,
             lastName,
-            DateOfBirth: dateOfBirth.toISOString().split('T')[0], 
+            dateOfBirth: dateOfBirth.toISOString().split('T')[0], 
             mobileNumber,
             userName,
             password,
@@ -178,9 +177,9 @@ const RegistrationPage = () => {
          
         if (userProfileResponse.status === 400) {
           const errorData = await userProfileResponse.json();
-          if (errorData.message === "UserName already exists.") {
+          if (errorData.message === "userName already exists.") {
             alert('Username already exists. Please choose a different username.');
-          } else if (errorData.message === "MobileNumber already exists.") {
+          } else if (errorData.message === "mobileNumber already exists.") {
             alert('Mobile number already exists. Please use a different mobile number.');
           }
           return;
@@ -213,8 +212,8 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="First Name"
-          value={FirstName}
-          onChangeText={(value) => setFirstName(value)}
+          value={firstName}
+          onChangeText={(value) => setfirstName(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Middle Name
@@ -222,8 +221,8 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Middle Name"
-          value={MiddleName}
-          onChangeText={(value) => setMiddleName(value)}
+          value={middleName}
+          onChangeText={(value) => setmiddleName(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Last Name
@@ -231,24 +230,24 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Last Name"
-          value={LastName}
-          onChangeText={(value) => setLastName(value)}
+          value={lastName}
+          onChangeText={(value) => setlastName(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Date of Birth
         </Text>
         <TouchableOpacity onPress={showDatePicker} style={styles.datePickerButton}>
-          <Text style={styles.datePickerText}>{DateOfBirth.toDateString()}</Text>
+          <Text style={styles.datePickerText}>{dateOfBirth.toDateString()}</Text>
         </TouchableOpacity>
         <Modal isVisible={isDatePickerVisible} onBackdropPress={hideDatePicker}>
           <View style={styles.modalContent}>
             <DatePicker
-              date={DateOfBirth}
+              date={dateOfBirth}
               onDateChange={setdateOfBirth}
               mode="date"
               maximumDate={new Date()}
             />
-            <Button title="Confirm" onPress={() => handleConfirm(DateOfBirth)} />
+            <Button title="Confirm" onPress={() => handleConfirm(dateOfBirth)} />
           </View>
         </Modal>
         <Text style={{ fontSize: 20, bottom: 5 }}>
@@ -256,7 +255,7 @@ const RegistrationPage = () => {
         </Text>
         <PhoneInput
           ref={phoneInput}
-          defaultValue={MobileNumber}
+          defaultValue={mobileNumber}
           defaultCode="IN"
           onChangeFormattedText={(text) => {
             setmobileNumber(text);
@@ -266,7 +265,7 @@ const RegistrationPage = () => {
           autoFocus
           placeholder="Enter phone number"
         />
-        {phoneInput.current?.isValidNumber(MobileNumber) && (
+        {phoneInput.current?.isValidNumber(mobileNumber) && (
           <>
         <TextInput
           style={styles.input}
@@ -294,67 +293,67 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Username"
-          value={UserName}
-          onChangeText={(value) => setUsername(value)}
+          value={userName}
+          onChangeText={(value) => setuserName(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          Password
+          password
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="password"
           secureTextEntry={true}
-          value={Password}
-          onChangeText={(value) => setPassword(value)}
+          value={password}
+          onChangeText={(value) => setpassword(value)}
         />
         {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
         <Text style={{ fontSize: 20 }}>
-          Confirm Password
+          Confirm password
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="Confirm Password"
+          placeholder="Confirm password"
           secureTextEntry={true}
-          value={confirmPassword}
-          onChangeText={(value) => setConfirmPassword(value)}
+          value={confirmpassword}
+          onChangeText={(value) => setConfirmpassword(value)}
         />
-        {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
+        {confirmpasswordError ? <Text style={styles.errorText}>{confirmpasswordError}</Text> : null}
         <Text style={{ fontSize: 20 }}>
-            Email
+            email
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="email"
             keyboardType="email-address"
-            value={EmailID}
-            onChangeText={(value) => setEmail(value)}
+            value={email}
+            onChangeText={(value) => setemail(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          Country
+          country
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="Country"
-          value={Country}
-          onChangeText={(value) => setCountry(value)}
+          placeholder="country"
+          value={country}
+          onChangeText={(value) => setcountry(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          State
+          state
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="State"
-          value={State}
-          onChangeText={(value) => setState(value)}
+          placeholder="state"
+          value={state}
+          onChangeText={(value) => setstate(value)}
         />
         <Text style={{ fontSize: 20 }}>
-          City
+          city
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="City"
-          value={City}
-          onChangeText={(value) => setCity(value)}
+          placeholder="city"
+          value={city}
+          onChangeText={(value) => setcity(value)}
         />
         <Text style={{ fontSize: 20 }}>
           Pincode
@@ -362,7 +361,7 @@ const RegistrationPage = () => {
         <TextInput
           style={styles.input}
           placeholder="Pincode"
-          value={PinCode}
+          value={pincode}
           onChangeText={(value) => setPincode(value)}
         />
         <TouchableOpacity 
