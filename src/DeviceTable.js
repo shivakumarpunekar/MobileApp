@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, Text, View, StyleSheet, Alert } from 'react-native';
 
-const DeviceTable = ({ loginId, userprofileId }) => {
+const DeviceTable = ({ loginId, profileID }) => {
   const [combinedData, setCombinedData] = useState([]);
 
   useEffect(() => {
     fetchData();
-  }, [loginId, userprofileId]);
+  }, [loginId, profileID]);
 
   const fetchData = async () => {
     try {
@@ -32,7 +32,7 @@ const DeviceTable = ({ loginId, userprofileId }) => {
       });
 
       // Filter combinedData based on loginId 
-      const filteredData = combinedData.filter(item => item.loginId === loginId && item.userprofileId === userprofileId);
+      const filteredData = combinedData.filter(item => item.loginId === loginId && item.profileID === profileID);
 
       if (filteredData.length === 0) {
         console.log('No devices available for this loginId');

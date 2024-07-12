@@ -47,7 +47,7 @@ const ChartScreen = () => {
         <View style={styles.container}>
             <TextInput
                 style={styles.input}
-                placeholder="Search by Created Date (MM/DD/YYYY)"
+                placeholder="Search by Created Date (DD/MM/YYYY)"
                 onChangeText={text => setSearchDate(text)}
                 value={searchDate}
             />
