@@ -131,27 +131,8 @@ const RegistrationPage = () => {
      
     if (checkTextInput()) {
       try {
-        // Post to the login table
-        const loginResponse = await fetch('http://10.0.2.2:2030/api/Auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userName,
-            password,
-          }),
-        });
-
-        if (!loginResponse.ok) {
-          throw new Error('Error creating login');
-        }
-
-        const loginData = await loginResponse.json();
-        const loginId = loginData.loginId;
-
-        // Post to the userprofile table
-        const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
+         // Post to the userprofile table
+         const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -169,12 +150,10 @@ const RegistrationPage = () => {
             state,
             city,
             pincode,
-            loginId,
           }),
         });
 
-        //This is a chicking Username and Mobilenumber
-         
+        //This is a chicking Username and Mobilenumber 
         if (userProfileResponse.status === 400) {
           const errorData = await userProfileResponse.json();
           if (errorData.message === "userName already exists.") {
@@ -187,9 +166,28 @@ const RegistrationPage = () => {
         if (!userProfileResponse.ok) {
           throw new Error('Error creating user profile');
         }
+
+        const userprofileData = await userProfileResponse.json();
+        const UserProfileId = userprofileData.UserProfileId;
+       
+        // Post to the login table
+        const loginResponse = await fetch('http://10.0.2.2:2030/api/Auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userName,
+            password,
+            UserProfileId,
+          }),
+        });
+
+        if (!loginResponse.ok) {
+          throw new Error('Error creating login');
+        }
         navigation.navigate('Login');
       } catch (error) {
-         
         console.error('Error:', error);
         alert('Error registering user');
       }

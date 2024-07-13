@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import {useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import apiClient, {fetchDataByIdFromApi, fetchUserProfileIdByLoginId} from './Api/api';
+import {fetchDataByIdFromApi, fetchUserProfileIdByLoginId} from './Api/api';
 
 // This is for date format
 const formatDate = dateString => {
@@ -19,10 +19,11 @@ const formatDate = dateString => {
 };
 
 const ProfilePage = ({ loginId }) => {
+  debugger
   const navigation = useNavigation();
-
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
     //function to fetch data
     const fetchData = async () => {
@@ -36,13 +37,15 @@ const ProfilePage = ({ loginId }) => {
         setData(result);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
-      // Fetch data initially and on loginId change
-  useEffect(() => {
-    fetchData();
-  }, [loginId]);
+    // Fetch data initially and on loginId change
+    useEffect(() => {
+      fetchData();
+    }, [loginId]);
 
   // Update data on focus (when returning from ProfileScreenEdit)
   useFocusEffect(
@@ -50,6 +53,14 @@ const ProfilePage = ({ loginId }) => {
       fetchData();
     }, [])
   );
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
   if (error) {
     return (
