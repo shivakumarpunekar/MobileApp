@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: '#F6F3E7',
     },
     title: {
         fontSize: 24,
@@ -55,11 +56,19 @@ const styles = StyleSheet.create({
     itemContainer: {
         marginBottom: 20,
         padding: 10,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#fff',
         borderRadius: 8,
+        // Shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        // Shadow for Android
+        elevation: 8,
     },
     itemText: {
         fontSize: 16,
+        color:'#000'
     },
 });
 
