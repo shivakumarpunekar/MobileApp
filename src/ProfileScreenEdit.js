@@ -129,7 +129,6 @@ const ProfileScreenEdit = ({ route }) => {
     <ScrollView>
       <View style={styles.container}>
         <View style={styles.curvedBackground}>
-        <Text>{data.userProfileId}</Text>
           <ImageBackground
             source={require('../assets/123.jpeg')}
             style={styles.backgroundImage}

@@ -47,7 +47,7 @@ const AdminProfileScreen = () => {
       <Text style={[styles.cell]}>{item.firstName}</Text>
       <Text style={[styles.cell]}>{item.middleName}</Text>
       <Text style={[styles.cell]}>{item.lastName}</Text>
-      <Text style={[styles.cell, {width: 250}]}>{item.emailID}</Text>
+      <Text style={[styles.cell, {width: 250}]}>{item.email}</Text>
       <Text style={[styles.cell]}>{item.mobileNumber}</Text>
       <Text style={[styles.cell]}>{item.dateOfBirth}</Text>
       <Text style={[styles.cell]}>{item.userName}</Text>
