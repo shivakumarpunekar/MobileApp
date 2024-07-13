@@ -30,7 +30,7 @@ export const fetchaDataFromApi = async () => {
 
 
 //This is a get method by Id
-debugger
+ 
 export const fetchDataByIdFromApi = async (userProfileId) => {
   try {
     const response = await apiClient.get(`/api/userprofiles/${userProfileId}`);
@@ -52,7 +52,7 @@ export const fetchDataByIdFromApi = async (userProfileId) => {
 //This is a LoginId To get a UserProfileId get Method
 export const fetchUserProfileIdByLoginId = async (loginId) => {
   try {
-    const response = await apiClient.get(`/api/login/${loginId}`);
+    const response = await apiClient.get(`/api/Auth/login/${loginId}`);
     return response.data.userProfileId; 
   } catch (error) {
     // if (error.response) {

@@ -19,7 +19,7 @@ const formatDate = dateString => {
 };
 
 const ProfilePage = ({ loginId }) => {
-  debugger
+   
   const navigation = useNavigation();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ const ProfilePage = ({ loginId }) => {
           setError(new Error(`User profile not found`));
           return;
         }
-        const result = await fetchDataByIdFromApi(userProfileId);
+        const result = await fetchDataByIdFromApi(userProfileId );
         setData(result);
       } catch (error) {
         console.error(error);

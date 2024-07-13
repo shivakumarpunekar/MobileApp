@@ -25,9 +25,8 @@ const ProfileScreenEdit = ({ route }) => {
   const navigation = useNavigation();
   const { data } = route.params;
 
-  const [profileID, setProfileID] = useState(data.userProfileId);
-  const [loginId, setLoginId] = useState(data.loginId);
-  const [profileGUID, setProfileGUID] = useState(data.guId);
+  const [userProfileId, setuserProfileId] = useState(data.userProfileId);
+  const [guId, setguId] = useState(data.guId);
   const [firstName, setFirstName] = useState(data.firstName);
   const [middleName, setMiddleName] = useState(data.middleName);
   const [lastName, setLastName] = useState(data.lastName);
@@ -39,7 +38,7 @@ const ProfileScreenEdit = ({ route }) => {
   const [country, setCountry] = useState(data.country);
   const [state, setState] = useState(data.state);
   const [city, setCity] = useState(data.city);
-  const [pinCode, setpinCode] = useState(data.pincode);
+  const [pincode, setpincode] = useState(data.pincode);
   const [profileImage, setProfileImage] = useState(data.profileImage || null);
 
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -49,11 +48,10 @@ const ProfileScreenEdit = ({ route }) => {
     if (!validateMobileNumber()) {
       return;
     }
-  
+     
     try {
       const updateData = {
         userProfileId,
-        loginId,
         guId,
         firstName,
         middleName,
@@ -69,7 +67,6 @@ const ProfileScreenEdit = ({ route }) => {
         pincode,
         profileImage: profileImage ? profileImage : null,
       };
-  
       const profileUpdateResponse = await fetch(
         `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
         {
@@ -132,6 +129,7 @@ const ProfileScreenEdit = ({ route }) => {
     <ScrollView>
       <View style={styles.container}>
         <View style={styles.curvedBackground}>
+        <Text>{data.userProfileId}</Text>
           <ImageBackground
             source={require('../assets/123.jpeg')}
             style={styles.backgroundImage}
@@ -310,8 +308,8 @@ const ProfileScreenEdit = ({ route }) => {
             <Text style={styles.sectionTitle}>Pin Code</Text>
             <TextInput
               style={styles.sectionContent}
-              value={pinCode}
-              onChangeText={setpinCode}
+              value={pincode}
+              onChangeText={setpincode}
               keyboardType="numeric"
             />
           </View>
