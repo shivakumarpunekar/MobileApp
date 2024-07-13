@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const GraphPage = () => {
@@ -7,20 +7,28 @@ const GraphPage = () => {
     const [data2, setData2] = useState([]);
     const [data3, setData3] = useState([]);
     const [labels, setLabels] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await fetch('http://10.0.2.2:2030/api/sensor_data'); // Adjust URL as needed
                 const result = await response.json();
+                console.log('API Response:', result); // Log the API response
                 processData(result);
             } catch (error) {
                 console.error('Failed to fetch sensor data:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
     }, []);
+
+    const isValidNumber = (value) => {
+        return typeof value === 'number' && !isNaN(value);
+    };
 
     const processData = (data) => {
         const sensor1Data = [];
@@ -28,29 +36,76 @@ const GraphPage = () => {
         const valveStatusData = [];
         const timeLabels = [];
 
+        // Group data by different time intervals
+        const hourlyData = groupDataByHour(data);
+        const dailyData = groupDataByDay(data);
+        const monthlyData = groupDataByMonth(data);
+        const yearlyData = groupDataByYear(data);
+
+        // Set state for the desired interval (e.g., dailyData)
+        setData1(hourlyData.sensor1Data);
+        setData2(hourlyData.sensor2Data);
+        setData3(hourlyData.valveStatusData);
+        setLabels(hourlyData.timeLabels);
+    };
+
+    // Helper function to group data by hour
+    const groupDataByHour = (data) => {
+        const sensor1Data = [];
+        const sensor2Data = [];
+        const valveStatusData = [];
+        const timeLabels = [];
+
         data.forEach(item => {
             const date = new Date(item.timestamp);
-            //This is a Y-axis
             const formattedTime = `${date.getHours()}:${date.getMinutes()}`;
-            //This is a X-axis
-            const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 
-            sensor1Data.push(item.sensor1_value);
-            sensor2Data.push(item.sensor2_value);
-            valveStatusData.push(item.solenoidValveStatus);
-            timeLabels.push(formattedTime);
+            if (isValidNumber(item.sensor1_value) && isValidNumber(item.sensor2_value) && isValidNumber(item.solenoidValveStatus)) {
+                sensor1Data.push(item.sensor1_value);
+                sensor2Data.push(item.sensor2_value);
+                valveStatusData.push(item.solenoidValveStatus);
+                timeLabels.push(formattedTime);
+            } else {
+                console.warn('Invalid data point encountered', item);
+            }
         });
 
-        setData1(sensor1Data);
-        setData2(sensor2Data);
-        setData3(valveStatusData);
-        setLabels(timeLabels);
+        return { sensor1Data, sensor2Data, valveStatusData, timeLabels };
     };
+
+    // Helper function to group data by day
+    const groupDataByDay = (data) => {
+        // Implement grouping logic by day
+        // Return sensor data and labels grouped by day
+    };
+
+    // Helper function to group data by month
+    const groupDataByMonth = (data) => {
+        // Implement grouping logic by month
+        // Return sensor data and labels grouped by month
+    };
+
+    // Helper function to group data by year
+    const groupDataByYear = (data) => {
+        // Implement grouping logic by year
+        // Return sensor data and labels grouped by year
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#00ff00" />
+                <Text style={styles.loaderText}>Loading data...</Text>
+            </View>
+        );
+    }
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Device 1</Text>
+            <Text style={styles.title}>Device Data</Text>
 
+            {/* Render your charts here using data1, data2, data3, and labels */}
+            {/* Example for Sensor-1 */}
             <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Sensor-1</Text>
                 <LineChart
@@ -73,6 +128,7 @@ const GraphPage = () => {
                 />
             </View>
 
+            {/* Example for Sensor-2 */}
             <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Sensor-2</Text>
                 <LineChart
@@ -95,6 +151,7 @@ const GraphPage = () => {
                 />
             </View>
 
+            {/* Example for Valve Status */}
             <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Valve Status</Text>
                 <LineChart
@@ -148,19 +205,40 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
+        color: '#333',
     },
     chartContainer: {
         marginBottom: 20,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
     },
     chartTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 10,
+        color: '#555',
     },
     chartStyle: {
         marginVertical: 8,
         borderRadius: 16,
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F6F3E7',
+    },
+    loaderText: {
+        marginTop: 10,
+        fontSize: 18,
+        color: '#555',
     },
 });
 
