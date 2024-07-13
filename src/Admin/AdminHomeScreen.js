@@ -33,7 +33,7 @@ const AdminHomeScreen = () => {
         <Text style={styles.cell}>{item.userName}</Text>
         <Text style={styles.cell}>{item.mobileNumber}</Text>
         <Text style={styles.cell}>{item.deviceId}</Text>
-        <Text style={styles.cell}>{item.createdDate}</Text>
+        <Text style={styles.cell}>{formattedDate}</Text>
         <Text style={styles.cell}>{item.sensor_1}</Text>
         <Text style={styles.cell}>{item.sensor_2}</Text>
         <Text style={styles.cell}>{item.valveId}</Text>
