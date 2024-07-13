@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { PieChart } from 'react-native-svg-charts';
 import { G, Text as SvgText } from 'react-native-svg';
+import Modal from 'react-native-modal';
 
 const PiChartScreen = () => {
   const [data, setData] = useState([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     // Fetch data from the API
@@ -35,7 +38,8 @@ const PiChartScreen = () => {
   };
 
   const handlePieChartClick = (item) => {
-    Alert.alert(`Date: ${item.createdDate}`, `Count: ${item.count}`);
+    setSelectedItem(item);
+    setModalVisible(true);
   };
 
   const Labels = ({ slices }) => {
@@ -96,6 +100,23 @@ const PiChartScreen = () => {
           ))}
         </ScrollView>
       </View>
+      <Modal isVisible={isModalVisible}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Registration Details</Text>
+          {selectedItem && (
+            <>
+              <Text style={styles.modalText}>Date: {selectedItem.createdDate}</Text>
+              <Text style={styles.modalText}>Count: {selectedItem.count}</Text>
+            </>
+          )}
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -126,6 +147,31 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   legendText: {
+    fontSize: 16
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center'
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10
+  },
+  modalText: {
+    fontSize: 16,
+    marginVertical: 5
+  },
+  closeButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#2196F3',
+    borderRadius: 5
+  },
+  closeButtonText: {
+    color: 'white',
     fontSize: 16
   }
 });

@@ -23,6 +23,7 @@ import RegistrationPage from './src/RegistationPage';
 import ProfileScreenEdit from './src/ProfileScreenEdit';
 import AdminHome from './src/Admin/AdminHome';
 import ChartScreen from './src/Admin/Chart';
+import GraphPage from './src/Admin/GraphPage ';
 
 const Stack = createStackNavigator();
 
@@ -106,6 +107,12 @@ function App(): React.JSX.Element {
               options={{ headerTitle: 'Chart' }}
             />
             
+            <Stack.Screen
+              name="GraphPage" //This is for Admin Graph Page
+              component={GraphPage}
+              options={{ headerTitle: 'device 1' }}
+            />
+
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Button } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 
 const SensorData = () => {
     const [data, setData] = useState([]);
+    const navigation = useNavigation();
 
     const fetchSensorData = async () => {
         try {
@@ -23,18 +25,23 @@ const SensorData = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Sensor Data</Text>
+            <View style={styles.header}>
+                <Text style={styles.title}>Sensor Data</Text>
+                <Button 
+                    title="Go to Graph" 
+                    onPress={() => navigation.navigate('GraphPage')} 
+                />
+            </View>
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={styles.itemContainer}>
-                        <Text style={styles.itemText}>ID: {item.id}</Text>
-                        <Text style={styles.itemText}>Sensor1 Value: {item.sensor1_value}</Text>
-                        <Text style={styles.itemText}>Sensor2 Value: {item.sensor2_value}</Text>
                         <Text style={styles.itemText}>Device Id: {item.deviceId}</Text>
-                        <Text style={styles.itemText}>Solenoid Valve Status: {item.solenoidValveStatus}</Text>
-                        <Text style={styles.itemText}>Created Date: {(item.timestamp)}</Text>
+                        <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
+                        <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
+                        <Text style={styles.itemText}>Valve Status: {item.solenoidValveStatus}</Text>
+                        <Text style={styles.itemText}>Date Time: {(item.timestamp)}</Text>
                     </View>
                 )}
             />
@@ -48,10 +55,15 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#F6F3E7',
     },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20,
     },
     itemContainer: {
         marginBottom: 20,
