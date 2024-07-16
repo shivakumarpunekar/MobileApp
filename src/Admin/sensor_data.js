@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet, Button } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const SensorData = () => {
     const [data, setData] = useState([]);
     const navigation = useNavigation();
+    const route = useRoute();
+    const { deviceId } = route.params;
 
     const fetchSensorData = async () => {
         try {
-            const response = await fetch('http://10.0.2.2:2030/api/sensor_data');
+            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}`);
             const result = await response.json();
             const latestData = result.slice(0, 30);
             setData(latestData);
@@ -26,10 +28,10 @@ const SensorData = () => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Sensor Data</Text>
+                <Text style={styles.title}>Device {deviceId}</Text>
                 <Button 
                     title="Go to Graph" 
-                    onPress={() => navigation.navigate('GraphPage')} 
+                    onPress={() => navigation.navigate('GraphPage', { deviceId })} 
                 />
             </View>
             <FlatList
@@ -41,7 +43,7 @@ const SensorData = () => {
                         <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
                         <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
                         <Text style={styles.itemText}>Valve Status: {item.solenoidValveStatus}</Text>
-                        <Text style={styles.itemText}>Date Time: {(item.timestamp)}</Text>
+                        <Text style={styles.itemText}>Date Time: {item.timestamp}</Text>
                     </View>
                 )}
             />
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 16,
-        color:'#000'
+        color: '#000',
     },
 });
 
