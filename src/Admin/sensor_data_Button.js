@@ -23,7 +23,7 @@ const SensorDataButton = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Sensor Data Button</Text>
+      <Text style={styles.headerText}>Device Detail Links</Text>
       {data
         .map(item => item.deviceId)
         .filter((value, index, self) => self.indexOf(value) === index) // Unique device IDs
