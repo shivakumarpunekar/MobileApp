@@ -23,6 +23,7 @@ import RegistrationPage from './src/RegistationPage';
 import ProfileScreenEdit from './src/ProfileScreenEdit';
 import AdminHome from './src/Admin/AdminHome';
 import ChartScreen from './src/Admin/Chart';
+import SensorData from './src/Admin/sensor_data';
 import GraphPage from './src/Admin/GraphPage ';
 
 const Stack = createStackNavigator();
@@ -106,6 +107,13 @@ function App(): React.JSX.Element {
               component={ChartScreen}
               options={{ headerTitle: 'Chart' }}
             />
+
+            <Stack.Screen
+              name="SensorData" //This is for Admin SensorData Page
+              component={SensorData}
+              options={{ headerTitle: 'device 1' }}
+            />
+
             
             <Stack.Screen
               name="GraphPage" //This is for Admin Graph Page

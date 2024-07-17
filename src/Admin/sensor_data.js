@@ -23,7 +23,7 @@ const SensorData = () => {
         fetchSensorData();
         const intervalId = setInterval(fetchSensorData, 10000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [deviceId]);
 
     return (
         <View style={styles.container}>

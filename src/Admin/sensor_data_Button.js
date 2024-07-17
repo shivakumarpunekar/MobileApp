@@ -1,55 +1,61 @@
-import React, { useEffect, useState } from "react";
-import { View, Button, ActivityIndicator, StyleSheet } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Button, StyleSheet, ScrollView, Text } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
 const SensorDataButton = () => {
-    const [devices, setDevices] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const navigation = useNavigation();
+  const [data, setData] = useState([]);
+  const navigation = useNavigation();
 
-    useEffect(() => {
-        const fetchDevices = async () => {
-            try {
-                const response = await axios.get('http://localhost:2030/api/sensor_data');
-                setDevices(response.data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    axios.get('http://10.0.2.2:2030/api/sensor_data')
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
-        fetchDevices();
-    }, []);
+  const handleButtonPress = (deviceId) => {
+    navigation.navigate('SensorData', { deviceId });
+  };
 
-    if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
-    const handleDevicePress = (deviceId) => {
-        navigation.navigate('SensorData', { deviceId });
-    };
-
-    return (
-        <View style={styles.container}>
-            {devices.map(device => (
-                <Button
-                    key={device.deviceId}
-                    title={`Device ${device.deviceId}`}
-                    onPress={() => handleDevicePress(device.deviceId)}
-                />
-            ))}
-        </View>
-    );
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.headerText}>Sensor Data Button</Text>
+      {data
+        .map(item => item.deviceId)
+        .filter((value, index, self) => self.indexOf(value) === index) // Unique device IDs
+        .sort((a, b) => a - b) // Sort in ascending order
+        .map(deviceId => (
+          <View key={deviceId} style={styles.buttonContainer}>
+            <Button
+              title={`Device ${deviceId}`}
+              onPress={() => handleButtonPress(deviceId)}
+            />
+          </View>
+        ))
+      }
+    </ScrollView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    margin: 10,
+  },
 });
 
 export default SensorDataButton;
