@@ -25,20 +25,32 @@ const SensorData = () => {
         return () => clearInterval(intervalId);
     }, []);
 
+    const renderItemContainerStyle = (sensor1, sensor2) => {
+        // Conditionally determine the background color based on sensor values
+        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
+            (sensor1 <= 1250 && sensor2 <= 1250) ||
+            (sensor1 >= 4000 && sensor2 <= 1250) ||
+            (sensor1 <= 1250 && sensor2 >= 4000)) {
+            return styles.itemContainerRed; // Red background
+        } else {
+            return styles.itemContainerGreen; // Green background
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Device {deviceId}</Text>
-                <Button 
-                    title="Go to Graph" 
-                    onPress={() => navigation.navigate('GraphPage', { deviceId })} 
+                <Button
+                    title="Go to Graph"
+                    onPress={() => navigation.navigate('GraphPage', { deviceId })}
                 />
             </View>
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <View style={styles.itemContainer}>
+                    <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
                         <Text style={styles.itemText}>Device Id: {item.deviceId}</Text>
                         <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
                         <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
@@ -70,7 +82,6 @@ const styles = StyleSheet.create({
     itemContainer: {
         marginBottom: 20,
         padding: 10,
-        backgroundColor: '#fff',
         borderRadius: 8,
         // Shadow for iOS
         shadowColor: '#000',
@@ -79,6 +90,12 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         // Shadow for Android
         elevation: 8,
+    },
+    itemContainerGreen: {
+        backgroundColor: '#7fff00', // Default green background
+    },
+    itemContainerRed: {
+        backgroundColor: '#ff0000', // Red background for specific condition
     },
     itemText: {
         fontSize: 16,

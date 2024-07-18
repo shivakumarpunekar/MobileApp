@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
+import { Path } from 'react-native-svg';
 import * as scale from 'd3-scale';
 
 const GraphPage = ({ route }) => {
@@ -11,7 +12,7 @@ const GraphPage = ({ route }) => {
     const [xLabels, setXLabels] = useState([]);
 
     useEffect(() => {
-        const startDateISO = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
+        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
         const endDateISO = new Date().toISOString(); // current date and time
 
         // Fetch historical data for the last 7 days
@@ -20,7 +21,7 @@ const GraphPage = ({ route }) => {
         // Start fetching live data (assuming it's updating in real-time)
         const liveDataInterval = setInterval(() => {
             fetchLiveData(deviceId);
-        }, 5000); // Fetch live data every 5 seconds (adjust as needed)
+        }, 10000); // Fetch live data every 10 seconds
 
         // Clean up interval on component unmount
         return () => clearInterval(liveDataInterval);
@@ -34,14 +35,11 @@ const GraphPage = ({ route }) => {
             }
 
             const data = await response.json();
-            setHistoricalData(data);
+            setHistoricalData(data.reverse());
 
             if (data.length > 0) {
                 const timestamps = data.map(entry => new Date(entry.timestamp));
-                const xLabels = timestamps.map((timestamp, index) => {
-                    const timeStr = `${timestamp.getHours()}:${timestamp.getMinutes()}`;
-                    return index === 0 ? 'Now' : timeStr;
-                });
+                const xLabels = timestamps.map(timestamp => `${timestamp.getHours()}:${String(timestamp.getMinutes()).padStart(2, '0')}`);
                 setXLabels(xLabels);
             } else {
                 console.warn('No historical data received');
@@ -72,15 +70,24 @@ const GraphPage = ({ route }) => {
     };
 
     useEffect(() => {
-        setLoading(!(historicalData.length > 0 && liveData.length > 0));
+        setLoading(historicalData.length === 0 && liveData.length === 0);
     }, [historicalData, liveData]);
 
     // Combine historical and live data for display
     const allData = [...historicalData, ...liveData];
 
-    // Extracting timestamps and sensor values for chart
-    const timestamps = allData.map(entry => new Date(entry.timestamp));
-    const sensorValues = allData.map(entry => entry.sensor1_value);
+    // Extracting sensor values for the chart
+    const sensor1Values = allData.map(entry => entry.sensor1_value);
+    const sensor2Values = allData.map(entry => entry.sensor2_value);
+
+    const Line = ({ line, color }) => (
+        <Path
+            key={'line'}
+            d={line}
+            stroke={color}
+            fill={'none'}
+        />
+    );
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -88,32 +95,62 @@ const GraphPage = ({ route }) => {
             {loading ? (
                 <ActivityIndicator size="large" color="blue" />
             ) : (
-                <View style={{ flexDirection: 'row', height: 200, width: '80%' }}>
-                    <YAxis
-                        data={sensorValues}
-                        style={{ marginBottom: 30 }}
-                        contentInset={{ top: 20, bottom: 20 }}
-                        svg={{ fontSize: 10, fill: 'grey' }}
-                    />
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                        <LineChart
-                            style={{ flex: 1, fontSize: 30 }}
-                            data={sensorValues}
-                            svg={{ stroke: 'green' }}
+                <>
+                    <View style={{ flexDirection: 'row', height: 200, width: '80%' }}>
+                        <YAxis
+                            data={sensor1Values}
+                            style={{ marginBottom: 30 }}
                             contentInset={{ top: 20, bottom: 20 }}
-                        >
-                            <Grid />
-                        </LineChart>
-                        <XAxis
-                            style={{ marginHorizontal: -10, height: 30 }}
-                            data={sensorValues}
-                            scale={scale.scaleBand}
-                            formatLabel={(value, index) => xLabels[index]}
-                            contentInset={{ left: 10, right: 10 }}
-                            svg={{ fontSize: 10, fill: 'black' }}
+                            svg={{ fontSize: 10, fill: 'grey' }}
                         />
+                        <View style={{ flex: 1, marginLeft: 10 }}>
+                            <LineChart
+                                style={{ flex: 1 }}
+                                data={sensor1Values}
+                                svg={{ stroke: 'green' }}
+                                contentInset={{ top: 20, bottom: 20 }}
+                            >
+                                <Grid />
+                                <Line color='green' />
+                            </LineChart>
+                            <XAxis
+                                style={{ marginHorizontal: -10, height: 30 }}
+                                data={sensor1Values}
+                                scale={scale.scaleBand}
+                                formatLabel={(value, index) => xLabels[index]}
+                                contentInset={{ left: 10, right: 10 }}
+                                svg={{ fontSize: 10, fill: 'black' }}
+                            />
+                        </View>
                     </View>
-                </View>
+                    <View style={{ flexDirection: 'row', height: 200, width: '80%', marginTop: 20 }}>
+                        <YAxis
+                            data={sensor2Values}
+                            style={{ marginBottom: 30 }}
+                            contentInset={{ top: 20, bottom: 20 }}
+                            svg={{ fontSize: 10, fill: 'grey' }}
+                        />
+                        <View style={{ flex: 1, marginLeft: 10 }}>
+                            <LineChart
+                                style={{ flex: 1 }}
+                                data={sensor2Values}
+                                svg={{ stroke: 'blue' }}
+                                contentInset={{ top: 20, bottom: 20 }}
+                            >
+                                <Grid />
+                                <Line color='blue' />
+                            </LineChart>
+                            <XAxis
+                                style={{ marginHorizontal: -10, height: 30 }}
+                                data={sensor2Values}
+                                scale={scale.scaleBand}
+                                formatLabel={(value, index) => xLabels[index]}
+                                contentInset={{ left: 10, right: 10 }}
+                                svg={{ fontSize: 10, fill: 'black' }}
+                            />
+                        </View>
+                    </View>
+                </>
             )}
         </View>
     );

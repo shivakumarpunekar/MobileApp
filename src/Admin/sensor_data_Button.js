@@ -35,15 +35,27 @@ const SensorDataButton = () => {
 
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
-        {row.map(deviceId => (
-          <TouchableOpacity
-            key={deviceId}
-            style={styles.button}
-            onPress={() => handleButtonPress(deviceId)}
-          >
-            <Text style={styles.buttonText}>{`Device ${deviceId}`}</Text>
-          </TouchableOpacity>
-        ))}
+        {row.map(deviceId => {
+          const deviceData = data.filter(item => item.deviceId === deviceId);
+          const sensor1 = deviceData.length ? deviceData[0].sensor1_value : 0;
+          const sensor2 = deviceData.length ? deviceData[0].sensor2_value : 0;
+          
+          const backgroundColor = (sensor1 >= 4000 && sensor2 >= 4000) ||
+                                  (sensor1 <= 1250 && sensor2 <= 1250) ||
+                                  (sensor1 >= 4000 && sensor2 <= 1250) ||
+                                  (sensor1 <= 1250 && sensor2 >= 4000) ? 
+                                  '#ff0000' : '#7fff00'; // Red or green based on conditions
+
+          return (
+            <TouchableOpacity
+              key={deviceId}
+              style={[styles.button, { backgroundColor }]}
+              onPress={() => handleButtonPress(deviceId)}
+            >
+              <Text style={styles.buttonText}>{`Device ${deviceId}`}</Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     ));
   };
@@ -75,7 +87,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#BFA100',
     padding: 10,
     borderRadius: 5,
     margin: 5,
