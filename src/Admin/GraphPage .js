@@ -11,7 +11,7 @@ const GraphPage = ({ route }) => {
     const [xLabels, setXLabels] = useState([]);
 
     useEffect(() => {
-        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
+        const startDateISO = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
         const endDateISO = new Date().toISOString(); // current date and time
 
         // Fetch historical data for the last 7 days
@@ -22,12 +22,13 @@ const GraphPage = ({ route }) => {
             fetchLiveData(deviceId);
         }, 5000); // Fetch live data every 5 seconds (adjust as needed)
 
-        return () => clearInterval(liveDataInterval); // Clean up interval on component unmount
+        // Clean up interval on component unmount
+        return () => clearInterval(liveDataInterval);
     }, [deviceId]);
 
     const fetchHistoricalData = async (deviceId, startDateISO, endDateISO) => {
         try {
-            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}`);
+            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}/last7days`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -52,7 +53,7 @@ const GraphPage = ({ route }) => {
 
     const fetchLiveData = async (deviceId) => {
         try {
-            const response = await fetch(`http://10.0.2.2:2030/api/live_sensor_data/device/${deviceId}`);
+            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -79,7 +80,7 @@ const GraphPage = ({ route }) => {
 
     // Extracting timestamps and sensor values for chart
     const timestamps = allData.map(entry => new Date(entry.timestamp));
-    const sensorValues = allData.map(entry => entry.sensorValue);
+    const sensorValues = allData.map(entry => entry.sensor1_value);
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -96,9 +97,9 @@ const GraphPage = ({ route }) => {
                     />
                     <View style={{ flex: 1, marginLeft: 10 }}>
                         <LineChart
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, fontSize: 30 }}
                             data={sensorValues}
-                            svg={{ stroke: 'rgb(134, 65, 244)' }}
+                            svg={{ stroke: 'green' }}
                             contentInset={{ top: 20, bottom: 20 }}
                         >
                             <Grid />
