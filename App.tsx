@@ -24,6 +24,7 @@ import AdminHome from './src/Admin/AdminHome';
 import ChartScreen from './src/Admin/Chart';
 import SensorData from './src/Admin/sensor_data';
 import GraphPage from './src/Admin/GraphPage ';
+import UserDeviceRegistation from './src/Admin/UserDeviceRegistation';
 
 const Stack = createStackNavigator();
 
@@ -120,6 +121,12 @@ function App(): React.JSX.Element {
               name="GraphPage" //This is for Admin Graph Page
               component={GraphPage}
               options={{ headerTitle: 'Graph' }}
+            />
+
+            <Stack.Screen
+              name="UserDeviceRegistation" //This is for Admin device registation Page
+              component={UserDeviceRegistation}
+              options={{ headerTitle: 'Device Registation' }}
             />
 
           </Stack.Navigator>

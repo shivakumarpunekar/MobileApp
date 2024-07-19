@@ -1,119 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, Alert, TouchableOpacity } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity } from "react-native";
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Import the icon library
 
-const UserDevice = () => {
-    const [usernames, setUsernames] = useState([]);
-    const [devices, setDevices] = useState([]);
-    const [selectedUsername, setSelectedUsername] = useState('');
-    const [selectedDeviceId, setSelectedDeviceId] = useState('');
-    const [isActivated, setIsActivated] = useState(false);
+const UserDevice = ({ navigation }) => {
+    const [userProfiles, setUserProfiles] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredDevice, setFilteredProfiles] = useState([]);
 
     useEffect(() => {
-        axios.get('http://10.0.2.2:2030/api/UserDevice')
-            .then(response => {
-                setUsernames(response.data.usernames);
-                setDevices(response.data.devices);
-            })
-            .catch(error => {
-                console.error('Error fetching data from API:', error);
-            });
+        fetchUserProfiles();
     }, []);
 
-    const handleSubmit = () => {
-        const payload = {
-            username: selectedUsername,
-            deviceId: selectedDeviceId,
-            status: isActivated ? 'Active' : 'Inactive',
-        };
+    useEffect(() => {
+        filterProfiles();
+    }, [searchQuery, userProfiles]);
 
-        axios.post('http://10.0.2.2:2030/api/UserDevice', payload)
-            .then(response => {
-                Alert.alert('Success', 'User Device has been updated successfully.');
-            })
-            .catch(error => {
-                console.error('Error submitting data:', error);
-                Alert.alert('Error', 'There was an error updating the User Device.');
-            });
+    const fetchUserProfiles = async () => {
+        try {
+            const response = await fetch('http://10.0.2.2:2030/api/UserDevice');
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            const data = await response.json();
+            setUserProfiles(data);
+            setFilteredProfiles(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     };
+
+    const filterProfiles = () => {
+        if (!searchQuery) {
+            setFilteredProfiles(userProfiles);
+            return;
+        }
+        const query = searchQuery.toLowerCase();
+        const filtered = userProfiles.filter(profile =>
+            Object.values(profile).some(value =>
+                String(value).toLowerCase().includes(query)
+            )
+        );
+        setFilteredProfiles(filtered);
+    };
+
+    const renderUserdevice = ({ item, index }) => (
+        <View style={[styles.userDeviceRow, { backgroundColor: index % 2 === 0 ? '#fff' : '#F6F3E7' }]}>
+            <Text style={[styles.cell]}>{item.profileId}</Text>
+            <Text style={[styles.cell]}>{item.sensor_dataId}</Text>
+            <Text style={[styles.cell]}>{item.deviceStatus ? 'On' : 'Off'}</Text>
+            <Text style={[styles.cell]}>{item.createdDate}</Text>
+        </View>
+    );
+
+    const keyExtractor = (item, index) => index.toString();
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>Username:</Text>
-            <Picker
-                selectedValue={selectedUsername}
-                onValueChange={(itemValue) => setSelectedUsername(itemValue)}
-                style={styles.picker}
-            >
-            </Picker>
-
-            <Text style={styles.label}>Device ID:</Text>
-            <Picker
-                selectedValue={selectedDeviceId}
-                onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
-                style={styles.picker}
-            >
-            </Picker>
-
-            <Text style={styles.label}>Status:</Text>
-            <Text style={styles.statusText}>{isActivated ? 'On' : 'Off'}</Text>
-            <Switch
-                onValueChange={setIsActivated}
-                value={isActivated}
-                thumbColor={isActivated ? '#4CAF50' : '#f4f3f4'}
-                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                style={styles.switch}
+            <Text style={styles.header}>User Device</Text>
+            <TextInput
+                style={styles.searchBar}
+                placeholder="Search"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
             />
+            <ScrollView horizontal>
+                <View style={{ flex: 1 }}>
+                    <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
+                        <Text style={[styles.headerCell, { width: 100 }]}>profileId</Text>
+                        <Text style={[styles.headerCell, { width: 100 }]}>sensor_dataId</Text>
+                        <Text style={[styles.headerCell, { width: 100 }]}>deviceStatus</Text>
+                        <Text style={[styles.headerCell, { width: 100 }]}>createdDate</Text>
+                    </View>
+                    <FlatList
+                        data={filteredDevice}
+                        renderItem={renderUserdevice}
+                        keyExtractor={keyExtractor}
+                        style={{ flex: 1 }}
+                    />
+                </View>
+            </ScrollView>
 
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
+            {/* Floating Action Button */}
+            <TouchableOpacity
+                style={styles.floatingButton}
+                onPress={() => navigation.navigate('UserDeviceRegistation')}
+            >
+                <Icon name="add" size={24} color="#fff" />
             </TouchableOpacity>
         </View>
     );
 };
 
+const windowWidth = Dimensions.get('window').width;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#F6F3E7'
+        padding: 20,
     },
-    label: {
-        fontSize: 16,
+    header: {
+        fontSize: 30,
         fontWeight: 'bold',
-        marginVertical: 8,
-        color: '#333',
+        marginBottom: 20,
     },
-    picker: {
-        height: 50,
-        width: '100%',
-        backgroundColor: '#fff',
-        borderColor: '#ccc',
+    searchBar: {
+        height: 40,
+        borderColor: 'gray',
         borderWidth: 1,
-        borderRadius: 8,
-        marginVertical: 8,
+        marginBottom: 20,
+        paddingHorizontal: 10,
     },
-    statusText: {
-        fontSize: 18,
+    headerRow: {
+        flexDirection: 'row',
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    headerCell: {
+        flex: 1,
         fontWeight: 'bold',
-        color: '#333',
-        marginVertical: 8,
+        color: '#000',
+        fontSize: 15,
+        textAlign: 'center',
+        paddingVertical: 10,
     },
-    switch: {
-        marginVertical: 8,
+    userDeviceRow: {
+        flexDirection: 'row',
+        paddingVertical: 10,
+        borderBottomWidth: 1, // Line between rows
+        borderBottomColor: '#ccc',
     },
-    button: {
+    cell: {
+        flex: 1,
+        padding: 10,
+        fontSize: 15,
+        textAlign: 'center',
+        paddingVertical: 10,
+        width: 100,
+    },
+    floatingButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
         backgroundColor: '#BFA100',
-        borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
+        borderRadius: 50,
+        padding: 15,
         alignItems: 'center',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+        justifyContent: 'center',
+        elevation: 8,
     },
 });
 
