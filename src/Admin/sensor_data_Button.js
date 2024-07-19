@@ -39,12 +39,12 @@ const SensorDataButton = () => {
           const deviceData = data.filter(item => item.deviceId === deviceId);
           const sensor1 = deviceData.length ? deviceData[0].sensor1_value : 0;
           const sensor2 = deviceData.length ? deviceData[0].sensor2_value : 0;
-          
+
           const backgroundColor = (sensor1 >= 4000 && sensor2 >= 4000) ||
-                                  (sensor1 <= 1250 && sensor2 <= 1250) ||
-                                  (sensor1 >= 4000 && sensor2 <= 1250) ||
-                                  (sensor1 <= 1250 && sensor2 >= 4000) ? 
-                                  '#ff0000' : '#7fff00'; // Red or green based on conditions
+            (sensor1 <= 1250 && sensor2 <= 1250) ||
+            (sensor1 >= 4000 && sensor2 <= 1250) ||
+            (sensor1 <= 1250 && sensor2 >= 4000) ?
+            '#ff0000' : '#7fff00'; // Red or green based on conditions
 
           return (
             <TouchableOpacity
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f8f8ff'
+    backgroundColor: '#F6F3E7'
   },
   headerText: {
     fontSize: 24,

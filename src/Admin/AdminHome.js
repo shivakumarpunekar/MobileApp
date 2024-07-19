@@ -5,12 +5,13 @@ import AdminHomeScreen from "./AdminHomeScreen";
 import AdminProfileScreen from "./AdminProfileScreen";
 import PiChartScreen from "./PiChartScreen";
 import SensorDataButton from "./sensor_data_Button";
+import UserDevice from "./UserDevice";
 
 const Tab = createBottomTabNavigator();
 
 const AdminHome = () => {
     return (
-        <Tab.Navigator 
+        <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
@@ -18,10 +19,12 @@ const AdminHome = () => {
                         iconName = focused ? 'home' : 'home';
                     } else if (route.name === 'AdminProfileScreen') {
                         iconName = focused ? 'user' : 'user';
-                    }  else if (route.name == 'PiChartScreen') {
-                        iconName =focused ? 'pie-chart' : 'pie-chart';
+                    } else if (route.name == 'PiChartScreen') {
+                        iconName = focused ? 'pie-chart' : 'pie-chart';
                     } else if (route.name == 'SensorDataButton') {
-                        iconName =focused ? 'tachometer' : 'tachometer';
+                        iconName = focused ? 'tachometer' : 'tachometer';
+                    } else if (route.name == 'userdevice') {
+                        iconName = focused ? 'user' : 'user';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;
@@ -36,6 +39,7 @@ const AdminHome = () => {
             <Tab.Screen name="AdminProfileScreen" component={AdminProfileScreen} options={{ headerShown: false }} />
             <Tab.Screen name="PiChartScreen" component={PiChartScreen} options={{ headerShown: false }} />
             <Tab.Screen name="SensorDataButton" component={SensorDataButton} options={{ headerShown: false }} />
+            <Tab.Screen name="UserDevice" component={UserDevice} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
 };
