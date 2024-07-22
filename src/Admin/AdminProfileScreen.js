@@ -34,8 +34,8 @@ const AdminProfileScreen = () => {
       return;
     }
     const query = searchQuery.toLowerCase();
-    const filtered = userProfiles.filter(profile => 
-      Object.values(profile).some(value => 
+    const filtered = userProfiles.filter(profile =>
+      Object.values(profile).some(value =>
         String(value).toLowerCase().includes(query)
       )
     );
@@ -47,7 +47,7 @@ const AdminProfileScreen = () => {
       <Text style={[styles.cell]}>{item.firstName}</Text>
       <Text style={[styles.cell]}>{item.middleName}</Text>
       <Text style={[styles.cell]}>{item.lastName}</Text>
-      <Text style={[styles.cell, {width: 250}]}>{item.email}</Text>
+      <Text style={[styles.cell, { width: 250 }]}>{item.email}</Text>
       <Text style={[styles.cell]}>{item.mobileNumber}</Text>
       <Text style={[styles.cell]}>{item.dateOfBirth}</Text>
       <Text style={[styles.cell]}>{item.userName}</Text>
@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#F6F3E7'
   },
   header: {
     fontSize: 30,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     paddingVertical: 10,
-    width: 100, 
+    width: 100,
   },
 });
 

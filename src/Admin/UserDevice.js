@@ -47,7 +47,7 @@ const UserDevice = ({ navigation }) => {
         <View style={[styles.userDeviceRow, { backgroundColor: index % 2 === 0 ? '#fff' : '#F6F3E7' }]}>
             <Text style={[styles.cell]}>{item.profileId}</Text>
             <Text style={[styles.cell]}>{item.sensor_dataId}</Text>
-            <Text style={[styles.cell]}>{item.deviceStatus ? 'On' : 'Off'}</Text>
+            <Text style={[styles.cell]}>{item.deviceStatus}</Text>
             <Text style={[styles.cell]}>{item.createdDate}</Text>
         </View>
     );
@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: '#F6F3E7'
     },
     header: {
         fontSize: 30,

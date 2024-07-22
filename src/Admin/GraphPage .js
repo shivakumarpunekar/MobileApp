@@ -14,7 +14,7 @@ const GraphPage = ({ route }) => {
     const screenHeight = Dimensions.get('window').height;
 
     useEffect(() => {
-        const startDateISO = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 days ago
+        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 2 days ago
         const endDateISO = new Date().toISOString(); // current date and time
 
         // Fetch historical data for the last 2 days
@@ -88,11 +88,18 @@ const GraphPage = ({ route }) => {
     const sensor2Values = allData.map(entry => entry.sensor2_value);
 
     // Function to determine line color based on sensor values
-    const getLineColor = (sensor1, sensor2) => {
-        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
-            (sensor1 <= 1250 && sensor2 <= 1250) ||
-            (sensor1 >= 4000 && sensor2 <= 1250) ||
-            (sensor1 <= 1250 && sensor2 >= 4000)) {
+    const getLineColor = (sensor1) => {
+        if ((sensor1 >= 4000) ||
+            (sensor1 <= 1250)) {
+            return 'red';
+        } else {
+            return 'green';
+        }
+    };
+
+    const getLineColor2 = (sensor2) => {
+        if ((sensor2 >= 4000) ||
+            (sensor2 <= 1250)) {
             return 'red';
         } else {
             return 'green';
@@ -100,11 +107,18 @@ const GraphPage = ({ route }) => {
     };
 
     // Function to determine chart background color based on sensor values
-    const getChartBackgroundColor = (sensor1Values, sensor2Values) => {
-        if ((sensor1Values >= 4000 && sensor2Values >= 4000) ||
-            (sensor1Values <= 1250 && sensor2Values <= 1250) ||
-            (sensor1Values >= 4000 && sensor2Values <= 1250) ||
-            (sensor1Values <= 1250 && sensor2Values >= 4000)) {
+    const getChartBackgroundColor = (sensor1Values) => {
+        if ((sensor1Values >= 4000) ||
+            (sensor1Values <= 1250)) {
+            return '#FFCDD2'; // Light red background
+        } else {
+            return '#C8E6C9'; // Light green background
+        }
+    };
+
+    const getChartBackgroundColor2 = (sensor2Values) => {
+        if ((sensor2Values >= 4000) ||
+            (sensor2Values <= 1250)) {
             return '#FFCDD2'; // Light red background
         } else {
             return '#C8E6C9'; // Light green background
@@ -122,7 +136,7 @@ const GraphPage = ({ route }) => {
                             Sensor-1 Values
                         </Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1Values[0], sensor2Values[0]), width: screenWidth - 40 }]}>
+                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1Values[0]), width: screenWidth - 40 }]}>
                                 <YAxis
                                     data={sensor1Values}
                                     style={styles.yAxis}
@@ -133,7 +147,7 @@ const GraphPage = ({ route }) => {
                                     <LineChart
                                         style={styles.lineChart}
                                         data={sensor1Values}
-                                        svg={{ stroke: getLineColor(sensor1Values[0], sensor2Values[0]) }}
+                                        svg={{ stroke: getLineColor(sensor1Values[0]) }}
                                         contentInset={styles.contentInset}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />
@@ -153,7 +167,7 @@ const GraphPage = ({ route }) => {
                             Sensor-2 Values
                         </Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor1Values[0], sensor2Values[0]), width: screenWidth - 40 }]}>
+                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor2(sensor2Values[0]), width: screenWidth - 40 }]}>
                                 <YAxis
                                     data={sensor2Values}
                                     style={styles.yAxis}
@@ -164,7 +178,7 @@ const GraphPage = ({ route }) => {
                                     <LineChart
                                         style={styles.lineChart}
                                         data={sensor2Values}
-                                        svg={{ stroke: getLineColor(sensor2Values[0]) }}
+                                        svg={{ stroke: getLineColor2(sensor2Values[0]) }}
                                         contentInset={styles.contentInset}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />
@@ -214,7 +228,7 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     yAxis: {
-        width: 50, // Fixed width for Y-axis labels
+        width: 60,
     },
     contentInset: {
         top: 20,
@@ -230,11 +244,11 @@ const styles = StyleSheet.create({
     },
     lineChart: {
         flex: 1,
-        minWidth: 400, // Minimum width to show content
+        minWidth: 10,
     },
     xAxis: {
         marginHorizontal: -10,
-        height: 30,
+        height: 10,
     },
 });
 

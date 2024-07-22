@@ -24,7 +24,7 @@ const AdminHome = () => {
                     } else if (route.name == 'SensorDataButton') {
                         iconName = focused ? 'tachometer' : 'tachometer';
                     } else if (route.name == 'userdevice') {
-                        iconName = focused ? 'user' : 'user';
+                        iconName = focused ? 'desktop' : 'desktop';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;

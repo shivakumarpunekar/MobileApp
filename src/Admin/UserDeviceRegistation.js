@@ -2,41 +2,63 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Switch, Alert, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
-const UserDeviceRegistation = () => {
-    const [usernames, setUsernames] = useState([]);
-    const [devices, setDevices] = useState([]);
+const UserDeviceRegistration = () => {
+    const [userProfiles, setUserProfiles] = useState([]);
     const [selectedUsername, setSelectedUsername] = useState('');
+    const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
     const [isActivated, setIsActivated] = useState(false);
+    const navigation = useNavigation();
 
     useEffect(() => {
-        axios.get('http://10.0.2.2:2030/api/UserDevice')
-            .then(response => {
-                setUsernames(response.data.usernames);
-                setDevices(response.data.devices);
-            })
-            .catch(error => {
-                console.error('Error fetching data from API:', error);
-            });
+        // Fetch user profiles
+        const fetchUserProfiles = async () => {
+            try {
+                const response = await fetch('http://10.0.2.2:2030/api/userprofiles/GetuserprofileByName');
+                const data = await response.json();
+                setUserProfiles(data);
+            } catch (error) {
+                console.error('Error fetching user profiles:', error);
+            }
+        };
+
+        fetchUserProfiles();
+
+        const fetchDevices = async () => {
+            try {
+                const response = await axios.get('http://10.0.2.2:2030/api/sensor_data/deviceId');
+                setDevices(response.data);
+            } catch (error) {
+                console.error('Error fetching devices:', error);
+            }
+        };
+
+        fetchDevices();
     }, []);
 
     const handleSubmit = () => {
         const payload = {
-            username: selectedUsername,
-            deviceId: selectedDeviceId,
-            status: isActivated ? 'Active' : 'Inactive',
+            profileId: selectedUsername,
+            sensor_dataId: selectedDeviceId,
+            deviceStatus: isActivated ? 'Active' : 'Inactive',
         };
+
+        // console.log('Payload:', payload);
 
         axios.post('http://10.0.2.2:2030/api/UserDevice', payload)
             .then(response => {
+                // console.log('Response:', response.data); 
                 Alert.alert('Success', 'User Device has been updated successfully.');
+                navigation.navigate('UserDevice');
             })
             .catch(error => {
                 console.error('Error submitting data:', error);
                 Alert.alert('Error', 'There was an error updating the User Device.');
             });
     };
+
 
     return (
         <View style={styles.container}>
@@ -46,6 +68,13 @@ const UserDeviceRegistation = () => {
                 onValueChange={(itemValue) => setSelectedUsername(itemValue)}
                 style={styles.picker}
             >
+                {userProfiles.map((data) => (
+                    <Picker.Item
+                        key={data.userProfileId}
+                        label={`${data.firstName} ${data.middleName} ${data.lastName}`}
+                        value={data.userProfileId}
+                    />
+                ))}
             </Picker>
 
             <Text style={styles.label}>Device ID:</Text>
@@ -54,10 +83,17 @@ const UserDeviceRegistation = () => {
                 onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
                 style={styles.picker}
             >
+                {devices.map((device, index) => (
+                    <Picker.Item
+                        key={index}
+                        label={`${device}`}
+                        value={device}
+                    />
+                ))}
             </Picker>
 
             <Text style={styles.label}>Status:</Text>
-            <Text style={styles.statusText}>{isActivated ? 'On' : 'Off'}</Text>
+            <Text style={styles.statusText}>{isActivated ? 'Active' : 'Inactive'}</Text>
             <Switch
                 onValueChange={setIsActivated}
                 value={isActivated}
@@ -117,4 +153,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default UserDeviceRegistation;
+export default UserDeviceRegistration;

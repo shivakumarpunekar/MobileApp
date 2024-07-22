@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     margin: 5,
     flex: 1,
-    maxWidth: '22%', // ensures 4 buttons fit in a row with some spacing
+    maxWidth: '22%', 
   },
   buttonText: {
     color: '#000',
