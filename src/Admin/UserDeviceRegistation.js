@@ -13,7 +13,6 @@ const UserDeviceRegistration = () => {
     const navigation = useNavigation();
 
     useEffect(() => {
-        // Fetch user profiles
         const fetchUserProfiles = async () => {
             try {
                 const response = await fetch('http://192.168.1.10:2030/api/userprofiles/GetuserprofileByName');
@@ -24,8 +23,6 @@ const UserDeviceRegistration = () => {
             }
         };
 
-        fetchUserProfiles();
-
         const fetchDevices = async () => {
             try {
                 const response = await axios.get('http://192.168.1.10:2030/api/sensor_data/deviceId');
@@ -35,6 +32,7 @@ const UserDeviceRegistration = () => {
             }
         };
 
+        fetchUserProfiles();
         fetchDevices();
     }, []);
 
@@ -45,20 +43,19 @@ const UserDeviceRegistration = () => {
             deviceStatus: isActivated ? 'Active' : 'Inactive',
         };
 
-        // console.log('Payload:', payload);
-
         axios.post('http://192.168.1.10:2030/api/UserDevice', payload)
             .then(response => {
-                // console.log('Response:', response.data); 
                 Alert.alert('Success', 'User Device has been updated successfully.');
                 navigation.navigate('UserDevice');
             })
             .catch(error => {
-                console.error('Error submitting data:', error);
-                Alert.alert('Error', 'There was an error updating the User Device.');
+                if (error.response && error.response.data) {
+                    Alert.alert('Error', error.response.data);
+                } else {
+                    Alert.alert('Error', 'There was an error updating the User Device.');
+                }
             });
     };
-
 
     return (
         <View style={styles.container}>

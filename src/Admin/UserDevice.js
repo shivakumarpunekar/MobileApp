@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity } from "react-native";
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Import the icon library
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
 
 const UserDevice = ({ navigation }) => {
     const [userProfiles, setUserProfiles] = useState([]);
@@ -10,6 +11,12 @@ const UserDevice = ({ navigation }) => {
     useEffect(() => {
         fetchUserProfiles();
     }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchUserProfiles();
+        }, [])
+    );
 
     useEffect(() => {
         filterProfiles();
@@ -128,7 +135,7 @@ const styles = StyleSheet.create({
     userDeviceRow: {
         flexDirection: 'row',
         paddingVertical: 10,
-        borderBottomWidth: 1, // Line between rows
+        borderBottomWidth: 1,
         borderBottomColor: '#ccc',
     },
     cell: {
