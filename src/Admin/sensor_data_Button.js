@@ -8,7 +8,7 @@ const SensorDataButton = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    axios.get('http://10.0.2.2:2030/api/sensor_data')
+    axios.get('http://192.168.1.10:2030/api/sensor_data')
       .then(response => {
         setData(response.data);
       })

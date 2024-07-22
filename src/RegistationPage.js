@@ -91,7 +91,7 @@ const RegistrationPage = () => {
       alert('Please Enter password');
       return false;
     }
-    if (!confirmpassword.trim()) {  
+    if (!confirmpassword.trim()) {
       alert('Please Enter Confirm password');
       return false;
     }
@@ -128,11 +128,11 @@ const RegistrationPage = () => {
 
   //This is a registration Handler 
   const handleRegistration = async () => {
-     
+
     if (checkTextInput()) {
       try {
-         // Post to the userprofile table
-         const userProfileResponse = await fetch('http://10.0.2.2:2030/api/userprofiles', {
+        // Post to the userprofile table
+        const userProfileResponse = await fetch('http://192.168.1.10:2030/api/userprofiles', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ const RegistrationPage = () => {
             firstName,
             middleName,
             lastName,
-            dateOfBirth: dateOfBirth.toISOString().split('T')[0], 
+            dateOfBirth: dateOfBirth.toISOString().split('T')[0],
             mobileNumber,
             userName,
             password,
@@ -169,9 +169,9 @@ const RegistrationPage = () => {
 
         const userprofileData = await userProfileResponse.json();
         const UserProfileId = userprofileData.UserProfileId;
-       
+
         // Post to the login table
-        const loginResponse = await fetch('http://10.0.2.2:2030/api/Auth/register', {
+        const loginResponse = await fetch('http://192.168.1.10:2030/api/Auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -265,19 +265,19 @@ const RegistrationPage = () => {
         />
         {phoneInput.current?.isValidNumber(mobileNumber) && (
           <>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter OTP"
-          keyboardType="numeric"
-          onChangeText={(text) => setOtp(text)}
-          value={otp}
-        />  
-        {showMessage && (
-          <Text style={styles.message}>
-            {valid ? "OTP Verified" : "Invalid OTP"}
-          </Text>
-        )}
-        </>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter OTP"
+              keyboardType="numeric"
+              onChangeText={(text) => setOtp(text)}
+              value={otp}
+            />
+            {showMessage && (
+              <Text style={styles.message}>
+                {valid ? "OTP Verified" : "Invalid OTP"}
+              </Text>
+            )}
+          </>
         )}
         <TouchableOpacity
           style={styles.button}
@@ -317,14 +317,14 @@ const RegistrationPage = () => {
         />
         {confirmpasswordError ? <Text style={styles.errorText}>{confirmpasswordError}</Text> : null}
         <Text style={{ fontSize: 20 }}>
-            email
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={(value) => setemail(value)}
+          email
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={(value) => setemail(value)}
         />
         <Text style={{ fontSize: 20 }}>
           country
@@ -362,8 +362,8 @@ const RegistrationPage = () => {
           value={pincode}
           onChangeText={(value) => setPincode(value)}
         />
-        <TouchableOpacity 
-          style={styles.RegButton} 
+        <TouchableOpacity
+          style={styles.RegButton}
           onPress={handleRegistration}
         >
           <Text style={styles.buttonText}>Register</Text>
@@ -379,8 +379,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor:'#F6F3E7',
-    top:15,
+    backgroundColor: '#F6F3E7',
+    top: 15,
   },
   profileImage: {
     width: 100,
@@ -398,10 +398,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   RegButton: {
-    alignItems:'center',
-    width:100,
-    marginTop:10,
-    marginBottom:30,
+    alignItems: 'center',
+    width: 100,
+    marginTop: 10,
+    marginBottom: 30,
     backgroundColor: '#BFA100',
   },
   button: {

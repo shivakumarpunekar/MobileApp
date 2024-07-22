@@ -12,7 +12,7 @@ const PiChartScreen = () => {
 
   useEffect(() => {
     // Fetch data from the API
-    axios.get('http://10.0.2.2:2030/api/userprofiles/registrationsSummary')
+    axios.get('http://192.168.1.10:2030/api/userprofiles/registrationsSummary')
       .then(response => {
         const formattedData = response.data.map(item => ({
           key: item.createdDate,

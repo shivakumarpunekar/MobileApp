@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const apiClient = axios.create({
-  baseURL: 'http://10.0.2.2:2030/',
+  baseURL: 'http://192.168.1.10:2030/',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,7 +30,7 @@ export const fetchaDataFromApi = async () => {
 
 
 //This is a get method by Id
- 
+
 export const fetchDataByIdFromApi = async (userProfileId) => {
   try {
     const response = await apiClient.get(`/api/userprofiles/${userProfileId}`);
@@ -53,7 +53,7 @@ export const fetchDataByIdFromApi = async (userProfileId) => {
 export const fetchUserProfileIdByLoginId = async (loginId) => {
   try {
     const response = await apiClient.get(`/api/Auth/login/${loginId}`);
-    return response.data.userProfileId; 
+    return response.data.userProfileId;
   } catch (error) {
     // if (error.response) {
     //   console.error('Error response:', error.response.data);
@@ -62,7 +62,7 @@ export const fetchUserProfileIdByLoginId = async (loginId) => {
     // } else if (error.request) {
     //   console.error('Error request:', error.request);
     // } else {
-      console.error('Error message:', error.message);
+    console.error('Error message:', error.message);
     // }
     throw error;
   }

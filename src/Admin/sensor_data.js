@@ -10,7 +10,7 @@ const SensorData = () => {
 
     const fetchSensorData = async () => {
         try {
-            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}`);
+            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}`);
             const result = await response.json();
             const latestData = result.slice(0, 30);
             setData(latestData);

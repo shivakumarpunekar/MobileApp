@@ -17,7 +17,7 @@ const UserDevice = ({ navigation }) => {
 
     const fetchUserProfiles = async () => {
         try {
-            const response = await fetch('http://10.0.2.2:2030/api/UserDevice');
+            const response = await fetch('http://192.168.1.10:2030/api/UserDevice');
             if (!response.ok) {
                 throw new Error('Network response was not ok.');
             }

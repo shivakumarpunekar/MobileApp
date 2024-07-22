@@ -11,8 +11,8 @@ const DeviceTable = ({ loginId, profileID }) => {
   const fetchData = async () => {
     try {
       const [devicesResponse, deviceDetailsResponse] = await Promise.all([
-        fetch(`http://10.0.2.2:2030/api/devices?loginId=${loginId}`),
-        fetch(`http://10.0.2.2:2030/api/devicedetails?loginId=${loginId}`),
+        fetch(`http://192.168.1.10:2030/api/devices?loginId=${loginId}`),
+        fetch(`http://192.168.1.10:2030/api/devicedetails?loginId=${loginId}`),
       ]);
 
       if (!devicesResponse.ok || !deviceDetailsResponse.ok) {
@@ -58,7 +58,7 @@ const DeviceTable = ({ loginId, profileID }) => {
   const renderItem = ({ item }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.deviceId}</Text>
-      <Text style={styles.cell}>{formatDate (item.createdDate)}</Text>
+      <Text style={styles.cell}>{formatDate(item.createdDate)}</Text>
       <Text style={styles.cell}>{item.sensor_1}</Text>
       <Text style={styles.cell}>{item.sensor_2}</Text>
       <Text style={styles.cell}>{item.valveId}</Text>

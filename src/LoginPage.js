@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert, Platform } from 'react-native';
 import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import appleAuth, {
@@ -9,7 +9,7 @@ import appleAuth, {
 } from '@invertase/react-native-apple-authentication';
 import Captcha from './Captcha/Captcha';
 
-export default function LoginPage({navigation}) {
+export default function LoginPage({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginId, setLoginId] = useState('');
@@ -73,7 +73,7 @@ export default function LoginPage({navigation}) {
 
     if (captchaVerified) {
       try {
-        const response = await fetch('http://10.0.2.2:2030/api/Auth/login', {
+        const response = await fetch('http://192.168.1.10:2030/api/Auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -111,35 +111,35 @@ export default function LoginPage({navigation}) {
 
   return (
     <View style={styles.container}>
-      <Image 
+      <Image
         source={require('../assets/aairos.png')}
-        style={styles.profileImage} 
+        style={styles.profileImage}
       />
-      
-      <TextInput 
-        style={styles.input} 
-        placeholder="Username" 
+
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
         value={username}
         onChangeText={setUsername}
       />
-      <TextInput 
-        style={styles.input} 
-        placeholder="Password" 
-        secureTextEntry 
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
       <Captcha onVerify={setCaptchaVerified} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={handleLogin}
         >
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => navigation.navigate('RegistrationPage')}
         >
           <Text style={styles.buttonText}>Signup</Text>
@@ -165,12 +165,12 @@ export default function LoginPage({navigation}) {
             style={{
               width: 192,
               height: 48,
-              top:6,
+              top: 6,
             }}
             onPress={onAppleButtonPress}
           />
-        </View>  
-       )}  
+        </View>
+      )}
     </View>
   );
 }
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     width: '60%',
   },
   googleButton: {
-    width: 192, 
-    height: 48, 
+    width: 192,
+    height: 48,
   },
 });

@@ -31,7 +31,7 @@ const GraphPage = ({ route }) => {
 
     const fetchHistoricalData = async (deviceId, startDateISO, endDateISO) => {
         try {
-            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}/last7days`);
+            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/last7days`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -53,7 +53,7 @@ const GraphPage = ({ route }) => {
 
     const fetchLiveData = async (deviceId) => {
         try {
-            const response = await fetch(`http://10.0.2.2:2030/api/sensor_data/device/${deviceId}`);
+            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

@@ -68,7 +68,7 @@ const ProfileScreenEdit = ({ route }) => {
         profileImage: profileImage ? profileImage : null,
       };
       const profileUpdateResponse = await fetch(
-        `http://10.0.2.2:2030/api/userprofiles/${userProfileId}`,
+        `http://192.168.1.10:2030/api/userprofiles/${userProfileId}`,
         {
           method: 'PUT',
           headers: {
