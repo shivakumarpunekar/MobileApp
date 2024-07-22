@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Switch, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -63,58 +63,63 @@ const UserDeviceRegistration = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.label}>Username:</Text>
-            <Picker
-                selectedValue={selectedUsername}
-                onValueChange={(itemValue) => setSelectedUsername(itemValue)}
-                style={styles.picker}
-            >
-                <Picker.Item label="Select Name" value="" />
-                {userProfiles.map((data) => (
-                    <Picker.Item
-                        key={data.userProfileId}
-                        label={`${data.firstName} ${data.middleName} ${data.lastName}`}
-                        value={data.userProfileId}
-                    />
-                ))}
-            </Picker>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.container}>
+                <Text style={styles.label}>Username:</Text>
+                <Picker
+                    selectedValue={selectedUsername}
+                    onValueChange={(itemValue) => setSelectedUsername(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Select Name" value="" />
+                    {userProfiles.map((data) => (
+                        <Picker.Item
+                            key={data.userProfileId}
+                            label={`${data.firstName} ${data.middleName} ${data.lastName}`}
+                            value={data.userProfileId}
+                        />
+                    ))}
+                </Picker>
 
-            <Text style={styles.label}>Device ID:</Text>
+                <Text style={styles.label}>Device ID:</Text>
 
-            <Picker
-                selectedValue={selectedDeviceId}
-                onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
-                style={styles.picker}
-            >
-                <Picker.Item label="Select Device" value="" />
-                {devices.map((device, index) => (
-                    <Picker.Item
-                        key={index}
-                        label={`${device}`}
-                        value={device}
-                    />
-                ))}
-            </Picker>
+                <Picker
+                    selectedValue={selectedDeviceId}
+                    onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Select Device" value="" />
+                    {devices.map((device, index) => (
+                        <Picker.Item
+                            key={index}
+                            label={`${device}`}
+                            value={device}
+                        />
+                    ))}
+                </Picker>
 
-            <Text style={styles.label}>Status:</Text>
-            <Text style={styles.statusText}>{isActivated ? 'Active' : 'Inactive'}</Text>
-            <Switch
-                onValueChange={setIsActivated}
-                value={isActivated}
-                thumbColor={isActivated ? '#4CAF50' : '#f4f3f4'}
-                trackColor={{ false: '#767577', true: '#81b0ff' }}
-                style={styles.switch}
-            />
+                <Text style={styles.label}>Status:</Text>
+                <Text style={styles.statusText}>{isActivated ? 'Active' : 'Inactive'}</Text>
+                <Switch
+                    onValueChange={setIsActivated}
+                    value={isActivated}
+                    thumbColor={isActivated ? '#4CAF50' : '#f4f3f4'}
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
+                    style={styles.switch}
+                />
 
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-            </TouchableOpacity>
-        </View>
+                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                    <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
+    scrollContainer: {
+        flexGrow: 1,
+    },
     container: {
         flex: 1,
         padding: 16,
@@ -134,6 +139,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 8,
         marginVertical: 8,
+        ...(Platform.OS === 'ios' && {
+            height: 200, // Optional: to fix iOS specific height issues
+        }),
     },
     statusText: {
         fontSize: 18,

@@ -16,15 +16,15 @@ const AdminHome = () => {
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
                     if (route.name === 'Home') {
-                        iconName = focused ? 'home' : 'home';
+                        iconName = 'home';
                     } else if (route.name === 'AdminProfileScreen') {
-                        iconName = focused ? 'user' : 'user';
-                    } else if (route.name == 'PiChartScreen') {
-                        iconName = focused ? 'pie-chart' : 'pie-chart';
-                    } else if (route.name == 'SensorDataButton') {
-                        iconName = focused ? 'tachometer' : 'tachometer';
-                    } else if (route.name == 'userdevice') {
-                        iconName = focused ? 'desktop' : 'desktop';
+                        iconName = 'user';
+                    } else if (route.name === 'PiChartScreen') {
+                        iconName = 'pie-chart';
+                    } else if (route.name === 'SensorDataButton') {
+                        iconName = 'tachometer';
+                    } else if (route.name === 'UserDevice') {
+                        iconName = 'desktop';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;

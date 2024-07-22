@@ -18,7 +18,8 @@
         "setconform",
         "setphone",
         "Signin",
-        "updateduser"
+        "updateduser",
+        "userdevice"
     ],
     "java.configuration.updateBuildConfiguration": "automatic"
 }
