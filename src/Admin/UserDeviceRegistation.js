@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginVertical: 8,
         ...(Platform.OS === 'ios' && {
-            height: 200, // Optional: to fix iOS specific height issues
+            height: 200,
         }),
     },
     statusText: {

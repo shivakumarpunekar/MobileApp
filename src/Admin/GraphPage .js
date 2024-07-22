@@ -37,7 +37,7 @@ const GraphPage = ({ route }) => {
             }
 
             const data = await response.json();
-            setHistoricalData(data.reverse());
+            // setHistoricalData(data.reverse());
 
             if (data.length > 0) {
                 const timestamps = data.map(entry => new Date(entry.timestamp));

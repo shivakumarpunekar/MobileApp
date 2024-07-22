@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,44 +8,44 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import {useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {fetchDataByIdFromApi, fetchUserProfileIdByLoginId} from './Api/api';
+import { fetchDataByIdFromApi, fetchUserProfileIdByLoginId } from './Api/api';
 
 // This is for date format
 const formatDate = dateString => {
-  const options = {year: 'numeric', month: 'short', day: 'numeric'};
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 const ProfilePage = ({ loginId }) => {
-   
+
   const navigation = useNavigation();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-    //function to fetch data
-    const fetchData = async () => {
-      try {
-        const userProfileId = await fetchUserProfileIdByLoginId(loginId);
-        if (!userProfileId) {
-          setError(new Error(`User profile not found`));
-          return;
-        }
-        const result = await fetchDataByIdFromApi(userProfileId );
-        setData(result);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
+  //function to fetch data
+  const fetchData = async () => {
+    try {
+      const userProfileId = await fetchUserProfileIdByLoginId(loginId);
+      if (!userProfileId) {
+        setError(new Error(`User profile not found`));
+        return;
       }
-    };
+      const result = await fetchDataByIdFromApi(userProfileId);
+      setData(result);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Fetch data initially and on loginId change
-    useEffect(() => {
-      fetchData();
-    }, [loginId]);
+  // Fetch data initially and on loginId change
+  useEffect(() => {
+    fetchData();
+  }, [loginId]);
 
   // Update data on focus (when returning from ProfileScreenEdit)
   useFocusEffect(
@@ -81,7 +81,7 @@ const ProfilePage = ({ loginId }) => {
                 style={styles.backgroundImage}>
                 <TouchableOpacity
                   style={styles.editButton}
-                  onPress={() => navigation.navigate('ProfileScreenEdit', {data})}>
+                  onPress={() => navigation.navigate('ProfileScreenEdit', { data })}>
                   <Icon name="edit" size={30} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.header}>
@@ -110,7 +110,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>dateOfBirth</Text>
                 <Text style={styles.sectionContent}>
-                  {formatDate(data.dateOfBirth)}
+                  {data.dateOfBirth}
                 </Text>
               </View>
               <View style={styles.section}>
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 40,
   },
-  
+
   inputname: {
     flexDirection: 'row',
   },

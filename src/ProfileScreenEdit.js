@@ -48,7 +48,7 @@ const ProfileScreenEdit = ({ route }) => {
     if (!validateMobileNumber()) {
       return;
     }
-     
+
     try {
       const updateData = {
         userProfileId,
@@ -77,22 +77,22 @@ const ProfileScreenEdit = ({ route }) => {
           body: JSON.stringify(updateData),
         },
       );
-  
+
       if (profileUpdateResponse.status === 204) {
         // No content response, update successful
         Alert.alert('Profile updated successfully');
         navigation.goBack();
         return;
       }
-  
+
       // Handle other status codes (200, etc.) here
       const profileUpdateResponseJson = await profileUpdateResponse.json();
-  
+
       if (!profileUpdateResponse.ok) {
         console.error('Profile update response:', profileUpdateResponseJson);
         throw new Error('Error updating profile User');
       }
-  
+
       Alert.alert('Profile updated successfully');
       navigation.goBack();
     } catch (error) {
@@ -100,7 +100,7 @@ const ProfileScreenEdit = ({ route }) => {
       Alert.alert('Error updating profile');
     }
   };
-  
+
 
   // This is a mobileNumber Verification
   const validateMobileNumber = () => {
@@ -188,7 +188,7 @@ const ProfileScreenEdit = ({ route }) => {
             <Text style={styles.sectionTitle}>Date of Birth</Text>
             <TouchableOpacity onPress={() => setDatePickerOpen(true)}>
               <Text style={styles.sectionContent}>
-                {formatDate(dateOfBirth)}
+                {dateOfBirth}
               </Text>
             </TouchableOpacity>
             <DatePicker
