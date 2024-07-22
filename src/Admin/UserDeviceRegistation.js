@@ -37,6 +37,11 @@ const UserDeviceRegistration = () => {
     }, []);
 
     const handleSubmit = () => {
+        if (!selectedUsername || !selectedDeviceId) {
+            Alert.alert('Error', 'Please select the username and device ID.');
+            return;
+        }
+
         const payload = {
             profileId: selectedUsername,
             sensor_dataId: selectedDeviceId,
@@ -65,6 +70,7 @@ const UserDeviceRegistration = () => {
                 onValueChange={(itemValue) => setSelectedUsername(itemValue)}
                 style={styles.picker}
             >
+                <Picker.Item label="Select Name" value="" />
                 {userProfiles.map((data) => (
                     <Picker.Item
                         key={data.userProfileId}
@@ -75,11 +81,13 @@ const UserDeviceRegistration = () => {
             </Picker>
 
             <Text style={styles.label}>Device ID:</Text>
+
             <Picker
                 selectedValue={selectedDeviceId}
                 onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
                 style={styles.picker}
             >
+                <Picker.Item label="Select Device" value="" />
                 {devices.map((device, index) => (
                     <Picker.Item
                         key={index}
