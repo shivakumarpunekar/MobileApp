@@ -9,7 +9,7 @@ const SensorDataButton = () => {
   const [devices] = useState([1, 2, 3, 4, 5, 6]);
   const navigation = useNavigation();
 
-  useEffect(() => {
+  const fetchData = () => {
     axios.get('http://192.168.1.10:2030/api/sensor_data')
       .then(response => {
         setData(response.data);
@@ -17,6 +17,12 @@ const SensorDataButton = () => {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Fetch data every 10 seconds
+    return () => clearInterval(interval); // Clear interval on component unmount
   }, []);
 
   const handleButtonPress = (deviceId) => {
@@ -48,17 +54,22 @@ const SensorDataButton = () => {
             backgroundColor = '#808080'; // Gray for no data
             buttonText = `Device ${deviceId}`;
           } else if (
-            (sensor1 >= 4000 && sensor2 >= 4000) ||
-            (sensor1 <= 1250 && sensor2 <= 1250) ||
-            (sensor1 >= 4000 && sensor2 <= 1250) ||
-            (sensor1 <= 1250 && sensor2 >= 4000)
+            (sensor1 >= 4000 || sensor1 <= 1250) &&
+            (sensor2 >= 4000 || sensor2 <= 1250)
           ) {
             backgroundColor = '#ff0000'; // Red
             buttonText = `Device ${deviceId}`;
+          } else if (
+            (sensor1 >= 4000 || sensor1 <= 1250) ||
+            (sensor2 >= 4000 || sensor2 <= 1250)
+          ) {
+            backgroundColor = '#FFA500'; // Orange
+            buttonText = `Device ${deviceId}`;
           } else {
-            backgroundColor = '#7fff00'; // Green
+            backgroundColor = '#00FF00'; // Green
             buttonText = `Device ${deviceId}`;
           }
+
 
           return (
             <View key={deviceId} style={styles.buttonContainer}>
@@ -79,7 +90,6 @@ const SensorDataButton = () => {
       </View>
     ));
   };
-
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
