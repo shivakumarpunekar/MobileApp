@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SensorDataButton = () => {
   const [data, setData] = useState([]);
+  const [devices] = useState([1, 2, 3, 4, 5, 6]);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -22,14 +24,9 @@ const SensorDataButton = () => {
   };
 
   const renderButtonsInGrid = () => {
-    const deviceIds = data
-      .map(item => item.deviceId)
-      .filter((value, index, self) => self.indexOf(value) === index) // Unique device IDs
-      .sort((a, b) => a - b); // Sort in ascending order
-
     const rows = [];
-    for (let i = 0; i < deviceIds.length; i += 4) {
-      const row = deviceIds.slice(i, i + 4);
+    for (let i = 0; i < devices.length; i += 50) {
+      const row = devices.slice(i, i + 50);
       rows.push(row);
     }
 
@@ -37,28 +34,52 @@ const SensorDataButton = () => {
       <View key={rowIndex} style={styles.row}>
         {row.map(deviceId => {
           const deviceData = data.filter(item => item.deviceId === deviceId);
-          const sensor1 = deviceData.length ? deviceData[0].sensor1_value : 0;
-          const sensor2 = deviceData.length ? deviceData[0].sensor2_value : 0;
+          const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
+          const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
+          const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
+          const dataCount = deviceData.length;
 
-          const backgroundColor = (sensor1 >= 4000 && sensor2 >= 4000) ||
+          let backgroundColor;
+          let heartIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000'; // Green for on, Red for off
+          let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
+          let buttonText;
+
+          if (sensor1 === null || sensor2 === null) {
+            backgroundColor = '#808080'; // Gray for no data
+            buttonText = `Device ${deviceId}`;
+          } else if (
+            (sensor1 >= 4000 && sensor2 >= 4000) ||
             (sensor1 <= 1250 && sensor2 <= 1250) ||
             (sensor1 >= 4000 && sensor2 <= 1250) ||
-            (sensor1 <= 1250 && sensor2 >= 4000) ?
-            '#ff0000' : '#7fff00'; // Red or green based on conditions
+            (sensor1 <= 1250 && sensor2 >= 4000)
+          ) {
+            backgroundColor = '#ff0000'; // Red
+            buttonText = `Device ${deviceId}`;
+          } else {
+            backgroundColor = '#7fff00'; // Green
+            buttonText = `Device ${deviceId}`;
+          }
 
           return (
-            <TouchableOpacity
-              key={deviceId}
-              style={[styles.button, { backgroundColor }]}
-              onPress={() => handleButtonPress(deviceId)}
-            >
-              <Text style={styles.buttonText}>{`Device ${deviceId}`}</Text>
-            </TouchableOpacity>
+            <View key={deviceId} style={styles.buttonContainer}>
+              <View style={styles.iconContainer}>
+                <Icon name="heart" size={30} color={heartIconColor} />
+                <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
+              </View>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor }]}
+                onPress={() => handleButtonPress(deviceId)}
+              >
+                <Text style={styles.buttonText}>{buttonText}</Text>
+                {dataCount > 0}
+              </TouchableOpacity>
+            </View>
           );
         })}
       </View>
     ));
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -84,20 +105,37 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
     marginBottom: 10,
+  },
+  buttonContainer: {
+    alignItems: 'center',
+    margin: 5,
   },
   button: {
     padding: 10,
     borderRadius: 5,
-    margin: 5,
-    flex: 1,
-    maxWidth: '22%',
+    width: '100%',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#000',
     fontSize: 16,
     textAlign: 'center',
   },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  valveIcon: {
+    marginLeft: 10,
+  },
+  dataCount: {
+    marginTop: 5,
+    color: '#000',
+    fontSize: 14,
+  }
 });
 
 export default SensorDataButton;
