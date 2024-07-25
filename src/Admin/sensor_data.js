@@ -55,7 +55,7 @@ const SensorData = () => {
                         <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
                         <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
                         <Text style={styles.itemText}>Valve Status: {item.solenoidValveStatus}</Text>
-                        <Text style={styles.itemText}>Date Time: {item.timestamp}</Text>
+                        <Text style={styles.itemText}>Date Time: {item.createdDateTime}</Text>
                     </View>
                 )}
             />

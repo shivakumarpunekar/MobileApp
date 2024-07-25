@@ -1,123 +1,151 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Text, View, StyleSheet, Alert } from 'react-native';
+import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const DeviceTable = ({ loginId, profileID }) => {
-  const [combinedData, setCombinedData] = useState([]);
+const DeviceTable = () => {
+  const [data, setData] = useState([]);
+  const [devices] = useState([1, 2, 3, 4, 5, 6]);
+  const navigation = useNavigation();
+
+  const fetchData = () => {
+    axios.get('http://192.168.1.10:2030/api/sensor_data/top100perdevice')
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  };
 
   useEffect(() => {
     fetchData();
-  }, [loginId, profileID]);
+    const interval = setInterval(fetchData, 10000); // Fetch data every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
 
-  const fetchData = async () => {
-    try {
-      const [devicesResponse, deviceDetailsResponse] = await Promise.all([
-        fetch(`http://192.168.1.10:2030/api/devices?loginId=${loginId}`),
-        fetch(`http://192.168.1.10:2030/api/devicedetails?loginId=${loginId}`),
-      ]);
+  const handleButtonPress = (deviceId) => {
+    navigation.navigate('SensorData', { deviceId });
+  };
 
-      if (!devicesResponse.ok || !deviceDetailsResponse.ok) {
-        throw new Error('HTTP error! status: ' + devicesResponse.status + ' ' + deviceDetailsResponse.status);
-      }
-
-      const devicesData = await devicesResponse.json();
-      const deviceDetailsData = await deviceDetailsResponse.json();
-
-      // Merge the data based on the common key `Id`
-      const combinedData = deviceDetailsData.map(detail => {
-        const device = devicesData.find(device => device.id === detail.id);
-        return {
-          ...detail,
-          ...device,
-        };
-      });
-
-      // Filter combinedData based on loginId 
-      const filteredData = combinedData.filter(item => item.loginId === loginId && item.profileID === profileID);
-
-      if (filteredData.length === 0) {
-        console.log('No devices available for this loginId');
-        Alert('No devices available for this loginId ');
-      }
-
-      setCombinedData(filteredData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+  const renderButtonsInGrid = () => {
+    const rows = [];
+    for (let i = 0; i < devices.length; i += 50) {
+      const row = devices.slice(i, i + 50);
+      rows.push(row);
     }
-  };
 
-  //This is a date formate
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
+    return rows.map((row, rowIndex) => (
+      <View key={rowIndex} style={styles.row}>
+        {row.map(deviceId => {
+          const deviceData = data.filter(item => item.deviceId === deviceId);
+          const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
+          const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
+          const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
+          const dataCount = deviceData.length;
 
-  const renderItem = ({ item }) => (
-    <View style={styles.row}>
-      <Text style={styles.cell}>{item.deviceId}</Text>
-      <Text style={styles.cell}>{formatDate(item.createdDate)}</Text>
-      <Text style={styles.cell}>{item.sensor_1}</Text>
-      <Text style={styles.cell}>{item.sensor_2}</Text>
-      <Text style={styles.cell}>{item.valveId}</Text>
-      <Text style={styles.cell}>{item.valveStatus}</Text>
-    </View>
-  );
+          let backgroundColor;
+          let heartIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000'; // Green for on, Red for off
+          let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
+          let buttonText;
+
+          if (sensor1 === null || sensor2 === null) {
+            backgroundColor = '#808080'; // Gray for no data
+            buttonText = `Device ${deviceId}`;
+          } else if (
+            (sensor1 >= 4000 || sensor1 <= 1250) &&
+            (sensor2 >= 4000 || sensor2 <= 1250)
+          ) {
+            backgroundColor = '#ff0000'; // Red
+            buttonText = `Device ${deviceId}`;
+          } else if (
+            (sensor1 >= 4000 || sensor1 <= 1250) ||
+            (sensor2 >= 4000 || sensor2 <= 1250)
+          ) {
+            backgroundColor = '#FFA500'; // Orange
+            buttonText = `Device ${deviceId}`;
+          } else {
+            backgroundColor = '#00FF00'; // Green
+            buttonText = `Device ${deviceId}`;
+          }
+
+
+          return (
+            <View key={deviceId} style={styles.buttonContainer}>
+              <View style={styles.iconContainer}>
+                <Icon name="heart" size={30} color={heartIconColor} />
+                <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
+              </View>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor }]}
+                onPress={() => handleButtonPress(deviceId)}
+              >
+                <Text style={styles.buttonText}>{buttonText}</Text>
+                {dataCount > 0}
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+      </View>
+    ));
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerCell}>DeviceId</Text>
-        <Text style={styles.headerCell}>CreatedDate</Text>
-        <Text style={styles.headerCell}>Sensor 1</Text>
-        <Text style={styles.headerCell}>Sensor 2</Text>
-        <Text style={styles.headerCell}>Valve Id</Text>
-        <Text style={styles.headerCell}>Valve Status</Text>
-      </View>
-      <FlatList
-        data={combinedData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
-      />
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.headerText}>Device Detail Links</Text>
+      {renderButtonsInGrid()}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: '#F6F3E7',
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F6F3E7'
   },
-  header: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#000',
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  headerCell: {
-    flex: 1,
+  headerText: {
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    fontSize: 17,
+    marginBottom: 20,
   },
   row: {
     flexDirection: 'row',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#000',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginBottom: 10,
   },
-  cell: {
-    flex: 1,
+  buttonContainer: {
+    alignItems: 'center',
+    margin: 5,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
     textAlign: 'center',
-    fontSize: 14,
-    backgroundColor: '#000',
-    color: '#f0f0f0',
-    fontSize: 14,
   },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  valveIcon: {
+    marginLeft: 10,
+  },
+  dataCount: {
+    marginTop: 5,
+    color: '#000',
+    fontSize: 14,
+  }
 });
 
 export default DeviceTable;

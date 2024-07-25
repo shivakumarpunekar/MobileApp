@@ -10,7 +10,7 @@ const SensorDataButton = () => {
   const navigation = useNavigation();
 
   const fetchData = () => {
-    axios.get('http://192.168.1.10:2030/api/sensor_data')
+    axios.get('http://192.168.1.10:2030/api/sensor_data/top100perdevice')
       .then(response => {
         setData(response.data);
       })
@@ -22,7 +22,7 @@ const SensorDataButton = () => {
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 10000); // Fetch data every 10 seconds
-    return () => clearInterval(interval); // Clear interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   const handleButtonPress = (deviceId) => {

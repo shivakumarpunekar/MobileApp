@@ -37,7 +37,7 @@ const GraphPage = ({ route }) => {
             }
 
             const data = await response.json();
-            // setHistoricalData(data.reverse());
+            setHistoricalData(data.reverse());
 
             if (data.length > 0) {
                 const timestamps = data.map(entry => new Date(entry.timestamp));
@@ -56,10 +56,17 @@ const GraphPage = ({ route }) => {
             const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
+
             }
 
-            const data = await response.json();
-            console.log('Live data received:', data);
+            // const data = await response.json();
+            const data = () => {
+                const categoryAItems = filterDataByCategory(response, 'sensor1_value');
+                const categoryBItems = filterDataByCategory(response, 'sensor2_value');
+            }
+            // const data = Array(Math.ceil(data.length / 100))
+
+            console.log('Live data received:', data.categoryBItems);
 
             if (data) {
                 setLiveData(prevLiveData => [...prevLiveData, data]);
@@ -89,8 +96,9 @@ const GraphPage = ({ route }) => {
 
     // Function to determine line color based on sensor values
     const getLineColor = (sensor1) => {
-        if ((sensor1 >= 4000) ||
-            (sensor1 <= 1250)) {
+        if ((sensor1 > 4000) ||
+            (sensor1 < 1250)
+        ) {
             return 'red';
         } else {
             return 'green';
@@ -98,8 +106,8 @@ const GraphPage = ({ route }) => {
     };
 
     const getLineColor2 = (sensor2) => {
-        if ((sensor2 >= 4000) ||
-            (sensor2 <= 1250)) {
+        if ((sensor2 > 1250) ||
+            (sensor2 < 4000)) {
             return 'red';
         } else {
             return 'green';
@@ -108,17 +116,19 @@ const GraphPage = ({ route }) => {
 
     // Function to determine chart background color based on sensor values
     const getChartBackgroundColor = (sensor1Values) => {
-        if ((sensor1Values >= 4000) ||
-            (sensor1Values <= 1250)) {
-            return '#FFCDD2'; // Light red background
+        if ((sensor1Values > 1250) ||
+            sensor1Values < 4000) {
+            // Light red background
+            return '#FFCDD2';
+
         } else {
             return '#C8E6C9'; // Light green background
         }
     };
 
     const getChartBackgroundColor2 = (sensor2Values) => {
-        if ((sensor2Values >= 4000) ||
-            (sensor2Values <= 1250)) {
+        if ((sensor2Values < 4000) ||
+            (sensor2Values > 1250)) {
             return '#FFCDD2'; // Light red background
         } else {
             return '#C8E6C9'; // Light green background
