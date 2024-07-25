@@ -59,14 +59,9 @@ const GraphPage = ({ route }) => {
 
             }
 
-            // const data = await response.json();
-            const data = () => {
-                const categoryAItems = filterDataByCategory(response, 'sensor1_value');
-                const categoryBItems = filterDataByCategory(response, 'sensor2_value');
-            }
-            // const data = Array(Math.ceil(data.length / 100))
+            const data = await response.json();
 
-            console.log('Live data received:', data.categoryBItems);
+            console.log('Live data received:', data);
 
             if (data) {
                 setLiveData(prevLiveData => [...prevLiveData, data]);
