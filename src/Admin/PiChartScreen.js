@@ -5,6 +5,12 @@ import { PieChart } from 'react-native-svg-charts';
 import { G, Text as SvgText } from 'react-native-svg';
 import Modal from 'react-native-modal';
 
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+
 const PiChartScreen = () => {
   const [data, setData] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -15,7 +21,7 @@ const PiChartScreen = () => {
     axios.get('http://192.168.1.10:2030/api/userprofiles/registrationsSummary')
       .then(response => {
         const formattedData = response.data.map(item => ({
-          key: item.createdDate,
+          key: formatDate(item.createdDate),
           value: item.count,
           svg: { fill: getRandomColor() },
           arc: { outerRadius: '100%', padAngle: 0 },
@@ -105,7 +111,7 @@ const PiChartScreen = () => {
           <Text style={styles.modalTitle}>Registration Details</Text>
           {selectedItem && (
             <>
-              <Text style={styles.modalText}>Date: {selectedItem.createdDate}</Text>
+              <Text style={styles.modalText}>Date: {formatDate(selectedItem.createdDate)}</Text>
               <Text style={styles.modalText}>Count: {selectedItem.count}</Text>
             </>
           )}

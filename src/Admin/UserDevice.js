@@ -3,6 +3,12 @@ import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, To
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 
+
+const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
 const UserDevice = ({ navigation }) => {
     const [userProfiles, setUserProfiles] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -55,7 +61,7 @@ const UserDevice = ({ navigation }) => {
             <Text style={[styles.cell]}>{item.profileId}</Text>
             <Text style={[styles.cell]}>{item.deviceId}</Text>
             <Text style={[styles.cell]}>{item.deviceStatus}</Text>
-            <Text style={[styles.cell]}>{item.createdDate}</Text>
+            <Text style={[styles.cell]}>{formatDate(item.createdDate)}</Text>
         </View>
     );
 

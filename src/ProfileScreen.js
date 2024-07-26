@@ -110,7 +110,7 @@ const ProfilePage = ({ loginId }) => {
                 />
                 <Text style={styles.sectionTitle}>dateOfBirth</Text>
                 <Text style={styles.sectionContent}>
-                  {data.dateOfBirth}
+                  {formatDate(data.dateOfBirth)}
                 </Text>
               </View>
               <View style={styles.section}>

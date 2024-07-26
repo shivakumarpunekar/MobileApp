@@ -188,7 +188,7 @@ const ProfileScreenEdit = ({ route }) => {
             <Text style={styles.sectionTitle}>Date of Birth</Text>
             <TouchableOpacity onPress={() => setDatePickerOpen(true)}>
               <Text style={styles.sectionContent}>
-                {dateOfBirth}
+                {formatDate(dateOfBirth)}
               </Text>
             </TouchableOpacity>
             <DatePicker

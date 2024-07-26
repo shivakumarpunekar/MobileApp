@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput } from "react-native";
 
+// Utility function to format date
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+
 const AdminProfileScreen = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,7 +56,7 @@ const AdminProfileScreen = () => {
       <Text style={[styles.cell]}>{item.lastName}</Text>
       <Text style={[styles.cell, { width: 250 }]}>{item.email}</Text>
       <Text style={[styles.cell]}>{item.mobileNumber}</Text>
-      <Text style={[styles.cell]}>{item.dateOfBirth}</Text>
+      <Text style={[styles.cell]}>{formatDate(item.dateOfBirth)}</Text>
       <Text style={[styles.cell]}>{item.userName}</Text>
       <Text style={[styles.cell]}>{item.password}</Text>
       <Text style={[styles.cell]}>{item.country}</Text>
