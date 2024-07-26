@@ -122,8 +122,9 @@ const DeviceTable = ({ loginId }) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#F6F3E7'
   },
   row: {
     flexDirection: 'row',

@@ -44,7 +44,7 @@ const UserDeviceRegistration = () => {
 
         const payload = {
             profileId: selectedUsername,
-            sensor_dataId: selectedDeviceId,
+            deviceId: selectedDeviceId,
             deviceStatus: isActivated ? 'Active' : 'Inactive',
         };
 

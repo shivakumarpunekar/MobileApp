@@ -128,9 +128,12 @@ const RegistrationPage = () => {
 
   //This is a registration Handler 
   const handleRegistration = async () => {
+    console.log('Registration started'); // Debug log
 
     if (checkTextInput()) {
       try {
+        console.log('Validation passed'); // Debug log
+
         // Post to the userprofile table
         const userProfileResponse = await fetch('http://192.168.1.10:2030/api/userprofiles', {
           method: 'POST',
@@ -153,19 +156,21 @@ const RegistrationPage = () => {
           }),
         });
 
-        //This is a chicking Username and Mobilenumber 
-        if (userProfileResponse.status === 400) {
+        console.log('User profile response:', userProfileResponse.status); // Debug log
+
+        if (!userProfileResponse.ok) {
           const errorData = await userProfileResponse.json();
+          console.log('User profile error:', errorData.message); // Debug log
           if (errorData.message === "userName already exists.") {
             alert('Username already exists. Please choose a different username.');
           } else if (errorData.message === "mobileNumber already exists.") {
             alert('Mobile number already exists. Please use a different mobile number.');
+          } else {
+            alert('Error creating user profile: ' + (errorData.message || 'Unknown error'));
           }
           return;
         }
-        if (!userProfileResponse.ok) {
-          throw new Error('Error creating user profile');
-        }
+
 
         const userprofileData = await userProfileResponse.json();
         const UserProfileId = userprofileData.UserProfileId;
@@ -183,16 +188,20 @@ const RegistrationPage = () => {
           }),
         });
 
+        console.log('Login response:', loginResponse.status); // Debug log
         if (!loginResponse.ok) {
-          throw new Error('Error creating login');
+          const loginErrorData = await loginResponse.json();
+          console.log('Login error:', loginErrorData.message); // Debug log
+          throw new Error('Error creating login: ' + loginErrorData.message);
         }
         navigation.navigate('Login');
       } catch (error) {
         console.error('Error:', error);
-        alert('Error registering user');
+        alert('Error registering user: ' + error.message);
       }
     }
   };
+
 
   return (
     <ScrollView>
