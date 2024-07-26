@@ -11,16 +11,15 @@ const GraphPage = ({ route }) => {
     const [xLabels, setXLabels] = useState([]);
 
     const screenWidth = Dimensions.get('window').width;
-    const screenHeight = Dimensions.get('window').height;
 
     useEffect(() => {
-        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 2 days ago
+        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
         const endDateISO = new Date().toISOString(); // current date and time
 
-        // Fetch historical data for the last 2 days
+        // Fetch historical data
         fetchHistoricalData(deviceId, startDateISO, endDateISO);
 
-        // Start fetching live data (assuming it's updating in real-time)
+        // Start fetching live data
         const liveDataInterval = setInterval(() => {
             fetchLiveData(deviceId);
         }, 10000); // Fetch live data every 10 seconds
@@ -31,7 +30,7 @@ const GraphPage = ({ route }) => {
 
     const fetchHistoricalData = async (deviceId, startDateISO, endDateISO) => {
         try {
-            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/last7days`);
+            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor1`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -53,22 +52,32 @@ const GraphPage = ({ route }) => {
 
     const fetchLiveData = async (deviceId) => {
         try {
-            const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+            const [responseSensor1, responseSensor2] = await Promise.all([
+                fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor1`),
+                fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor2`)
+            ]);
 
+            if (!responseSensor1.ok || !responseSensor2.ok) {
+                throw new Error('Network response was not ok');
             }
 
-            const data = await response.json();
+            const [dataSensor1, dataSensor2] = await Promise.all([
+                responseSensor1.json(),
+                responseSensor2.json()
+            ]);
 
-            console.log('Live data received:', data);
+            console.log('Live data received:', { dataSensor1, dataSensor2 });
 
-            if (data) {
-                setLiveData(prevLiveData => [...prevLiveData, data]);
+            if (dataSensor1 && dataSensor2) {
+                setLiveData(prevLiveData => [
+                    ...prevLiveData,
+                    { sensor1_value: dataSensor1.sensor1_value, sensor2_value: dataSensor2.sensor2_value }
+                ]);
+
                 // Update xLabels for live data as well
                 setXLabels(prevXLabels => [
                     ...prevXLabels,
-                    `${new Date(data.timestamp).getHours()}:${String(new Date(data.timestamp).getMinutes()).padStart(2, '0')}`
+                    `${new Date(dataSensor1.timestamp).getHours()}:${String(new Date(dataSensor1.timestamp).getMinutes()).padStart(2, '0')}`
                 ]);
             } else {
                 console.warn('Empty data received from API');
@@ -89,44 +98,24 @@ const GraphPage = ({ route }) => {
     const sensor1Values = allData.map(entry => entry.sensor1_value);
     const sensor2Values = allData.map(entry => entry.sensor2_value);
 
-    // Function to determine line color based on sensor values
-    const getLineColor = (sensor1) => {
-        if ((sensor1 > 4000) ||
-            (sensor1 < 1250)
-        ) {
-            return 'red';
+    // Function to determine line color based on sensor values and position
+    const getLineColor = (index, sensorValues) => {
+        if (sensorValues[index] === null) {
+            return 'grey'; // Gray for no data
+        } else if (sensorValues[index] >= 4000 || sensorValues[index] <= 1250) {
+            return 'red'; // Red for high/low values
         } else {
-            return 'green';
+            return 'green'; // Green for normal values
         }
     };
 
-    const getLineColor2 = (sensor2) => {
-        if ((sensor2 > 1250) ||
-            (sensor2 < 4000)) {
-            return 'red';
+    const getChartBackgroundColor = (index, sensorValues) => {
+        if (sensorValues[index] === null) {
+            return '#808080'; // Gray for no data
+        } else if (sensorValues[index] >= 4000 || sensorValues[index] <= 1250) {
+            return '#ffccc3'; // Light red for high/low values
         } else {
-            return 'green';
-        }
-    };
-
-    // Function to determine chart background color based on sensor values
-    const getChartBackgroundColor = (sensor1Values) => {
-        if ((sensor1Values > 1250) ||
-            sensor1Values < 4000) {
-            // Light red background
-            return '#FFCDD2';
-
-        } else {
-            return '#C8E6C9'; // Light green background
-        }
-    };
-
-    const getChartBackgroundColor2 = (sensor2Values) => {
-        if ((sensor2Values < 4000) ||
-            (sensor2Values > 1250)) {
-            return '#FFCDD2'; // Light red background
-        } else {
-            return '#C8E6C9'; // Light green background
+            return '#abf7b1'; // Light green for normal values
         }
     };
 
@@ -137,11 +126,9 @@ const GraphPage = ({ route }) => {
                     <ActivityIndicator size="large" color="blue" />
                 ) : (
                     <>
-                        <Text style={styles.title}>
-                            Sensor-1 Values
-                        </Text>
+                        <Text style={styles.title}>Sensor-1 Values</Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1Values[0]), width: screenWidth - 40 }]}>
+                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(0, sensor1Values), width: screenWidth - 40 }]}>
                                 <YAxis
                                     data={sensor1Values}
                                     style={styles.yAxis}
@@ -152,7 +139,7 @@ const GraphPage = ({ route }) => {
                                     <LineChart
                                         style={styles.lineChart}
                                         data={sensor1Values}
-                                        svg={{ stroke: getLineColor(sensor1Values[0]) }}
+                                        svg={{ stroke: getLineColor(0, sensor1Values) }}
                                         contentInset={styles.contentInset}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />
@@ -168,11 +155,9 @@ const GraphPage = ({ route }) => {
                                 </View>
                             </View>
                         </ScrollView>
-                        <Text style={styles.title}>
-                            Sensor-2 Values
-                        </Text>
+                        <Text style={styles.title}>Sensor-2 Values</Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor2(sensor2Values[0]), width: screenWidth - 40 }]}>
+                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(0, sensor2Values), width: screenWidth - 40 }]}>
                                 <YAxis
                                     data={sensor2Values}
                                     style={styles.yAxis}
@@ -183,7 +168,7 @@ const GraphPage = ({ route }) => {
                                     <LineChart
                                         style={styles.lineChart}
                                         data={sensor2Values}
-                                        svg={{ stroke: getLineColor2(sensor2Values[0]) }}
+                                        svg={{ stroke: getLineColor(0, sensor2Values) }}
                                         contentInset={styles.contentInset}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />

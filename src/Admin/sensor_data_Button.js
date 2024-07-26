@@ -101,9 +101,6 @@ const SensorDataButton = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
     backgroundColor: '#F6F3E7'
   },

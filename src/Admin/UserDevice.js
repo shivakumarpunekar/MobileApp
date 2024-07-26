@@ -53,7 +53,7 @@ const UserDevice = ({ navigation }) => {
     const renderUserdevice = ({ item, index }) => (
         <View style={[styles.userDeviceRow, { backgroundColor: index % 2 === 0 ? '#fff' : '#F6F3E7' }]}>
             <Text style={[styles.cell]}>{item.profileId}</Text>
-            <Text style={[styles.cell]}>{item.sensor_dataId}</Text>
+            <Text style={[styles.cell]}>{item.deviceId}</Text>
             <Text style={[styles.cell]}>{item.deviceStatus}</Text>
             <Text style={[styles.cell]}>{item.createdDate}</Text>
         </View>
