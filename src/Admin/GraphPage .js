@@ -68,8 +68,6 @@ const GraphPage = ({ route }) => {
             const data1 = await response1.json();
             const data2 = await response2.json();
 
-            console.log('Live data received:', { sensor1: data1, sensor2: data2 });
-
             if (data1 && data2) {
                 setSensor1Data(prevData => [data1, ...prevData]);
                 setSensor2Data(prevData => [data2, ...prevData]);

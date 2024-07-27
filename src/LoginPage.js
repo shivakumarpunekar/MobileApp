@@ -27,7 +27,6 @@ export default function LoginPage({ navigation }) {
   //   try {
   //     await GoogleSignin.hasPlayServices();
   //     const userInfo = await GoogleSignin.signIn();
-  //     console.log(userInfo);
   //   } catch (error) {
   //     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
   //       console.log('User cancelled the login flow');
@@ -101,7 +100,6 @@ export default function LoginPage({ navigation }) {
         navigation.navigate('Welcome', { loginId: data.loginId }); // Navigate to regular user welcome page
       }
     } catch (error) {
-      console.error('Login Error:', error.message);
       Alert.alert('Login Failed', 'Please verify username and password.');
     }
     // } else {

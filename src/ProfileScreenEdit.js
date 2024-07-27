@@ -89,14 +89,12 @@ const ProfileScreenEdit = ({ route }) => {
       const profileUpdateResponseJson = await profileUpdateResponse.json();
 
       if (!profileUpdateResponse.ok) {
-        console.error('Profile update response:', profileUpdateResponseJson);
         throw new Error('Error updating profile User');
       }
 
       Alert.alert('Profile updated successfully');
       navigation.goBack();
     } catch (error) {
-      console.error('Error:', error);
       Alert.alert('Error updating profile');
     }
   };
