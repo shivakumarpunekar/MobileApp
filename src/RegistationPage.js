@@ -18,9 +18,9 @@ const RegistrationPage = () => {
   const [userName, setuserName] = useState('');
   const [password, setpassword] = useState('');
   const [confirmpassword, setConfirmpassword] = useState('');
-  const [otp, setOtp] = useState("");
-  const [valid, setValid] = useState(false);
-  const [showMessage, setShowMessage] = useState(false);
+  // const [otp, setOtp] = useState("");
+  // const [valid, setValid] = useState(false);
+  // const [showMessage, setShowMessage] = useState(false);
   const [email, setemail] = useState('');
   const [country, setcountry] = useState('');
   const [state, setstate] = useState('');
@@ -51,14 +51,14 @@ const RegistrationPage = () => {
       return;
     }
 
-    const staticOTP = "123456";
-    if (otp === staticOTP) {
-      setValid(true);
-      setShowMessage(true);
-    } else {
-      setValid(false);
-      setShowMessage(true);
-    }
+    // const staticOTP = "123456";
+    // if (otp === staticOTP) {
+    //   setValid(true);
+    //   setShowMessage(true);
+    // } else {
+    //   setValid(false);
+    //   setShowMessage(true);
+    // }
   };
 
   //this is a validate the field 
@@ -128,11 +128,9 @@ const RegistrationPage = () => {
 
   //This is a registration Handler 
   const handleRegistration = async () => {
-    console.log('Registration started'); // Debug log
-
     if (checkTextInput()) {
       try {
-        console.log('Validation passed'); // Debug log
+        { handleVerify }
 
         // Post to the userprofile table
         const userProfileResponse = await fetch('http://192.168.1.10:2030/api/userprofiles', {
@@ -156,11 +154,9 @@ const RegistrationPage = () => {
           }),
         });
 
-        console.log('User profile response:', userProfileResponse.status); // Debug log
 
         if (!userProfileResponse.ok) {
           const errorData = await userProfileResponse.json();
-          console.log('User profile error:', errorData.message); // Debug log
           if (errorData.message === "userName already exists.") {
             alert('Username already exists. Please choose a different username.');
           } else if (errorData.message === "mobileNumber already exists.") {
@@ -171,9 +167,10 @@ const RegistrationPage = () => {
           return;
         }
 
-
+        debugger
         const userprofileData = await userProfileResponse.json();
         const UserProfileId = userprofileData.UserProfileId;
+
 
         // Post to the login table
         const loginResponse = await fetch('http://192.168.1.10:2030/api/Auth/register', {
@@ -188,15 +185,12 @@ const RegistrationPage = () => {
           }),
         });
 
-        console.log('Login response:', loginResponse.status); // Debug log
         if (!loginResponse.ok) {
           const loginErrorData = await loginResponse.json();
-          console.log('Login error:', loginErrorData.message); // Debug log
           throw new Error('Error creating login: ' + loginErrorData.message);
         }
         navigation.navigate('Login');
       } catch (error) {
-        console.error('Error:', error);
         alert('Error registering user: ' + error.message);
       }
     }
@@ -272,7 +266,7 @@ const RegistrationPage = () => {
           autoFocus
           placeholder="Enter phone number"
         />
-        {phoneInput.current?.isValidNumber(mobileNumber) && (
+        {/* {phoneInput.current?.isValidNumber(mobileNumber) && (
           <>
             <TextInput
               style={styles.input}
@@ -287,13 +281,13 @@ const RegistrationPage = () => {
               </Text>
             )}
           </>
-        )}
-        <TouchableOpacity
+        )} */}
+        {/* <TouchableOpacity
           style={styles.button}
           onPress={handleVerify}
         >
           <Text style={styles.buttonText}>Verify OTP</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={{ fontSize: 20 }}>
           Username
         </Text>
