@@ -167,7 +167,6 @@ const RegistrationPage = () => {
           return;
         }
 
-        debugger
         const userprofileData = await userProfileResponse.json();
         const UserProfileId = userprofileData.UserProfileId;
 
