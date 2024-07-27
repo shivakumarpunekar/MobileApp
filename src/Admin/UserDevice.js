@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+};
 
 const UserDevice = ({ navigation }) => {
     const [userProfiles, setUserProfiles] = useState([]);
@@ -30,7 +30,7 @@ const UserDevice = ({ navigation }) => {
 
     const fetchUserProfiles = async () => {
         try {
-            const response = await fetch('http://192.168.1.10:2030/api/UserDevice');
+            const response = await fetch('http://103.145.50.185:2030/api/UserDevice');
             if (!response.ok) {
                 throw new Error('Network response was not ok.');
             }

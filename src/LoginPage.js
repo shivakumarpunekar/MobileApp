@@ -72,7 +72,7 @@ export default function LoginPage({ navigation }) {
 
     // if (captchaVerified) {
     try {
-      const response = await fetch('http://192.168.1.10:2030/api/Auth/login', {
+      const response = await fetch('http://103.145.50.185:2030/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

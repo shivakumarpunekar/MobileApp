@@ -30,8 +30,8 @@ const GraphPage = ({ route }) => {
 
     const fetchHistoricalData = async (deviceId, startDateISO, endDateISO) => {
         try {
-            const response1 = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor1`);
-            const response2 = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor2`);
+            const response1 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
+            const response2 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
 
             if (!response1.ok || !response2.ok) {
                 throw new Error('Network response was not ok');
@@ -58,8 +58,8 @@ const GraphPage = ({ route }) => {
 
     const fetchLiveData = async (deviceId) => {
         try {
-            const response1 = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor1`);
-            const response2 = await fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/sensor2`);
+            const response1 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
+            const response2 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
 
             if (!response1.ok || !response2.ok) {
                 throw new Error('Network response was not ok');

@@ -10,7 +10,7 @@ const SensorDataButton = () => {
   const navigation = useNavigation();
 
   const fetchData = () => {
-    axios.get('http://192.168.1.10:2030/api/sensor_data/top100perdevice')
+    axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
       .then(response => {
         setData(response.data);
       })
