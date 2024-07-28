@@ -10,7 +10,7 @@ const DeviceTable = ({ loginId }) => {
   const navigation = useNavigation();
 
   const fetchUserDevices = () => {
-    return axios.get(`http://192.168.1.10:2030/api/UserDevice/byProfile/${loginId}`)
+    return axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Error fetching user device data:', error);
@@ -19,7 +19,7 @@ const DeviceTable = ({ loginId }) => {
   };
 
   const fetchSensorData = () => {
-    return axios.get('http://192.168.1.10:2030/api/sensor_data/top100perdevice')
+    return axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
       .then(response => response.data)
       .catch(error => {
         console.error('Error fetching sensor data:', error);

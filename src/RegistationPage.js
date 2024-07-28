@@ -133,7 +133,7 @@ const RegistrationPage = () => {
         { handleVerify }
 
         // Post to the userprofile table
-        const userProfileResponse = await fetch('http://192.168.1.10:2030/api/userprofiles', {
+        const userProfileResponse = await fetch('http://103.145.50.185:2030/api/userprofiles', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ const RegistrationPage = () => {
 
 
         // Post to the login table
-        const loginResponse = await fetch('http://192.168.1.10:2030/api/Auth/register', {
+        const loginResponse = await fetch('http://103.145.50.185:2030/api/Auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
