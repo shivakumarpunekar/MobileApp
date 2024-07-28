@@ -6,16 +6,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SensorDataButton = () => {
   const [data, setData] = useState([]);
-  const [devices, setDevices] = useState([]);
+  const [devices] = useState([1, 2, 3, 4, 5, 6]);
   const navigation = useNavigation();
 
   const fetchData = () => {
     axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
       .then(response => {
         setData(response.data);
-         // Extract unique device IDs from the fetched data
-         const deviceIds = [...new Set(response.data.map(item => item.deviceId))];
-         setDevices(deviceIds);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
