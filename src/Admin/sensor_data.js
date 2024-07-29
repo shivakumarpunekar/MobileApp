@@ -21,7 +21,7 @@ const SensorData = () => {
 
     useEffect(() => {
         fetchSensorData();
-        const intervalId = setInterval(fetchSensorData, 10000);
+        const intervalId = setInterval(fetchSensorData, 1000); // Fetch data every 1 seconds
         return () => clearInterval(intervalId);
     }, []);
 
