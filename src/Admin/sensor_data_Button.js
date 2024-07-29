@@ -40,6 +40,8 @@ const SensorDataButton = () => {
       rows.push(row);
     }
 
+    const currentDate = moment().format('DD-MM-YYYY');
+
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
         {row.map(deviceId => {
@@ -47,13 +49,13 @@ const SensorDataButton = () => {
           const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
           const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
           const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
-          const createDate = deviceData.length ? deviceData[0].create_date : null;
+          const createdDateTime = deviceData.length ? deviceData[0].createdDateTime : null;
           const dataCount = deviceData.length;
 
           let backgroundColor;
           // Determine heart icon color based on create date and current date
-          const currentDateString = moment().format('YYYY-MM-DD');
-          const heartIconColor = createDate === currentDateString ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
+          const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
+          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
           let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
           let buttonText;
 
