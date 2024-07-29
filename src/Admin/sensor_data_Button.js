@@ -3,16 +3,20 @@ import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-nati
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import moment from 'moment';
 
 const SensorDataButton = () => {
   const [data, setData] = useState([]);
-  const [devices] = useState([1, 2, 3, 4, 5, 6]);
+  const [devices, setDevices] = useState([]);
   const navigation = useNavigation();
 
   const fetchData = () => {
     axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
       .then(response => {
         setData(response.data);
+        // Extract unique device IDs from the data
+        const uniqueDevices = [...new Set(response.data.map(item => item.deviceId))];
+        setDevices(uniqueDevices);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -43,10 +47,13 @@ const SensorDataButton = () => {
           const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
           const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
           const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
+          const createDate = deviceData.length ? deviceData[0].create_date : null;
           const dataCount = deviceData.length;
 
           let backgroundColor;
-          let heartIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000'; // Green for on, Red for off
+          // Determine heart icon color based on create date and current date
+          const currentDateString = moment().format('YYYY-MM-DD');
+          const heartIconColor = createDate === currentDateString ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
           let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
           let buttonText;
 
