@@ -66,8 +66,8 @@ const UserDeviceRegistration = () => {
         // Convert dates to the format required by your API if necessary
         const start = startDate.toISOString().split('T')[0];
         const end = endDate.toISOString().split('T')[0];
-
-        const url = `http://192.168.1.10:2030/api/sensor_data/profile/{profileId}/device/{deviceId}/startDate={startDate}/endDate={endDate}`;
+        
+        const url = `http://192.168.1.10:2030/api/sensor_data/export?profileId={profileId}&deviceId={deviceId}&startDate={startDate}&endDate={endDate}`;
 
         // Handle the download (this could vary depending on your requirements)
         axios.get(url, { responseType: 'blob' })
@@ -80,6 +80,7 @@ const UserDeviceRegistration = () => {
                 console.error('Error downloading the Excel file:', error);
                 Alert.alert('Error', 'There was an error downloading the Excel file.');
             });
+            console.log ('data form database', handleDownload);
     };
 
     return (
