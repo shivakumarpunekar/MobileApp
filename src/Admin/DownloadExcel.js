@@ -168,10 +168,6 @@ const UserDeviceRegistration = () => {
                 )}
                 <Text style={styles.dateText}>{`Selected End Date: ${endDate.toDateString()}`}</Text>
 
-                {/* <TouchableOpacity style={styles.button} onPress={selectFolder}>
-                    <Text style={styles.buttonText}>Select Save Location</Text>
-                </TouchableOpacity> */}
-
                 <TouchableOpacity style={styles.button} onPress={handleDownload}>
                     <Text style={styles.buttonText}>Download Excel</Text>
                 </TouchableOpacity>
