@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import RNFS from 'react-native-fs';
+import DocumentPicker from 'react-native-document-picker';
 
 const UserDeviceRegistration = () => {
     const [userProfiles, setUserProfiles] = useState([]);
@@ -15,6 +17,7 @@ const UserDeviceRegistration = () => {
     const [endDate, setEndDate] = useState(new Date());
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+    const [selectedFilePath, setSelectedFilePath] = useState(null); // Path for saving file
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -57,30 +60,40 @@ const UserDeviceRegistration = () => {
         fetchDevices();
     }, [selectedUsername]);
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!selectedUsername || !selectedDeviceId || !startDate || !endDate) {
             Alert.alert('Error', 'Please complete all fields before downloading.');
             return;
         }
-
-        // Convert dates to the format required by your API if necessary
-        const start = startDate.toISOString().split('T')[0];
-        const end = endDate.toISOString().split('T')[0];
-        
-        const url = `http://192.168.1.10:2030/api/sensor_data/export?profileId={profileId}&deviceId={deviceId}&startDate={startDate}&endDate={endDate}`;
-
-        // Handle the download (this could vary depending on your requirements)
-        axios.get(url, { responseType: 'blob' })
-            .then(response => {
-                // Process the downloaded file, e.g., save it to the device
-                // For example, use `react-native-fs` to save the file locally
-                Alert.alert('Success', 'Excel file downloaded successfully.');
-            })
-            .catch(error => {
-                console.error('Error downloading the Excel file:', error);
-                Alert.alert('Error', 'There was an error downloading the Excel file.');
-            });
-            console.log ('data form database', handleDownload);
+    
+        const start = startDate.toISOString();
+        const end = endDate.toISOString();
+        const url = `http://192.168.1.10:2030/api/sensor_data/export?profileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
+    
+        try {
+            const response = await axios.get(url, { responseType: 'blob' });
+            const blob = response.data;
+            const reader = new FileReader();
+    
+            reader.onloadend = async () => {
+                const base64data = reader.result.split(',')[1]; // Remove the data URL prefix
+                const downloadsDirectory = RNFS.DownloadDirectoryPath;
+                const filePath = `${downloadsDirectory}/SensorData_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+                try {
+                    await RNFS.writeFile(filePath, base64data, 'base64');
+                    Alert.alert('Success', `Excel file downloaded successfully: ${filePath}`);
+                } catch (error) {
+                    console.error('Error saving the file:', error);
+                    Alert.alert('Error', 'There was an error saving the Excel file.');
+                }
+            };
+    
+            reader.readAsDataURL(blob);
+        } catch (error) {
+            console.error('Error downloading the Excel file:', error);
+            Alert.alert('Error', 'There was an error downloading the Excel file.');
+        }
     };
 
     return (
@@ -154,6 +167,10 @@ const UserDeviceRegistration = () => {
                     />
                 )}
                 <Text style={styles.dateText}>{`Selected End Date: ${endDate.toDateString()}`}</Text>
+
+                {/* <TouchableOpacity style={styles.button} onPress={selectFolder}>
+                    <Text style={styles.buttonText}>Select Save Location</Text>
+                </TouchableOpacity> */}
 
                 <TouchableOpacity style={styles.button} onPress={handleDownload}>
                     <Text style={styles.buttonText}>Download Excel</Text>
