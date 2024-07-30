@@ -17,7 +17,6 @@ const UserDeviceRegistration = () => {
     const [endDate, setEndDate] = useState(new Date());
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-    const [selectedFilePath, setSelectedFilePath] = useState(null); // Path for saving file
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -76,7 +75,7 @@ const UserDeviceRegistration = () => {
             const reader = new FileReader();
     
             reader.onloadend = async () => {
-                const base64data = reader.result.split(',')[1]; // Remove the data URL prefix
+                const base64data = reader.result.split(',')[1]; 
                 const downloadsDirectory = RNFS.DownloadDirectoryPath;
                 const filePath = `${downloadsDirectory}/SensorData_${new Date().toISOString().split('T')[0]}.xlsx`;
     
