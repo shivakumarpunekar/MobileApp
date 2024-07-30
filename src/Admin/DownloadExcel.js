@@ -67,7 +67,7 @@ const UserDeviceRegistration = () => {
     
         const start = startDate.toISOString();
         const end = endDate.toISOString();
-        const url = `http://192.168.1.10:2030/api/sensor_data/export?profileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
+        const url = `http://103.145.50.185:2030/api/sensor_data/export?profileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
     
         try {
             const response = await axios.get(url, { responseType: 'blob' });
