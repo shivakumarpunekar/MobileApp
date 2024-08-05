@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Button } from "react-native";
+import { View, Text, FlatList, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 const SensorData = () => {
@@ -40,11 +40,20 @@ const SensorData = () => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
+                {/* This is a title and graph button */}
                 <Text style={styles.title}>Device {deviceId}</Text>
-                <Button
-                    title="Go to Graph"
-                    onPress={() => navigation.navigate('GraphPage', { deviceId })}
-                />
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('GraphPage', { deviceId })}>
+                    <Text style={styles.buttonText}>Go to Graph</Text>
+                </TouchableOpacity>
+            </View>
+            {/* This is a button for Switch and Valva-status */}
+            <View style={styles.header}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId })}>
+                    <Text style={styles.buttonText}>Switch</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>
+                    <Text style={styles.buttonText}>Valve Status</Text>
+                </TouchableOpacity>
             </View>
             <FlatList
                 data={data}
@@ -74,6 +83,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
+        // backgroundColor: '#BFA100',
+    },
+    button: {
+        backgroundColor: '#BFA100',
+        padding: 10,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
     },
     title: {
         fontSize: 24,

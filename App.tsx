@@ -25,6 +25,9 @@ import ChartScreen from './src/Admin/Chart';
 import SensorData from './src/Admin/sensor_data';
 import GraphPage from './src/Admin/GraphPage ';
 import UserDeviceRegistation from './src/Admin/UserDeviceRegistation';
+import Valva_status from './src/Admin/Valva_status';
+import Switch from './src/Admin/Switch';
+import Valva_status_detail from './src/Admin/Valva_status_detail';
 
 const Stack = createStackNavigator();
 
@@ -121,6 +124,25 @@ function App(): React.JSX.Element {
               name="GraphPage" //This is for Admin Graph Page
               component={GraphPage}
               options={{ headerTitle: 'Graph' }}
+            />
+
+            <Stack.Screen
+              name="Valva_status" //This is for Admin Valva_status Page
+              component={Valva_status}
+              options={{ headerTitle: 'Valva_status' }}
+            />
+
+            <Stack.Screen
+              name="Switch" //This is for Admin Switch Page
+              component={Switch}
+              options={{ headerTitle: 'Switch' }}
+            />
+
+
+            <Stack.Screen
+              name="Valva_status_detail" //This is for Admin Valva_status_detail Page
+              component={Valva_status_detail}
+              options={{ headerTitle: 'Valva_status_detail' }}
             />
 
             <Stack.Screen
