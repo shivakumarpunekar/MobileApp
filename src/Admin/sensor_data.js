@@ -21,7 +21,7 @@ const SensorData = () => {
 
     useEffect(() => {
         fetchSensorData();
-        const intervalId = setInterval(fetchSensorData, 1000); // Fetch data every 1 seconds
+        const intervalId = setInterval(fetchSensorData, 1000); // Fetch data every 1 second
         return () => clearInterval(intervalId);
     }, []);
 
@@ -37,6 +37,18 @@ const SensorData = () => {
         }
     };
 
+    const renderTextStyle = (sensor1, sensor2) => {
+        // Conditionally determine the text color based on the background color
+        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
+            (sensor1 <= 1250 && sensor2 <= 1250) ||
+            (sensor1 >= 4000 && sensor2 <= 1250) ||
+            (sensor1 <= 1250 && sensor2 >= 4000)) {
+            return styles.itemTextWhite; // White text color for red background
+        } else {
+            return styles.itemTextBlack; // Default black text color
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -46,7 +58,7 @@ const SensorData = () => {
                     <Text style={styles.buttonText}>Go to Graph</Text>
                 </TouchableOpacity>
             </View>
-            {/* This is a button for Switch and Valva-status */}
+            {/* This is a button for Switch and Valve-status */}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId })}>
                     <Text style={styles.buttonText}>Switch</Text>
@@ -60,11 +72,11 @@ const SensorData = () => {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                        <Text style={styles.itemText}>Device Id: {item.deviceId}</Text>
-                        <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
-                        <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
-                        <Text style={styles.itemText}>Valve Status: {item.solenoidValveStatus}</Text>
-                        <Text style={styles.itemText}>Date Time: {item.createdDateTime}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Device Id: {item.deviceId}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-1: {item.sensor1_value}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-2: {item.sensor2_value}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Valve Status: {item.solenoidValveStatus}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Date Time: {item.createdDateTime}</Text>
                     </View>
                 )}
             />
@@ -111,14 +123,19 @@ const styles = StyleSheet.create({
         elevation: 8,
     },
     itemContainerGreen: {
-        backgroundColor: '#7fff00', // Default green background
+        backgroundColor: '#7fff00', // Green background
     },
     itemContainerRed: {
         backgroundColor: '#ff0000', // Red background for specific condition
     },
     itemText: {
         fontSize: 16,
-        color: '#000',
+    },
+    itemTextWhite: {
+        color: '#fff', // White text color
+    },
+    itemTextBlack: {
+        color: '#000', // Black text color
     },
 });
 

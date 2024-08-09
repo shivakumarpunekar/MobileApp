@@ -34,6 +34,17 @@ const Valva_status_detail = () => {
     }
   };
 
+  const renderItemTextStyle = (sensor1, sensor2) => {
+    if ((sensor1 >= 4000 && sensor2 >= 4000) ||
+        (sensor1 <= 1250 && sensor2 <= 1250) ||
+        (sensor1 >= 4000 && sensor2 <= 1250) ||
+        (sensor1 <= 1250 && sensor2 >= 4000)) {
+      return styles.itemTextWhite;
+    } else {
+      return styles.itemText;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -41,11 +52,11 @@ const Valva_status_detail = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-            <Text style={styles.itemText}>Device Id: {item.deviceId}</Text>
-            <Text style={styles.itemText}>Sensor-1: {item.sensor1_value}</Text>
-            <Text style={styles.itemText}>Sensor-2: {item.sensor2_value}</Text>
-            <Text style={styles.itemText}>Valve Status: {item.solenoidValveStatus}</Text>
-            <Text style={styles.itemText}>Date Time: {item.createdDateTime}</Text>
+            <Text style={renderItemTextStyle(item.sensor1_value, item.sensor2_value)}>Device Id: {item.deviceId}</Text>
+            <Text style={renderItemTextStyle(item.sensor1_value, item.sensor2_value)}>Sensor-1: {item.sensor1_value}</Text>
+            <Text style={renderItemTextStyle(item.sensor1_value, item.sensor2_value)}>Sensor-2: {item.sensor2_value}</Text>
+            <Text style={renderItemTextStyle(item.sensor1_value, item.sensor2_value)}>Valve Status: {item.solenoidValveStatus}</Text>
+            <Text style={renderItemTextStyle(item.sensor1_value, item.sensor2_value)}>Date Time: {item.createdDateTime}</Text>
           </View>
         )}
       />
@@ -77,7 +88,11 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: '#000',
+    color: '#000', // Default text color
+  },
+  itemTextWhite: {
+    fontSize: 16,
+    color: '#fff', // White text color for red background
   },
 });
 
