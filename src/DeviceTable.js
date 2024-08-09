@@ -73,7 +73,7 @@ const DeviceTable = ({ loginId }) => {
           const { sensor1, sensor2, solenoidValveStatus } = getSensorValues(deviceId);
 
           let backgroundColor;
-          let heartIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000'; // Green for active, Red for inactive
+          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
           let valveIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000'; // Green for on, Red for off
           let buttonText = `Device ${deviceId}`;
 
