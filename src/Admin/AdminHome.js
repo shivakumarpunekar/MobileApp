@@ -7,6 +7,7 @@ import PiChartScreen from "./PiChartScreen";
 import SensorDataButton from "./sensor_data_Button";
 import UserDevice from "./UserDevice";
 import DownloadExcel from "./DownloadExcel";
+import Threshold from "./Threshold";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,7 +15,7 @@ const AdminHome = () => {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
+                tabBarIcon: ({ color, size }) => {
                     let iconName;
                     if (route.name === 'Home') {
                         iconName = 'home';
@@ -26,8 +27,10 @@ const AdminHome = () => {
                         iconName = 'tachometer';
                     } else if (route.name === 'UserDevice') {
                         iconName = 'desktop';
-                    } else if (route.name === 'download'){
+                    } else if (route.name === 'download') {
                         iconName = 'download';
+                    } else if (route.name === 'Threshold') {
+                        iconName = 'user';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;
@@ -44,6 +47,7 @@ const AdminHome = () => {
             <Tab.Screen name="SensorDataButton" component={SensorDataButton} options={{ headerShown: false }} />
             <Tab.Screen name="UserDevice" component={UserDevice} options={{ headerShown: false }} />
             <Tab.Screen name="download" component={DownloadExcel} options={{ headerShown: false }} />
+            <Tab.Screen name="Threshold" component={Threshold} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
 };
