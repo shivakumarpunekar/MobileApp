@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert, Platform } from 'react-native';
-// import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
-// import appleAuth, {
-//   AppleButton,
-//   AppleAuthError,
-//   AppleAuthRequestOperation,
-//   AppleAuthRequestScope,
-// } from '@invertase/react-native-apple-authentication';
-// import Captcha from './Captcha/Captcha';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert } from 'react-native';
+import RainAnimation from './RainAnimation/RainAnimation';
 
 export default function LoginPage({ navigation }) {
   const [username, setUsername] = useState('');
@@ -15,62 +8,12 @@ export default function LoginPage({ navigation }) {
   const [loginId, setLoginId] = useState('');
   const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  // // Configure Google SignIn
-  // GoogleSignin.configure({
-  //   webClientId: 'YOUR_WEB_CLIENT_ID',
-  //   iosClientId: 'YOUR_IOS_CLIENT_ID',
-  //   offlineAccess: true,
-  // });
-
-  // // Function to handle Google Sign-In
-  // const signInWithGoogle = async () => {
-  //   try {
-  //     await GoogleSignin.hasPlayServices();
-  //     const userInfo = await GoogleSignin.signIn();
-  //   } catch (error) {
-  //     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-  //       console.log('User cancelled the login flow');
-  //     } else if (error.code === statusCodes.IN_PROGRESS) {
-  //       console.log('Login is already in progress');
-  //     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-  //       console.log('Play services not available or outdated');
-  //     } else {
-  //       console.log('Error:', error);
-  //     }
-  //   }
-  // };
-
-  // // Function to handle Apple Sign-In
-  // const onAppleButtonPress = async () => {
-  //   try {
-  //     const appleAuthRequestResponse = await appleAuth.performRequest({
-  //       requestedOperation: AppleAuthRequestOperation.LOGIN,
-  //       requestedScopes: [AppleAuthRequestScope.EMAIL, AppleAuthRequestScope.FULL_NAME],
-  //     });
-
-  //     if (!appleAuthRequestResponse.identityToken) {
-  //       throw 'Apple Sign-In failed - no identify token returned';
-  //     }
-
-  //     Alert.alert('Login Success', 'You are logged in with Apple!');
-  //   } catch (error) {
-  //     if (error.code === AppleAuthError.CANCELED) {
-  //       Alert.alert('Login Canceled', 'You canceled the login');
-  //     } else {
-  //       Alert.alert('Login Failed', 'Something went wrong');
-  //       console.error(error);
-  //     }
-  //   }
-  // };
-
-  // Function to handle Login
   const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert('Validation Error', 'Username, password are required.');
       return;
     }
 
-    // if (captchaVerified) {
     try {
       const response = await fetch('http://103.145.50.185:2030/api/Auth/login', {
         method: 'POST',
@@ -90,25 +33,21 @@ export default function LoginPage({ navigation }) {
 
       const data = await response.json();
 
-      //Admin and User Login Handular
       if (data.isAdmin) {
         Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
-        navigation.navigate('AdminHome'); // Navigate to Admin Dashboard
+        navigation.navigate('AdminHome');
       } else {
-        // Alert.alert('Login Successful', `UserName: ${data.username}`);
-        setLoginId(data.loginId); // Update loginId state after successful login
-        navigation.navigate('Welcome', { loginId: data.loginId }); // Navigate to regular user welcome page
+        setLoginId(data.loginId);
+        navigation.navigate('Welcome', { loginId: data.loginId });
       }
     } catch (error) {
       Alert.alert('Login Failed', 'Please verify username and password.');
     }
-    // } else {
-    //   Alert.alert('Captcha Verification', 'Please verify the CAPTCHA first.');
-    // }
   };
 
   return (
     <View style={styles.container}>
+      <RainAnimation/>
       <Image
         source={require('../assets/aairos.png')}
         style={styles.profileImage}
@@ -127,7 +66,6 @@ export default function LoginPage({ navigation }) {
         value={password}
         onChangeText={setPassword}
       />
-      {/* <Captcha onVerify={setCaptchaVerified} /> */}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -143,32 +81,6 @@ export default function LoginPage({ navigation }) {
           <Text style={styles.buttonText}>Signup</Text>
         </TouchableOpacity>
       </View>
-
-      {/* {Platform.OS !== 'ios' && (
-        <View style={styles.socialContainer}>
-          <GoogleSigninButton
-            style={styles.googleButton}
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={signInWithGoogle}
-          />
-        </View>
-      )}
-
-      {Platform.OS !== 'android' && (
-        <View>
-          <AppleButton
-            buttonStyle={AppleButton.Style.BLACK}
-            buttonType={AppleButton.Type.SIGN_IN}
-            style={{
-              width: 192,
-              height: 48,
-              top: 6,
-            }}
-            onPress={onAppleButtonPress}
-          />
-        </View>
-      )} */}
     </View>
   );
 }
@@ -181,6 +93,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F6F3E7',
     padding: 16,
+    position: 'absolute', // Position absolute to ensure it's above the rain animation
+    zIndex: 1, // Higher zIndex to make sure it appears above the rain animation
   },
   profileImage: {
     width: 100,
@@ -191,11 +105,13 @@ const styles = StyleSheet.create({
   input: {
     width: '80%',
     height: 40,
-    borderColor: 'gray',
+    borderColor: '#D3D3D3',
     borderWidth: 1,
     marginBottom: 12,
     paddingLeft: 8,
     borderRadius: 5,
+    backgroundColor: '#F0F0F0',
+    color: '#333',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -210,19 +126,15 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     width: '45%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   buttonText: {
     color: '#fff',
     fontSize: 15,
   },
-  socialContainer: {
-    flexDirection: 'row',
-    marginTop: 20,
-    justifyContent: 'center',
-    width: '60%',
-  },
-  googleButton: {
-    width: 192,
-    height: 48,
-  },
 });
+
