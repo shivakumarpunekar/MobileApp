@@ -3,6 +3,7 @@ import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-nati
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import moment from 'moment';
 
 const DeviceTable = ({ loginId }) => {
   const [userDevices, setUserDevices] = useState([]);
@@ -55,9 +56,10 @@ const DeviceTable = ({ loginId }) => {
         sensor1: deviceSensorData.sensor1_value,
         sensor2: deviceSensorData.sensor2_value,
         solenoidValveStatus: deviceSensorData.solenoidValveStatus,
+        createdDateTime: deviceSensorData.createdDateTime, // Include createdDateTime
       };
     }
-    return { sensor1: null, sensor2: null, solenoidValveStatus: null };
+    return { sensor1: null, sensor2: null, solenoidValveStatus: null, createdDateTime: null };
   };
 
   const renderButtonsInGrid = () => {
@@ -66,13 +68,16 @@ const DeviceTable = ({ loginId }) => {
       rows.push(userDevices.slice(i, i + 3));
     }
 
+    const currentDate = moment().format('DD-MM-YYYY');
+
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
         {row.map(device => {
           const { deviceId, deviceStatus } = device;
-          const { sensor1, sensor2, solenoidValveStatus } = getSensorValues(deviceId);
+          const { sensor1, sensor2, solenoidValveStatus, createdDateTime } = getSensorValues(deviceId);
 
           let backgroundColor;
+          const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
           const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
           let valveIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000'; // Green for on, Red for off
           let buttonText = `Device ${deviceId}`;
