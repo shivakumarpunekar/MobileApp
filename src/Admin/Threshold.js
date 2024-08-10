@@ -24,7 +24,7 @@ const Threshold = () => {
 
   const fetchUserProfiles = async () => {
     try {
-      const response = await fetch('http://192.168.1.10:2030/api/Threshold');
+      const response = await fetch('http://103.145.50.185:2030/api/Threshold');
       if (!response.ok) {
         throw new Error('Network response was not ok.');
       }
@@ -92,12 +92,12 @@ const Threshold = () => {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity
-                style={styles.floatingButton}
-                onPress={() => navigation.navigate('#')}
-            >
-                <Icon name="add" size={24} color="#fff" />
-            </TouchableOpacity>
+      {/* <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => navigation.navigate('#')}
+      >
+        <Icon name="add" size={24} color="#fff" />
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
-},
+  },
 });
 
 export default Threshold;
