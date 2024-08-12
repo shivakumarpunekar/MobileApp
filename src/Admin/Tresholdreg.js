@@ -50,7 +50,7 @@ const Tresholdreg = () => {
             sensor2_value: parseInt(sensor2Value, 10),
         };
 
-        axios.post(`http://192.168.1.10:2030/api/Threshold/CreateSingle?profileId=${payload.profileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
+        axios.post(`http://103.145.50.185:2030/api/Threshold/CreateSingle?profileId=${payload.profileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
             .then(response => {
                 Alert.alert('Success', 'Threshold created successfully.');
                 navigation.navigate('Threshold', { refresh: true });

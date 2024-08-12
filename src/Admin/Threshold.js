@@ -30,7 +30,7 @@ const Threshold = () => {
 
   const fetchUserProfiles = async () => {
     try {
-      const response = await fetch('http://192.168.1.10:2030/api/Threshold');
+      const response = await fetch('http://103.145.50.185:2030/api/Threshold');
       if (!response.ok) {
         throw new Error('Network response was not ok.');
       }
