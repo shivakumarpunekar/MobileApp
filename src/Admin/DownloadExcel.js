@@ -65,6 +65,11 @@ const UserDeviceRegistration = () => {
             return;
         }
     
+        if (startDate.toDateString() === endDate.toDateString()) {
+            Alert.alert('Error', 'Start Date and End Date cannot be the same.');
+            return;
+        }
+    
         const start = startDate.toISOString();
         const end = endDate.toISOString();
         const url = `http://103.145.50.185:2030/api/sensor_data/export?profileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
@@ -77,7 +82,7 @@ const UserDeviceRegistration = () => {
             reader.onloadend = async () => {
                 const base64data = reader.result.split(',')[1]; 
                 const downloadsDirectory = RNFS.DownloadDirectoryPath;
-                const filePath = `${downloadsDirectory}/SensorData_${new Date().toISOString().split('T')[0]}.xlsx`;
+                const filePath = `${downloadsDirectory}/Data_${new Date().toISOString().split('T')[0]}.xlsx`;
     
                 try {
                     await RNFS.writeFile(filePath, base64data, 'base64');
@@ -90,10 +95,15 @@ const UserDeviceRegistration = () => {
     
             reader.readAsDataURL(blob);
         } catch (error) {
-            console.error('Error downloading the Excel file:', error);
-            Alert.alert('Error', 'There was an error downloading the Excel file.');
-        }
+            if (error.response && error.response.status === 404) {
+                Alert.alert('No Data', 'No data found for the specified parameters.');
+            } else {
+                console.error('Error downloading the Excel file:', error);
+                Alert.alert('Error', 'There was an error downloading the Excel file.');
+            }
+        }        
     };
+    
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
