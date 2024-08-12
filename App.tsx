@@ -28,6 +28,7 @@ import UserDeviceRegistation from './src/Admin/UserDeviceRegistation';
 import Valva_status from './src/Admin/Valva_status';
 import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
+import Tresholdreg from './src/Admin/Tresholdreg';
 
 const Stack = createStackNavigator();
 
@@ -149,6 +150,12 @@ function App(): React.JSX.Element {
               name="UserDeviceRegistation" //This is for Admin device registation Page
               component={UserDeviceRegistation}
               options={{ headerTitle: 'Device Registation' }}
+            />
+
+            <Stack.Screen
+              name="Tresholdreg" //This is for Admin device registation Page
+              component={Tresholdreg}
+              options={{ headerTitle: 'Tresholdreg' }}
             />
 
           </Stack.Navigator>
