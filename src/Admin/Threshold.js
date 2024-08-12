@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 // Utility function to format date
 const formatDate = (dateString) => {
@@ -14,9 +15,14 @@ const Threshold = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProfiles, setFilteredProfiles] = useState([]);
 
+  const navigation = useNavigation(); 
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    fetchUserProfiles();
-  }, []);
+    if (isFocused) {
+      fetchUserProfiles();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     filterProfiles();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -9,7 +9,8 @@ const Tresholdreg = () => {
     const [selectedUsername, setSelectedUsername] = useState('');
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
-    const [isActivated, setIsActivated] = useState(false);
+    const [sensor1Value, setSensor1Value] = useState('');
+    const [sensor2Value, setSensor2Value] = useState('');
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -37,27 +38,28 @@ const Tresholdreg = () => {
     }, []);
 
     const handleSubmit = () => {
-        if (!selectedUsername || !selectedDeviceId) {
-            Alert.alert('Error', 'Please select the username and device ID.');
+        if (!selectedUsername || !selectedDeviceId || !sensor1Value || !sensor2Value) {
+            Alert.alert('Error', 'Please fill out all fields.');
             return;
         }
 
         const payload = {
             profileId: selectedUsername,
             deviceId: selectedDeviceId,
-            deviceStatus: isActivated ? 'Active' : 'Inactive',
+            sensor1_value: parseInt(sensor1Value, 10),
+            sensor2_value: parseInt(sensor2Value, 10),
         };
 
-        axios.post('http://192.168.1.10:2030/api/Threshold/CreateSingle?profileId=${profileId}&deviceId=${deviceId}&sensor1_value=${threshold_1}&sensor2_value=${threshold_2}', payload)
+        axios.post(`http://192.168.1.10:2030/api/Threshold/CreateSingle?profileId=${payload.profileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
             .then(response => {
-                Alert.alert('Success', 'User Device has been updated successfully.');
-                navigation.navigate('UserDevice');
+                Alert.alert('Success', 'Threshold created successfully.');
+                navigation.navigate('Threshold', { refresh: true });
             })
             .catch(error => {
                 if (error.response && error.response.data) {
                     Alert.alert('Error', error.response.data);
                 } else {
-                    Alert.alert('Error', 'There was an error updating the User Device.');
+                    Alert.alert('Error', 'There was an error creating the threshold.');
                 }
             });
     };
@@ -82,7 +84,6 @@ const Tresholdreg = () => {
                 </Picker>
 
                 <Text style={styles.label}>Device ID:</Text>
-
                 <Picker
                     selectedValue={selectedDeviceId}
                     onValueChange={(itemValue) => setSelectedDeviceId(itemValue)}
@@ -98,7 +99,21 @@ const Tresholdreg = () => {
                     ))}
                 </Picker>
 
-                
+                <Text style={styles.label}>Sensor 1 Value:</Text>
+                <TextInput
+                    style={styles.input}
+                    value={sensor1Value}
+                    onChangeText={setSensor1Value}
+                    keyboardType="numeric"
+                />
+
+                <Text style={styles.label}>Sensor 2 Value:</Text>
+                <TextInput
+                    style={styles.input}
+                    value={sensor2Value}
+                    onChangeText={setSensor2Value}
+                    keyboardType="numeric"
+                />
 
                 <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                     <Text style={styles.buttonText}>Submit</Text>
@@ -131,18 +146,16 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 8,
         marginVertical: 8,
-        ...(Platform.OS === 'ios' && {
-            height: 200,
-        }),
     },
-    statusText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
+    input: {
+        height: 50,
+        width: '100%',
+        backgroundColor: '#fff',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
         marginVertical: 8,
-    },
-    switch: {
-        marginVertical: 8,
+        paddingHorizontal: 10,
     },
     button: {
         backgroundColor: '#BFA100',
