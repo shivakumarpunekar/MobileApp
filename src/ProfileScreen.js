@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { fetchDataByIdFromApi, fetchUserProfileIdByLoginId } from './Api/api';
+import { fetchDataByIdFromApi, fetchuserProfileIdByLoginId } from './Api/api';
 
 // This is for date format
 const formatDate = dateString => {
@@ -28,7 +28,7 @@ const ProfilePage = ({ loginId }) => {
   //function to fetch data
   const fetchData = async () => {
     try {
-      const userProfileId = await fetchUserProfileIdByLoginId(loginId);
+      const userProfileId = await fetchuserProfileIdByLoginId(loginId);
       if (!userProfileId) {
         setError(new Error(`User profile not found`));
         return;

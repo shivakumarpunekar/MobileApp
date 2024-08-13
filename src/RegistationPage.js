@@ -168,7 +168,7 @@ const RegistrationPage = () => {
         }
 
         const userprofileData = await userProfileResponse.json();
-        const UserProfileId = userprofileData.UserProfileId;
+        const userProfileId = userprofileData.userProfileId;
 
 
         // Post to the login table
@@ -180,7 +180,7 @@ const RegistrationPage = () => {
           body: JSON.stringify({
             userName,
             password,
-            UserProfileId,
+            userProfileId,
           }),
         });
 

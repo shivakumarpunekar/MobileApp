@@ -44,13 +44,13 @@ const Tresholdreg = () => {
         }
 
         const payload = {
-            profileId: selectedUsername,
+            userProfileId: selectedUsername,
             deviceId: selectedDeviceId,
             sensor1_value: parseInt(sensor1Value, 10),
             sensor2_value: parseInt(sensor2Value, 10),
         };
 
-        axios.post(`http://103.145.50.185:2030/api/Threshold/CreateSingle?profileId=${payload.profileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
+        axios.post(`http://103.145.50.185:2030/api/Threshold/CreateSingle?userProfileId=${payload.userProfileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
             .then(response => {
                 Alert.alert('Success', 'Threshold created successfully.');
                 navigation.navigate('Threshold', { refresh: true });

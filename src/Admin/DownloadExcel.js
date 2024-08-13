@@ -64,26 +64,26 @@ const UserDeviceRegistration = () => {
             Alert.alert('Error', 'Please complete all fields before downloading.');
             return;
         }
-    
+
         if (startDate.toDateString() === endDate.toDateString()) {
             Alert.alert('Error', 'Start Date and End Date cannot be the same.');
             return;
         }
-    
+
         const start = startDate.toISOString();
         const end = endDate.toISOString();
-        const url = `http://103.145.50.185:2030/api/sensor_data/export?profileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
-    
+        const url = `http://103.145.50.185:2030/api/sensor_data/export?userProfileId=${selectedUsername}&deviceId=${selectedDeviceId}&startDate=${start}&endDate=${end}`;
+
         try {
             const response = await axios.get(url, { responseType: 'blob' });
             const blob = response.data;
             const reader = new FileReader();
-    
+
             reader.onloadend = async () => {
-                const base64data = reader.result.split(',')[1]; 
+                const base64data = reader.result.split(',')[1];
                 const downloadsDirectory = RNFS.DownloadDirectoryPath;
                 const filePath = `${downloadsDirectory}/Data_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
+
                 try {
                     await RNFS.writeFile(filePath, base64data, 'base64');
                     Alert.alert('Success', `Excel file downloaded successfully: ${filePath}`);
@@ -92,7 +92,7 @@ const UserDeviceRegistration = () => {
                     Alert.alert('Error', 'There was an error saving the Excel file.');
                 }
             };
-    
+
             reader.readAsDataURL(blob);
         } catch (error) {
             if (error.response && error.response.status === 404) {
@@ -101,9 +101,9 @@ const UserDeviceRegistration = () => {
                 console.error('Error downloading the Excel file:', error);
                 Alert.alert('Error', 'There was an error downloading the Excel file.');
             }
-        }        
+        }
     };
-    
+
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>

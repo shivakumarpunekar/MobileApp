@@ -43,7 +43,7 @@ const UserDeviceRegistration = () => {
         }
 
         const payload = {
-            profileId: selectedUsername,
+            userProfileId: selectedUsername,
             deviceId: selectedDeviceId,
             deviceStatus: isActivated ? 'Active' : 'Inactive',
         };

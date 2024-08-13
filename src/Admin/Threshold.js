@@ -15,7 +15,7 @@ const Threshold = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProfiles, setFilteredProfiles] = useState([]);
 
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const Threshold = () => {
       Object.values(profile).some(value =>
         String(value).toLowerCase().includes(query)
       )
-    );
+    ); userProfileId
     setFilteredProfiles(filtered);
   };
 
@@ -75,7 +75,7 @@ const Threshold = () => {
       <TextInput
         style={styles.searchBar}
         placeholder="Search"
-        value={searchQuery}
+        value={searchQuery} userProfileId
         onChangeText={setSearchQuery}
       />
       <ScrollView horizontal>

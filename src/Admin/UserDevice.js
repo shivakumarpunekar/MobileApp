@@ -58,7 +58,7 @@ const UserDevice = ({ navigation }) => {
 
     const renderUserdevice = ({ item, index }) => (
         <View style={[styles.userDeviceRow, { backgroundColor: index % 2 === 0 ? '#fff' : '#F6F3E7' }]}>
-            <Text style={[styles.cell]}>{item.profileId}</Text>
+            <Text style={[styles.cell]}>{item.userProfileId}</Text>
             <Text style={[styles.cell]}>{item.deviceId}</Text>
             <Text style={[styles.cell]}>{item.deviceStatus}</Text>
             <Text style={[styles.cell]}>{formatDate(item.createdDate)}</Text>
@@ -79,7 +79,7 @@ const UserDevice = ({ navigation }) => {
             <ScrollView horizontal>
                 <View style={{ flex: 1 }}>
                     <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-                        <Text style={[styles.headerCell, { width: 100 }]}>profileId</Text>
+                        <Text style={[styles.headerCell, { width: 100 }]}>userProfileId</Text>
                         <Text style={[styles.headerCell, { width: 100 }]}>DeviceId</Text>
                         <Text style={[styles.headerCell, { width: 100 }]}>deviceStatus</Text>
                         <Text style={[styles.headerCell, { width: 100 }]}>createdDate</Text>

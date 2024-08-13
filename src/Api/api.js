@@ -49,8 +49,8 @@ export const fetchDataByIdFromApi = async (userProfileId) => {
   }
 };
 
-//This is a LoginId To get a UserProfileId get Method
-export const fetchUserProfileIdByLoginId = async (loginId) => {
+//This is a LoginId To get a userProfileId get Method
+export const fetchuserProfileIdByLoginId = async (loginId) => {
   try {
     const response = await apiClient.get(`/api/Auth/login/${loginId}`);
     return response.data.userProfileId;
