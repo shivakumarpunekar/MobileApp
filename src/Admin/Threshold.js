@@ -58,7 +58,7 @@ const Threshold = () => {
 
   const renderUserProfile = ({ item, index }) => (
     <View style={[styles.userProfileRow, { backgroundColor: index % 2 === 0 ? '#F6F3E7' : '#fff' }]}>
-      <Text style={[styles.cell]}>{item.profileId}</Text>
+      <Text style={[styles.cell]}>{item.userProfileId}</Text>
       <Text style={[styles.cell]}>{item.deviceId}</Text>
       <Text style={[styles.cell]}>{item.threshold_1}</Text>
       <Text style={[styles.cell]}>{item.threshold_2}</Text>
@@ -81,7 +81,7 @@ const Threshold = () => {
       <ScrollView horizontal>
         <View style={{ flex: 1 }}>
           <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-            <Text style={[styles.headerCell, { width: 200 }]}>profileId</Text>
+            <Text style={[styles.headerCell, { width: 200 }]}>userProfileId</Text>
             <Text style={[styles.headerCell, { width: 200 }]}>deviceId</Text>
             <Text style={[styles.headerCell, { width: 200 }]}>Threshold_1</Text>
             <Text style={[styles.headerCell, { width: 200 }]}>Threshold_2</Text>
