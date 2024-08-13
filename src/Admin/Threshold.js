@@ -3,12 +3,6 @@ import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, To
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-// Utility function to format date
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
-
 const Threshold = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,8 +75,8 @@ const Threshold = () => {
       <Text style={[styles.cell, { width: headerWidths[1] || 'auto' }]}>{item.deviceId}</Text>
       <Text style={[styles.cell, { width: headerWidths[2] || 'auto' }]}>{item.threshold_1}</Text>
       <Text style={[styles.cell, { width: headerWidths[3] || 'auto' }]}>{item.threshold_2}</Text>
-      <Text style={[styles.cell, { width: headerWidths[4] || 'auto' }]}>{formatDate(item.createdDateTime)}</Text>
-      <Text style={[styles.cell, { width: headerWidths[5] || 'auto' }]}>{formatDate(item.updatedDateTime)}</Text>
+      <Text style={[styles.cell, { width: headerWidths[4] || 'auto' }]}>{item.createdDateTime}</Text>
+      <Text style={[styles.cell, { width: headerWidths[5] || 'auto' }]}>{item.updatedDateTime}</Text>
       <TouchableOpacity
         style={styles.updateButton}
         onPress={() => navigation.navigate('ThresholdEdit', { id: item.id })}
@@ -96,7 +90,7 @@ const Threshold = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>User Profiles</Text>
+      <Text style={styles.header}>Threshold</Text>
       <TextInput
         style={styles.searchBar}
         placeholder="Search"
@@ -106,7 +100,7 @@ const Threshold = () => {
       <ScrollView horizontal>
         <View style={{ flex: 1 }}>
           <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-            {['userProfileId', 'deviceId', 'Threshold_1', 'Threshold_2', 'createDateTime', 'UpdatedDateTime', 'Actions'].map((title, index) => (
+            {['userProfileId', 'deviceId', 'Threshold_1', 'Threshold_2', 'createdDateTime', 'updatedDateTime', 'Actions'].map((title, index) => (
               <Text
                 key={index}
                 style={[styles.headerCell, { width: headerWidths[index] || 'auto' }]}
