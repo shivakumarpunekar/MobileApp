@@ -11,7 +11,7 @@ const DeviceTable = ({ loginId }) => {
   const navigation = useNavigation();
 
   const fetchUserDevices = () => {
-    return axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
+    return axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${userProfileId}`)
       .then(response => response.data)
       .catch(error => {
         console.error('Error fetching user device data:', error);
