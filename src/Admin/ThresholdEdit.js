@@ -56,9 +56,6 @@ const ThresholdEdit = () => {
     // Build the request URL with query parameters
     const url = `http://192.168.1.10:2030/api/Threshold/${route.params.id}?userProfileId=${userProfileId}&deviceId=${deviceId}&Threshold_1=${threshold_1}&Threshold_2=${threshold_2}`;
   
-    // Log the URL for debugging
-    console.log('PUT request URL:', url);
-  
     axios.put(url)
       .then(response => {
         Alert.alert('Success', 'Threshold updated successfully.');
