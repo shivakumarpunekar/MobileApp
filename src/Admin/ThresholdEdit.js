@@ -23,7 +23,7 @@ const ThresholdEdit = () => {
         return;
       }
       try {
-        const response = await axios.get(`http://192.168.1.10:2030/api/Threshold/${id}`);
+        const response = await axios.get(`http://103.145.50.185:2030/api/Threshold/${id}`);
         setThreshold({
           userProfileId: response.data.userProfileId.toString(),
           deviceId: response.data.deviceId.toString(),
@@ -46,16 +46,16 @@ const ThresholdEdit = () => {
       Alert.alert('Error', 'Please fill out all fields.');
       return;
     }
-  
+
     // Convert values to integers
     const userProfileId = parseInt(threshold.userProfileId, 10);
     const deviceId = parseInt(threshold.deviceId, 10);
     const threshold_1 = parseInt(threshold.threshold_1, 10);
     const threshold_2 = parseInt(threshold.threshold_2, 10);
-  
+
     // Build the request URL with query parameters
-    const url = `http://192.168.1.10:2030/api/Threshold/${route.params.id}?userProfileId=${userProfileId}&deviceId=${deviceId}&Threshold_1=${threshold_1}&Threshold_2=${threshold_2}`;
-  
+    const url = `http://103.145.50.185:2030/api/Threshold/${route.params.id}?userProfileId=${userProfileId}&deviceId=${deviceId}&Threshold_1=${threshold_1}&Threshold_2=${threshold_2}`;
+
     axios.put(url)
       .then(response => {
         Alert.alert('Success', 'Threshold updated successfully.');
@@ -69,8 +69,8 @@ const ThresholdEdit = () => {
         }
       });
   };
-  
-  
+
+
 
   if (isLoading) {
     return <Text>Loading...</Text>;

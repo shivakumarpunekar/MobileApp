@@ -10,7 +10,7 @@ const ValvaStatus = () => {
 
   useEffect(() => {
     fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
-    // fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
+      // fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length === 0) { // Check if data is an array and if it's empty
@@ -23,20 +23,20 @@ const ValvaStatus = () => {
 
   return (
     <View style={styles.container}>
-    {uniqueDates && uniqueDates.length > 0 ? (
-      uniqueDates.map((date, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.button}
-          onPress={() => navigation.navigate('Valva_status_detail', { deviceId, date })}
-        >
-          <Text style={styles.buttonText}>{new Date(date).toDateString()}</Text>
-        </TouchableOpacity>
-      ))
-    ) : (
-      <Text style={styles.noDataText}>No data available.</Text>
-    )}
-  </View>
+      {uniqueDates && uniqueDates.length > 0 ? (
+        uniqueDates.map((date, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.button}
+            onPress={() => navigation.navigate('Valva_status_detail', { deviceId, date })}
+          >
+            <Text style={styles.buttonText}>{new Date(date).toDateString()}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.noDataText}>No data available.</Text>
+      )}
+    </View>
   );
 };
 
