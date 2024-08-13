@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
@@ -9,14 +9,17 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-
 const Threshold = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProfiles, setFilteredProfiles] = useState([]);
+  const [headerWidths, setHeaderWidths] = useState({});
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+
+  // Refs to measure header text widths
+  const headerRefs = useRef([]);
 
   useEffect(() => {
     if (isFocused) {
@@ -30,7 +33,7 @@ const Threshold = () => {
 
   const fetchUserProfiles = async () => {
     try {
-      const response = await fetch('http://103.145.50.185:2030/api/Threshold');
+      const response = await fetch('http://192.168.1.10:2030/api/Threshold');
       if (!response.ok) {
         throw new Error('Network response was not ok.');
       }
@@ -52,18 +55,40 @@ const Threshold = () => {
       Object.values(profile).some(value =>
         String(value).toLowerCase().includes(query)
       )
-    ); userProfileId
+    );
     setFilteredProfiles(filtered);
   };
 
+  const measureHeaderWidths = () => {
+    const widths = {};
+    headerRefs.current.forEach((ref, index) => {
+      ref.measure((x, y, width) => {
+        widths[index] = width;
+        if (Object.keys(widths).length === headerRefs.current.length) {
+          setHeaderWidths(widths);
+        }
+      });
+    });
+  };
+
+  useEffect(() => {
+    measureHeaderWidths();
+  }, []);
+
   const renderUserProfile = ({ item, index }) => (
     <View style={[styles.userProfileRow, { backgroundColor: index % 2 === 0 ? '#F6F3E7' : '#fff' }]}>
-      <Text style={[styles.cell]}>{item.userProfileId}</Text>
-      <Text style={[styles.cell]}>{item.deviceId}</Text>
-      <Text style={[styles.cell]}>{item.threshold_1}</Text>
-      <Text style={[styles.cell]}>{item.threshold_2}</Text>
-      <Text style={[styles.cell]}>{item.createdDateTime}</Text>
-      <Text style={[styles.cell]}>{item.updatedDateTime}</Text>
+      <Text style={[styles.cell, { width: headerWidths[0] || 'auto' }]}>{item.userProfileId}</Text>
+      <Text style={[styles.cell, { width: headerWidths[1] || 'auto' }]}>{item.deviceId}</Text>
+      <Text style={[styles.cell, { width: headerWidths[2] || 'auto' }]}>{item.threshold_1}</Text>
+      <Text style={[styles.cell, { width: headerWidths[3] || 'auto' }]}>{item.threshold_2}</Text>
+      <Text style={[styles.cell, { width: headerWidths[4] || 'auto' }]}>{formatDate(item.createdDateTime)}</Text>
+      <Text style={[styles.cell, { width: headerWidths[5] || 'auto' }]}>{formatDate(item.updatedDateTime)}</Text>
+      <TouchableOpacity
+        style={styles.updateButton}
+        onPress={() => navigation.navigate('ThresholdEdit', { id: item.id })}
+      >
+        <Icon name="edit" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -75,18 +100,22 @@ const Threshold = () => {
       <TextInput
         style={styles.searchBar}
         placeholder="Search"
-        value={searchQuery} userProfileId
+        value={searchQuery}
         onChangeText={setSearchQuery}
       />
       <ScrollView horizontal>
         <View style={{ flex: 1 }}>
           <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-            <Text style={[styles.headerCell, { width: 200 }]}>userProfileId</Text>
-            <Text style={[styles.headerCell, { width: 200 }]}>deviceId</Text>
-            <Text style={[styles.headerCell, { width: 200 }]}>Threshold_1</Text>
-            <Text style={[styles.headerCell, { width: 200 }]}>Threshold_2</Text>
-            <Text style={[styles.headerCell, { width: 200 }]}>createDateTime</Text>
-            <Text style={[styles.headerCell, { width: 200 }]}>UpdatedDateTime</Text>
+            {['userProfileId', 'deviceId', 'Threshold_1', 'Threshold_2', 'createDateTime', 'UpdatedDateTime', 'Actions'].map((title, index) => (
+              <Text
+                key={index}
+                style={[styles.headerCell, { width: headerWidths[index] || 'auto' }]}
+                ref={(ref) => { if (ref) headerRefs.current[index] = ref; }}
+                onLayout={() => measureHeaderWidths()}
+              >
+                {title}
+              </Text>
+            ))}
           </View>
           <FlatList
             data={filteredProfiles}
@@ -114,47 +143,56 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F6F3E7'
+    backgroundColor: '#F6F3E7',
   },
   header: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333',
   },
   searchBar: {
     height: 40,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
+    borderRadius: 8,
     marginBottom: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
   },
   headerRow: {
     flexDirection: 'row',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#bbb',
+    backgroundColor: '#F6F3E7',
   },
   headerCell: {
-    flex: 1,
     fontWeight: 'bold',
     color: '#000',
-    fontSize: 20,
+    fontSize: 16,
     textAlign: 'center',
     paddingVertical: 10,
+    paddingHorizontal: 5,
   },
   userProfileRow: {
     flexDirection: 'row',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
   cell: {
-    flex: 1,
-    padding: 10,
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
-    paddingVertical: 10,
-    width: 200,
+    padding: 10,
+  },
+  updateButton: {
+    backgroundColor: '#BFA100',
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
   },
   floatingButton: {
     position: 'absolute',
@@ -166,6 +204,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
 });
 

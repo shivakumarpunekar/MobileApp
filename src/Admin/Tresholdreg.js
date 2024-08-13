@@ -6,11 +6,11 @@ import { useNavigation } from '@react-navigation/native';
 
 const Tresholdreg = () => {
     const [userProfiles, setUserProfiles] = useState([]);
-    const [selectedUsername, setSelectedUsername] = useState('');
+    const [selectedUserProfileId, setSelectedUserProfileId] = useState('');
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
-    const [sensor1Value, setSensor1Value] = useState('');
-    const [sensor2Value, setSensor2Value] = useState('');
+    const [threshold1, setThreshold1] = useState('');
+    const [threshold2, setThreshold2] = useState('');
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -24,33 +24,38 @@ const Tresholdreg = () => {
             }
         };
 
-        const fetchDevices = async () => {
-            try {
-                const response = await axios.get('http://103.145.50.185:2030/api/sensor_data/deviceId');
-                setDevices(response.data);
-            } catch (error) {
-                console.error('Error fetching devices:', error);
-            }
-        };
-
         fetchUserProfiles();
-        fetchDevices();
     }, []);
 
+    useEffect(() => {
+        if (selectedUserProfileId) {
+            const fetchDevices = async () => {
+                try {
+                    const response = await axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${selectedUserProfileId}`);
+                    setDevices(response.data);
+                } catch (error) {
+                    console.error('Error fetching devices:', error);
+                }
+            };
+
+            fetchDevices();
+        }
+    }, [selectedUserProfileId]);
+
     const handleSubmit = () => {
-        if (!selectedUsername || !selectedDeviceId || !sensor1Value || !sensor2Value) {
+        if (!selectedUserProfileId || !selectedDeviceId || !threshold1 || !threshold2) {
             Alert.alert('Error', 'Please fill out all fields.');
             return;
         }
 
         const payload = {
-            userProfileId: selectedUsername,
+            userProfileId: selectedUserProfileId,
             deviceId: selectedDeviceId,
-            sensor1_value: parseInt(sensor1Value, 10),
-            sensor2_value: parseInt(sensor2Value, 10),
+            threshold_1: parseInt(threshold1, 10),
+            threshold_2: parseInt(threshold2, 10),
         };
 
-        axios.post(`http://103.145.50.185:2030/api/Threshold/CreateSingle?userProfileId=${payload.userProfileId}&deviceId=${payload.deviceId}&sensor1_value=${payload.sensor1_value}&sensor2_value=${payload.sensor2_value}`)
+        axios.post(`http://192.168.1.10:2030/api/Threshold/CreateSingle?userProfileId=${payload.userProfileId}&deviceId=${payload.deviceId}&threshold_1=${payload.threshold_1}&threshold_2=${payload.threshold_2}`)
             .then(response => {
                 Alert.alert('Success', 'Threshold created successfully.');
                 navigation.navigate('Threshold', { refresh: true });
@@ -67,13 +72,13 @@ const Tresholdreg = () => {
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.container}>
-                <Text style={styles.label}>Username:</Text>
+                <Text style={styles.label}>User Profile:</Text>
                 <Picker
-                    selectedValue={selectedUsername}
-                    onValueChange={(itemValue) => setSelectedUsername(itemValue)}
+                    selectedValue={selectedUserProfileId}
+                    onValueChange={(itemValue) => setSelectedUserProfileId(itemValue)}
                     style={styles.picker}
                 >
-                    <Picker.Item label="Select Name" value="" />
+                    <Picker.Item label="Select User Profile" value="" />
                     {userProfiles.map((data) => (
                         <Picker.Item
                             key={data.userProfileId}
@@ -93,25 +98,25 @@ const Tresholdreg = () => {
                     {devices.map((device, index) => (
                         <Picker.Item
                             key={index}
-                            label={`${device}`}
-                            value={device}
+                            label={device.deviceId} // Assuming deviceId is the property you want to show
+                            value={device.deviceId} // Assuming deviceId is the property you want to use
                         />
                     ))}
                 </Picker>
 
-                <Text style={styles.label}>Sensor 1 Value:</Text>
+                <Text style={styles.label}>Threshold 1:</Text>
                 <TextInput
                     style={styles.input}
-                    value={sensor1Value}
-                    onChangeText={setSensor1Value}
+                    value={threshold1}
+                    onChangeText={setThreshold1}
                     keyboardType="numeric"
                 />
 
-                <Text style={styles.label}>Sensor 2 Value:</Text>
+                <Text style={styles.label}>Threshold 2:</Text>
                 <TextInput
                     style={styles.input}
-                    value={sensor2Value}
-                    onChangeText={setSensor2Value}
+                    value={threshold2}
+                    onChangeText={setThreshold2}
                     keyboardType="numeric"
                 />
 

@@ -29,6 +29,7 @@ import Valva_status from './src/Admin/Valva_status';
 import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
+import ThresholdEdit from './src/Admin/ThresholdEdit';
 
 const Stack = createStackNavigator();
 
@@ -153,9 +154,15 @@ function App(): React.JSX.Element {
             />
 
             <Stack.Screen
-              name="Tresholdreg" //This is for Admin device registation Page
+              name="Tresholdreg" //This is for Admin Tresholdreg Page
               component={Tresholdreg}
               options={{ headerTitle: 'Tresholdreg' }}
+            />
+
+            <Stack.Screen
+              name="ThresholdEdit" //This is for Admin ThresholdEdit Page
+              component={ThresholdEdit}
+              options={{ headerTitle: 'ThresholdEdit' }}
             />
 
           </Stack.Navigator>
