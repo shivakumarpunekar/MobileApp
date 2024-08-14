@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   headerCell: {
     fontWeight: 'bold',
     color: '#000',
-    fontSize: 16,
+    fontSize: 12,
     textAlign: 'center',
     paddingVertical: 10,
     paddingHorizontal: 5,
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   cell: {
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
     padding: 10,
   },

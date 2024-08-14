@@ -17,16 +17,16 @@ function HomeScreen({ route }) {
     );
 }
 
-function AdminScreen() {
-    return (
-        <AdminDetail />
-    );
-}
-function SingleUserScreen() {
-    return (
-        <SingleUser />
-    );
-}
+// function AdminScreen() {
+//     return (
+//         <AdminDetail />
+//     );
+// }
+// function SingleUserScreen() {
+//     return (
+//         <SingleUser />
+//     );
+// }
 
 function ProfileScreen({ route }) {
     const { loginId } = route.params;
@@ -78,8 +78,8 @@ export default function WelcomePage({ route }) {
             }}
         >
             <Tab.Screen name="Home" component={HomeScreen} initialParams={{ loginId }} options={{ headerShown: false }} />
-            <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} />
+            {/* <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} /> */}
             <Tab.Screen name="ProfileScreen" component={ProfileScreen} initialParams={{ loginId }} options={{ headerShown: false }} />
             <Tab.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
