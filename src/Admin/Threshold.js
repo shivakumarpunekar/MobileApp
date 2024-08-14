@@ -7,13 +7,13 @@ const Threshold = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProfiles, setFilteredProfiles] = useState([]);
-  const [headerWidths, setHeaderWidths] = useState({});
+  const [cellWidth, setCellWidth] = useState(0);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  // Refs to measure header text widths
-  const headerRefs = useRef([]);
+  // Get screen width
+  const windowWidth = Dimensions.get('window').width;
 
   useEffect(() => {
     if (isFocused) {
@@ -24,6 +24,13 @@ const Threshold = () => {
   useEffect(() => {
     filterProfiles();
   }, [searchQuery, userProfiles]);
+
+  useEffect(() => {
+    // Calculate the cell width based on screen width and number of columns
+    const numberOfColumns = 7; // Adjust this if you change the number of columns
+    const width = (windowWidth - 40) / numberOfColumns; // Subtract padding/margin as needed
+    setCellWidth(width);
+  }, [windowWidth]);
 
   const fetchUserProfiles = async () => {
     try {
@@ -53,30 +60,14 @@ const Threshold = () => {
     setFilteredProfiles(filtered);
   };
 
-  const measureHeaderWidths = () => {
-    const widths = {};
-    headerRefs.current.forEach((ref, index) => {
-      ref.measure((x, y, width) => {
-        widths[index] = width;
-        if (Object.keys(widths).length === headerRefs.current.length) {
-          setHeaderWidths(widths);
-        }
-      });
-    });
-  };
-
-  useEffect(() => {
-    measureHeaderWidths();
-  }, []);
-
   const renderUserProfile = ({ item, index }) => (
     <View style={[styles.userProfileRow, { backgroundColor: index % 2 === 0 ? '#F6F3E7' : '#fff' }]}>
-      <Text style={[styles.cell, { width: headerWidths[0] || 'auto' }]}>{item.userProfileId}</Text>
-      <Text style={[styles.cell, { width: headerWidths[1] || 'auto' }]}>{item.deviceId}</Text>
-      <Text style={[styles.cell, { width: headerWidths[2] || 'auto' }]}>{item.threshold_1}</Text>
-      <Text style={[styles.cell, { width: headerWidths[3] || 'auto' }]}>{item.threshold_2}</Text>
-      <Text style={[styles.cell, { width: headerWidths[4] || 'auto' }]}>{item.createdDateTime}</Text>
-      <Text style={[styles.cell, { width: headerWidths[5] || 'auto' }]}>{item.updatedDateTime}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.userProfileId}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.deviceId}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.threshold_1}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.threshold_2}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.createdDateTime}</Text>
+      <Text style={[styles.cell, { width: cellWidth }]}>{item.updatedDateTime}</Text>
       <TouchableOpacity
         style={styles.updateButton}
         onPress={() => navigation.navigate('ThresholdEdit', { id: item.id })}
@@ -103,9 +94,7 @@ const Threshold = () => {
             {['userProfileId', 'deviceId', 'Threshold_1', 'Threshold_2', 'createdDateTime', 'updatedDateTime', 'Actions'].map((title, index) => (
               <Text
                 key={index}
-                style={[styles.headerCell, { width: headerWidths[index] || 'auto' }]}
-                ref={(ref) => { if (ref) headerRefs.current[index] = ref; }}
-                onLayout={() => measureHeaderWidths()}
+                style={[styles.headerCell, { width: cellWidth }]}
               >
                 {title}
               </Text>
@@ -130,8 +119,6 @@ const Threshold = () => {
     </View>
   );
 };
-
-const windowWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   container: {
