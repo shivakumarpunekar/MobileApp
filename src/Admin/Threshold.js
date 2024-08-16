@@ -27,7 +27,7 @@ const Threshold = () => {
 
   useEffect(() => {
     // Calculate the cell width based on screen width and number of columns
-    const numberOfColumns = 7; // Adjust this if you change the number of columns
+    const numberOfColumns = 6; // Adjust this if you change the number of columns
     const width = (windowWidth - 40) / numberOfColumns; // Subtract padding/margin as needed
     setCellWidth(width);
   }, [windowWidth]);
@@ -66,7 +66,7 @@ const Threshold = () => {
       <Text style={[styles.cell, { width: cellWidth }]}>{item.deviceId}</Text>
       <Text style={[styles.cell, { width: cellWidth }]}>{item.threshold_1}</Text>
       <Text style={[styles.cell, { width: cellWidth }]}>{item.threshold_2}</Text>
-      <Text style={[styles.cell, { width: cellWidth }]}>{item.createdDateTime}</Text>
+      {/* <Text style={[styles.cell, { width: cellWidth }]}>{item.createdDateTime}</Text> */}
       <Text style={[styles.cell, { width: cellWidth }]}>{item.updatedDateTime}</Text>
       <TouchableOpacity
         style={styles.updateButton}
@@ -91,7 +91,7 @@ const Threshold = () => {
       <ScrollView horizontal>
         <View style={{ flex: 1 }}>
           <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-            {['userProfileId', 'deviceId', 'Threshold_1', 'Threshold_2', 'createdDateTime', 'updatedDateTime', 'Actions'].map((title, index) => (
+            {['userProfileId', 'deviceId', 'TH_1', 'TH_2', 'updatedDateTime', 'Actions'].map((title, index) => (
               <Text
                 key={index}
                 style={[styles.headerCell, { width: cellWidth }]}

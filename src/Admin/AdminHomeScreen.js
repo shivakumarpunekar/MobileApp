@@ -7,42 +7,41 @@ const AdminHomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Admin Home Screen</Text>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('AdminProfileScreen')}
       >
-        <Text style={styles.buttonText}>Go to Admin Profile</Text>
+        <Text style={styles.buttonText}> Profile</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('PiChartScreen')}
       >
-        <Text style={styles.buttonText}>Go to Pi Chart</Text>
+        <Text style={styles.buttonText}>Pi Chart</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('SensorDataButton')}
       >
-        <Text style={styles.buttonText}>Go to Sensor Data</Text>
+        <Text style={styles.buttonText}>Sensor Data</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('UserDevice')}
       >
-        <Text style={styles.buttonText}>Go to User Device</Text>
+        <Text style={styles.buttonText}>User Device Mapping</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('download')}
       >
-        <Text style={styles.buttonText}>Download Excel</Text>
+        <Text style={styles.buttonText}> Report Download Excel</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('Threshold')}
       >
-        <Text style={styles.buttonText}>Set Threshold</Text>
+        <Text style={styles.buttonText}>Threshold Configuration</Text>
       </TouchableOpacity>
     </View>
   );
