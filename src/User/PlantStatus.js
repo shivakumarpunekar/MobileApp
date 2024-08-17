@@ -9,7 +9,6 @@ const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 const PlantStatus = () => {
     const [selectedDate, setSelectedDate] = useState(moment());
     const [flowRate, setFlowRate] = useState(0);
-    const [loginId, setLoginId] = useState(null);
     const [deviceId, setDeviceId] = useState(null);
     const animatedValue = useState(new Animated.Value(0))[0];
 
@@ -17,7 +16,7 @@ const PlantStatus = () => {
         // Fetch loginId and deviceId
         const fetchLoginAndDevice = async () => {
             try {
-                const response = await fetch('http://103.145.50.185:2030/api/UserDevice/byProfile/${LoginId}');
+                const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
                 const data = await response.json();
                 
                 if (data && data.loginId && data.deviceId) {
@@ -28,12 +27,12 @@ const PlantStatus = () => {
                 console.error('Error fetching login and device data:', error);
             }
         };
-
+        
         fetchLoginAndDevice();
     }, []);
 
     useEffect(() => {
-        if (loginId && deviceId) {
+        if (deviceId) {
             // Fetch water level data
             const fetchWaterData = async () => {
                 try {
@@ -50,7 +49,7 @@ const PlantStatus = () => {
 
             fetchWaterData();
         }
-    }, [loginId, deviceId]);
+    }, [deviceId]);
 
     useEffect(() => {
         Animated.timing(animatedValue, {

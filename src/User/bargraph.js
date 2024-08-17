@@ -1,19 +1,41 @@
-import React from "react";
-import { View, Text, Dimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Dimensions, ActivityIndicator } from "react-native";
 import { BarChart, Grid } from 'react-native-svg-charts';
 import { G, Line, Text as SVGText } from 'react-native-svg';
-import * as scale from 'd3-scale';
+import axios from 'axios';
 import moment from 'moment';
 
 const Bargraph = () => {
-    // Sample data: array of objects with value and date
-    const data = [
-        { value: 1000, date: '2024-08-01T12:00:00Z' },
-        { value: 2000, date: '2024-08-02T12:00:00Z' },
-        { value: 3000, date: '2024-08-03T12:00:00Z' },
-        { value: 4000, date: '2024-08-04T12:00:00Z' },
-        { value: 5000, date: '2024-08-05T12:00:00Z' },
-    ];
+    const [sensorData, setSensorData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch the deviceId based on loginId (assuming 29 is the loginId)
+                const deviceResponse = await axios.get('http://103.145.50.185:2030/api/UserDevice/byProfile/${deviceId}');
+                const deviceId = deviceResponse.data.deviceId;
+
+                // Fetch sensor1_value and sensor2_value
+                const sensor1Response = await axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
+                const sensor2Response = await axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
+
+                // Combine data for the chart (using sensor1_value for this example)
+                const data = sensor1Response.data.map((item, index) => ({
+                    value: item.value,  // Assuming response has { value, date } structure
+                    date: item.date,
+                }));
+
+                setSensorData(data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching sensor data:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     // Function to determine the color of each bar based on its value
     const getBarColor = (value) => {
@@ -22,28 +44,19 @@ const Bargraph = () => {
         return '#FF0000'; // Red for values < 1250
     };
 
-    const barData = data.map(item => ({
+    const barData = sensorData.map(item => ({
         value: item.value,
         color: getBarColor(item.value),
     }));
 
-    // Custom grid to add more detailed labels
-    const CustomGrid = ({ x, y, ticks }) => (
-        <G>
-            {
-                ticks.map(tick => (
-                    <Line
-                        key={tick}
-                        x1={0}
-                        x2={Dimensions.get('window').width}
-                        y1={y(tick)}
-                        y2={y(tick)}
-                        stroke="rgba(0,0,0,0.2)"
-                    />
-                ))
-            }
-        </G>
-    );
+    if (loading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Loading data...</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={{ flex: 1, padding: 20 }}>

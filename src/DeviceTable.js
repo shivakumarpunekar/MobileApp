@@ -78,26 +78,26 @@ const DeviceTable = ({ loginId }) => {
           const { deviceId, deviceStatus } = device;
           const { sensor1, sensor2, solenoidValveStatus, createdDateTime } = getSensorValues(deviceId);
 
-          let backgroundColor = '#808080'; // Default to gray if no data
+          let backgroundColor;
           const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
           const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
           let valveIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000'; // Green for on, Red for off
           let buttonText = `Device ${deviceId}`;
 
-          if (sensor1 !== null && sensor2 !== null) {
-            if (
-              (sensor1 >= 4000 || sensor1 <= 1250) &&
-              (sensor2 >= 4000 || sensor2 <= 1250)
-            ) {
-              backgroundColor = '#FF0000'; // Red
-            } else if (
-              (sensor1 >= 4000 || sensor1 <= 1250) ||
-              (sensor2 >= 4000 || sensor2 <= 1250)
-            ) {
-              backgroundColor = '#FFA500'; // Orange
-            } else {
-              backgroundColor = '#00FF00'; // Green
-            }
+          if (sensor1 === null || sensor2 === null) {
+            backgroundColor = '#808080'; // Gray for no data
+          } else if (
+            (sensor1 >= 4000 || sensor1 <= 1250) &&
+            (sensor2 >= 4000 || sensor2 <= 1250)
+          ) {
+            backgroundColor = '#FF0000'; // Red
+          } else if (
+            (sensor1 >= 4000 || sensor1 <= 1250) ||
+            (sensor2 >= 4000 || sensor2 <= 1250)
+          ) {
+            backgroundColor = '#FFA500'; // Orange
+          } else {
+            backgroundColor = '#00FF00'; // Green
           }
 
           return (
@@ -123,9 +123,10 @@ const DeviceTable = ({ loginId }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.headerText}>Device Detail Links</Text>
       {renderButtonsInGrid()}
-      <PlantStatus style={styles.PlantStatus} />
-      {/* <Bargraph style={styles.Bargraph}/> */}
+      <PlantStatus/>
+      <Bargraph/>
     </ScrollView>
+
   );
 };
 
