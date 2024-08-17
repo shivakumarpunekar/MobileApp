@@ -31,6 +31,7 @@ import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
 import PlantStatus from './src/User/PlantStatus';
+import Bargraph from './src/User/bargraph';
 
 const Stack = createStackNavigator();
 
@@ -167,12 +168,16 @@ function App(): React.JSX.Element {
             />
 
             <Stack.Screen
-            name='PlantStatus'
+            name='PlantStatus' //This is for user PlantStatus
             component={PlantStatus}
             options={ {headerTitle: 'PlantStatus'} }
             />
 
-            
+            <Stack.Screen
+              name='Bargraph'
+              component={Bargraph}
+              options={ {headerTitle: 'Bargraph'} }
+            />
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

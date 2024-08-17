@@ -9,8 +9,8 @@ const ValvaStatus = () => {
   const { deviceId } = route.params;
 
   useEffect(() => {
-    fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
-      // fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
+    // fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
+      fetch(`http://192.168.1.10:2030/api/sensor_data/device/${deviceId}/uniqueDatesLast30Days`)
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length === 0) { // Check if data is an array and if it's empty
