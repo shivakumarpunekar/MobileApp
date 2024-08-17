@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
+import PlantStatus from './User/PlantStatus';
 
 const DeviceTable = ({ loginId }) => {
   const [userDevices, setUserDevices] = useState([]);
@@ -121,6 +122,7 @@ const DeviceTable = ({ loginId }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.headerText}>Device Detail Links</Text>
       {renderButtonsInGrid()}
+      <PlantStatus/>
     </ScrollView>
   );
 };

@@ -30,6 +30,7 @@ import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
+import PlantStatus from './src/User/PlantStatus';
 
 const Stack = createStackNavigator();
 
@@ -165,6 +166,13 @@ function App(): React.JSX.Element {
               options={{ headerTitle: 'ThresholdEdit' }}
             />
 
+            <Stack.Screen
+            name='PlantStatus'
+            component={PlantStatus}
+            options={ {headerTitle: 'PlantStatus'} }
+            />
+
+            
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>
