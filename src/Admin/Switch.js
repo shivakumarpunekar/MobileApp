@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Switch, StyleSheet } from "react-native";
+import { View, Text, Switch, StyleSheet, Alert } from "react-native";
 
 const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId } = route.params; // Destructure loginId here
@@ -8,13 +8,17 @@ const SwitchPage = ({ route, navigation }) => {
   const fetchSwitchState = async () => {
     try {
 
-      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`);
+      //const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`);
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
 
       if (response.ok) {
         const data = await response.json();
-        setIsEnabled(data.valveStatusOnOrOff === 1);
+        // setIsEnabled(data.valveStatusOnOrOff === 1);
+        const valveStatus = data[0];
+      setIsEnabled(valveStatus.valveStatusOnOrOff === 1);
       } else {
         console.error('Failed to fetch switch state');
+        Alert('no device is there');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -32,7 +36,8 @@ const SwitchPage = ({ route, navigation }) => {
 
     try {
 
-      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`, {
+      //const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`, {
+        const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`, {
         method: 'PUT',
         headers: {
           'Accept': '*/*',
