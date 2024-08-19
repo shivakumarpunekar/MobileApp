@@ -15,11 +15,9 @@ const PlantStatus = ({ loginId }) => {
     useEffect(() => {
         // Fetch deviceId based on loginId
         const fetchLoginAndDevice = async () => {
-             
             try {
                 const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
                 const data = await response.json();
-                 
                 if (data.length > 0 && data[0].deviceId) {
                     setDeviceId(data[0].deviceId);
                 } else {
@@ -29,22 +27,18 @@ const PlantStatus = ({ loginId }) => {
                 console.error('Error fetching login and device data:', error);
             }
         };
-    
+
         if (loginId) {
             fetchLoginAndDevice();
         }
     }, [loginId]);
-    
 
     useEffect(() => {
         if (deviceId) {
-            // Fetch water level data
             const fetchWaterData = async () => {
-                 
                 try {
                     const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/profile/${loginId}/device/${deviceId}`);
                     const data = await response.json();
-                     
                     if (data && data.length > 0) {
                         const { sensor1_value, sensor2_value } = data[0];
                         const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
@@ -56,11 +50,17 @@ const PlantStatus = ({ loginId }) => {
                     console.error('Error fetching water data:', error);
                 }
             };
-    
+
             fetchWaterData();
+
+            const interval = setInterval(() => {
+                fetchWaterData();
+            }, 5000); // Refresh every 5 seconds
+
+            // Clear the interval on component unmount
+            return () => clearInterval(interval);
         }
     }, [deviceId, loginId]);
-    
 
     useEffect(() => {
         Animated.timing(animatedValue, {
