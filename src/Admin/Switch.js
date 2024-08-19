@@ -2,14 +2,17 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 
 const SwitchPage = ({ route, navigation }) => {
-  const { deviceId, loginId } = route.params; // Destructure loginId here
+  const { deviceId, loginId, isAdmin } = route.params; // Destructure isAdmin here
   const [isEnabled, setIsEnabled] = useState(false);
 
   const fetchSwitchState = async () => {
     try {
-         
-      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`);
-       
+      const url = isAdmin
+        ? `http://192.168.1.10:2030/api/ValveStatus/device/${deviceId}`
+        : `http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`;
+
+      const response = await fetch(url);
+
       if (response.ok) {
         const data = await response.json();
         setIsEnabled(data.valveStatusOnOrOff === 1);
@@ -22,17 +25,19 @@ const SwitchPage = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-     
     fetchSwitchState();
   }, [loginId, deviceId]);
 
   const toggleSwitch = async () => {
     const newValue = isEnabled ? 0 : 1;  // Toggle the value
     setIsEnabled(previousState => !previousState);
-  
+
     try {
-         
-      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`, {
+      const url = isAdmin
+        ? `http://192.168.1.10:2030/api/ValveStatus/device/${deviceId}`
+        : `http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`;
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Accept': '*/*',
@@ -42,11 +47,10 @@ const SwitchPage = ({ route, navigation }) => {
           valveStatusOnOrOff: newValue,
           deviceId: deviceId,
           userProfileId: loginId,
-          createdDate: new Date().toISOString(),
           updatedDate: new Date().toISOString(),
         }),
       });
-  
+
       if (response.ok) {
         console.log('Switch state updated successfully');
         navigation.goBack();
@@ -57,7 +61,6 @@ const SwitchPage = ({ route, navigation }) => {
       console.error('Error:', error);
     }
   };
-  
 
   return (
     <View style={styles.container}>
