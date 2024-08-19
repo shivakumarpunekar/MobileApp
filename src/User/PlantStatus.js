@@ -6,50 +6,61 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
-const PlantStatus = () => {
+const PlantStatus = ({ loginId }) => {
     const [selectedDate, setSelectedDate] = useState(moment());
     const [flowRate, setFlowRate] = useState(0);
     const [deviceId, setDeviceId] = useState(null);
     const animatedValue = useState(new Animated.Value(0))[0];
 
     useEffect(() => {
-        // Fetch loginId and deviceId
+        // Fetch deviceId based on loginId
         const fetchLoginAndDevice = async () => {
+             
             try {
                 const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
                 const data = await response.json();
-                
-                if (data && data.loginId && data.deviceId) {
-                    setLoginId(data.loginId);
-                    setDeviceId(data.deviceId);
+                 
+                if (data.length > 0 && data[0].deviceId) {
+                    setDeviceId(data[0].deviceId);
+                } else {
+                    console.error('Device ID not found or data is empty');
                 }
             } catch (error) {
                 console.error('Error fetching login and device data:', error);
             }
         };
-        
-        fetchLoginAndDevice();
-    }, []);
+    
+        if (loginId) {
+            fetchLoginAndDevice();
+        }
+    }, [loginId]);
+    
 
     useEffect(() => {
         if (deviceId) {
             // Fetch water level data
             const fetchWaterData = async () => {
+                 
                 try {
                     const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/profile/${loginId}/device/${deviceId}`);
                     const data = await response.json();
-                    
-                    if (data && data.flowRate !== undefined) {
-                        setFlowRate(data.flowRate);
+                     
+                    if (data && data.length > 0) {
+                        const { sensor1_value, sensor2_value } = data[0];
+                        const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
+                        setFlowRate(calculatedFlowRate);
+                    } else {
+                        console.error('Sensor data not found or data is empty');
                     }
                 } catch (error) {
                     console.error('Error fetching water data:', error);
                 }
             };
-
+    
             fetchWaterData();
         }
-    }, [deviceId]);
+    }, [deviceId, loginId]);
+    
 
     useEffect(() => {
         Animated.timing(animatedValue, {

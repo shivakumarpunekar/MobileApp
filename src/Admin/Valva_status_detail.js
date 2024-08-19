@@ -9,7 +9,8 @@ const Valva_status_detail = () => {
 
   const fetchSensorData = async () => {
     try {
-      const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/date/${date}/device/${deviceId}`);
+      // const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/date/${date}/device/${deviceId}`);
+      const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/date/${date}/device/${deviceId}`);
       const result = await response.json();
       setData(result); 
     } catch (error) {
