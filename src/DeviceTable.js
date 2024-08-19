@@ -48,7 +48,7 @@ const DeviceTable = ({ loginId }) => {
   }, [loginId]);
 
   const handleButtonPress = (deviceId) => {
-    navigation.navigate('SensorData', { deviceId });
+    navigation.navigate('SensorData', { deviceId, loginId });
   };
 
   const getSensorValues = (deviceId) => {

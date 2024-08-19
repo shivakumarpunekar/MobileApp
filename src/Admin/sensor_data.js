@@ -6,7 +6,7 @@ const SensorData = () => {
     const [data, setData] = useState([]);
     const navigation = useNavigation();
     const route = useRoute();
-    const { deviceId } = route.params;
+    const { deviceId, loginId } = route.params; // Destructure loginId here
 
     const fetchSensorData = async () => {
         try {
@@ -26,41 +26,37 @@ const SensorData = () => {
     }, []);
 
     const renderItemContainerStyle = (sensor1, sensor2) => {
-        // Conditionally determine the background color based on sensor values
         if ((sensor1 >= 4000 && sensor2 >= 4000) ||
             (sensor1 <= 1250 && sensor2 <= 1250) ||
             (sensor1 >= 4000 && sensor2 <= 1250) ||
             (sensor1 <= 1250 && sensor2 >= 4000)) {
-            return styles.itemContainerRed; // Red background
+            return styles.itemContainerRed;
         } else {
-            return styles.itemContainerGreen; // Green background
+            return styles.itemContainerGreen;
         }
     };
 
     const renderTextStyle = (sensor1, sensor2) => {
-        // Conditionally determine the text color based on the background color
         if ((sensor1 >= 4000 && sensor2 >= 4000) ||
             (sensor1 <= 1250 && sensor2 <= 1250) ||
             (sensor1 >= 4000 && sensor2 <= 1250) ||
             (sensor1 <= 1250 && sensor2 >= 4000)) {
-            return styles.itemTextWhite; // White text color for red background
+            return styles.itemTextWhite;
         } else {
-            return styles.itemTextBlack; // Default black text color
+            return styles.itemTextBlack;
         }
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                {/* This is a title and graph button */}
                 <Text style={styles.title}>Device {deviceId}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('GraphPage', { deviceId })}>
                     <Text style={styles.buttonText}>Go to Graph</Text>
                 </TouchableOpacity>
             </View>
-            {/* This is a button for Switch and Valve-status */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId })}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId })}>
                     <Text style={styles.buttonText}>Switch</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>
@@ -95,7 +91,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
-        // backgroundColor: '#BFA100',
     },
     button: {
         backgroundColor: '#BFA100',
@@ -114,28 +109,26 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         padding: 10,
         borderRadius: 8,
-        // Shadow for iOS
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        // Shadow for Android
         elevation: 8,
     },
     itemContainerGreen: {
-        backgroundColor: '#7fff00', // Green background
+        backgroundColor: '#7fff00',
     },
     itemContainerRed: {
-        backgroundColor: '#ff0000', // Red background for specific condition
+        backgroundColor: '#ff0000',
     },
     itemText: {
         fontSize: 16,
     },
     itemTextWhite: {
-        color: '#fff', // White text color
+        color: '#fff',
     },
     itemTextBlack: {
-        color: '#000', // Black text color
+        color: '#000',
     },
 });
 

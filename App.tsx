@@ -70,7 +70,7 @@ function App(): React.JSX.Element {
                     color="#BFA100"
                   />
                 ),
-                headerTitle:'aairos',
+                headerTitle:'aairos Technologies',
                 headerLeftContainerStyle: { marginLeft: 15 },
                 headerRightContainerStyle: {marginRight: 20},
                 headerBackTitleVisible: false,
@@ -167,17 +167,17 @@ function App(): React.JSX.Element {
               options={{ headerTitle: 'ThresholdEdit' }}
             />
 
-            <Stack.Screen
+            {/* <Stack.Screen
             name='PlantStatus' //This is for user PlantStatus
-            component={PlantStatus}
+            component={PlantStatus }
             options={ {headerTitle: 'PlantStatus'} }
-            />
+            /> */}
 
-            <Stack.Screen
+            {/* <Stack.Screen
               name='Bargraph'
               component={Bargraph}
               options={ {headerTitle: 'Bargraph'} }
-            />
+            /> */}
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

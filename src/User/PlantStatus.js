@@ -65,14 +65,14 @@ const PlantStatus = ({ loginId }) => {
     useEffect(() => {
         Animated.timing(animatedValue, {
             toValue: flowRate < 1250 ? 0 : flowRate > 3800 ? 1 : 0.5,
-            duration: 1000,
+            duration: 10000,
             useNativeDriver: false,
         }).start();
     }, [flowRate]);
 
     const animatedColor = animatedValue.interpolate({
         inputRange: [0, 0.5, 1],
-        outputRange: ["#00FF00", "#FFFF00", "#FF0000"],
+        outputRange: ["#FF0000", "#00FF00", "#FF0000"],
     });
 
     const handlePrevDay = () => {
@@ -94,11 +94,11 @@ const PlantStatus = ({ loginId }) => {
 
     const handleWaterFlow = (flowRate) => {
         if (flowRate < 1250) {
-            return "Water is full";
-        } else if (flowRate >= 3800) {
-            return "Water level is 250 ml or 25%";
+            return "Soil is more Moisture";
+        } else if (flowRate > 3800) {
+            return "Soil is Dry";
         } else {
-            return "Normal water flow";
+            return "Soil is Moisture";
         }
     };
 
@@ -120,7 +120,7 @@ const PlantStatus = ({ loginId }) => {
                 <Text style={styles.waterHeader}>Water level</Text>
                 
                 <View style={styles.waterRow}>
-                    <Text style={styles.waterText}>Total value: </Text>
+                    {/* <Text style={styles.waterText}>Total value: </Text> */}
                     <Text style={styles.waterText}>{handleWaterFlow(flowRate)}</Text>
                     
                     <AnimatedIcon 
