@@ -8,7 +8,7 @@ const SwitchPage = ({ route, navigation }) => {
   const fetchSwitchState = async () => {
     try {
          
-      const response = await fetch(`http://192.168.1.10:2030/api/ValveStatus/${loginId}/${deviceId}`);
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`);
        
       if (response.ok) {
         const data = await response.json();
@@ -32,7 +32,7 @@ const SwitchPage = ({ route, navigation }) => {
   
     try {
          
-      const response = await fetch(`http://192.168.1.10:2030/api/ValveStatus/${loginId}/${deviceId}`, {
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/${loginId}/${deviceId}`, {
         method: 'PUT',
         headers: {
           'Accept': '*/*',
