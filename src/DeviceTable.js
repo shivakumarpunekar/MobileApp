@@ -124,7 +124,7 @@ const DeviceTable = ({ loginId }) => {
       <Text style={styles.headerText}>Device Detail Links</Text>
       {renderButtonsInGrid()}
       <PlantStatus loginId={loginId} />
-      {/* <Bargraph/> */}
+      <Bargraph loginId={loginId}/>
     </ScrollView>
   );
 };

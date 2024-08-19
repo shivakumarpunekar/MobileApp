@@ -5,37 +5,50 @@ import { G, Line, Text as SVGText } from 'react-native-svg';
 import axios from 'axios';
 import moment from 'moment';
 
-const Bargraph = () => {
+const Bargraph = ( { loginId } ) => {
     const [sensorData, setSensorData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch the deviceId based on loginId (assuming 29 is the loginId)
-                const deviceResponse = await axios.get('http://103.145.50.185:2030/api/UserDevice/byProfile/${deviceId}');
-                const deviceId = deviceResponse.data.deviceId;
-
-                // Fetch sensor1_value and sensor2_value
+                // Fetch the deviceId based on loginId
+                const deviceResponse = await axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
+                const data = deviceResponse.data;
+    
+                let deviceId = null;
+    
+                if (Array.isArray(data) && data.length > 0 && data[0].deviceId) {
+                    deviceId = data[0].deviceId;
+                } else {
+                    console.error('Device ID not found or data is empty');
+                    setLoading(false);
+                    return; // Exit the function early if deviceId is not found
+                }
+    
+                // Fetch sensor1_value and sensor2_value using the retrieved deviceId
                 const sensor1Response = await axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
                 const sensor2Response = await axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
-
+    
                 // Combine data for the chart (using sensor1_value for this example)
-                const data = sensor1Response.data.map((item, index) => ({
+                const chartData = sensor1Response.data.map((item) => ({
                     value: item.value,  // Assuming response has { value, date } structure
                     date: item.date,
                 }));
-
-                setSensorData(data);
+    
+                setSensorData(chartData);
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching sensor data:", error);
                 setLoading(false);
             }
         };
-
-        fetchData();
-    }, []);
+    
+        if (loginId) {
+            fetchData();
+        }
+    }, [loginId]);
+    
 
     // Function to determine the color of each bar based on its value
     const getBarColor = (value) => {
