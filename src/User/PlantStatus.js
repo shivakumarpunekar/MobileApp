@@ -120,13 +120,18 @@ const PlantStatus = ({ loginId }) => {
                 <Text style={styles.waterHeader}>Water level</Text>
                 
                 <View style={styles.waterRow}>
-                    {/* <Text style={styles.waterText}>Total value: </Text> */}
                     <Text style={styles.waterText}>{handleWaterFlow(flowRate)}</Text>
                     
                     <AnimatedIcon 
                         name="water" 
-                        size={24} 
-                        style={{ color: animatedColor, transform: [{ scale: animatedValue }] }} 
+                        size={48} 
+                        style={{ 
+                            color: animatedColor, 
+                            transform: [{ scale: animatedValue.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0.8, 1.2],  // Adjusted scale range
+                            }) }] 
+                        }} 
                     />
                 </View>
             </View>
