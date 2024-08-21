@@ -70,8 +70,8 @@ const SwitchPage = ({ route, navigation }) => {
       <View style={styles.switchContainer}>
         <Text style={styles.switchText}>{isEnabled ? "On" : "Off"}</Text>
         <Switch
-          trackColor={{ false: "#767577", true: "#767557" }}
-          thumbColor={isEnabled ? "#000" : "#f4f3f4"}
+          trackColor={{ false: "red", true: "green" }}
+          thumbColor={isEnabled ? "green" : "red"}
           ios_backgroundColor="#3e3e3e"
           onValueChange={toggleSwitch}
           value={isEnabled}

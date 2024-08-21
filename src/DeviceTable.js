@@ -123,15 +123,17 @@ const DeviceTable = ({ loginId }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.headerText}>Device Detail Links</Text>
       {renderButtonsInGrid()}
-      <PlantStatus loginId={loginId} />
-      {/* <Bargraph loginId={loginId}/> */}
+      <View style={styles.spacer} />
+      <PlantStatus loginId={loginId}/>
+      <View style={styles.spacer} />
+      <Bargraph loginId={loginId}/>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1, // Ensure ScrollView takes up available space
     padding: 20,
     backgroundColor: '#F6F3E7'
   },
@@ -167,6 +169,9 @@ const styles = StyleSheet.create({
   },
   valveIcon: {
     marginLeft: 10,
+  },
+  spacer: {
+    height: 20, // Adjust height as needed for spacing
   },
 });
 
