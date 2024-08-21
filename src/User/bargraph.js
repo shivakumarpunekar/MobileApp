@@ -14,15 +14,15 @@ const Bargraph = ({ loginId }) => {
       try {
         const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
         const deviceData = await deviceResponse.json();
-  
+
         if (Array.isArray(deviceData) && deviceData.length > 0) {
           const deviceId = deviceData[0].deviceId;
           setDeviceId(deviceId);
-  
+
           const sensor1Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
           const sensor1Values = await sensor1Response.json();
           setSensor1Data(groupDataByInterval(sensor1Values, "sensor1_value"));
-  
+
           const sensor2Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
           const sensor2Values = await sensor2Response.json();
           setSensor2Data(groupDataByInterval(sensor2Values, "sensor2_value"));
@@ -36,34 +36,33 @@ const Bargraph = ({ loginId }) => {
 
     fetchData();
 
-    const intervalId = setInterval(fetchData, 10 * 60 * 1000); // Auto-refresh every 10 minutes
+    const intervalId = setInterval(fetchData, 1000); // Auto-refresh every 10 minutes
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [loginId]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 10) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 1) => {
     const groupedData = {};
-  
+
     data.forEach(entry => {
       const date = new Date(entry.createdDateTime);
       const minutes = Math.floor(date.getMinutes() / intervalMinutes) * intervalMinutes;
       const timeKey = `${date.getHours()}:${minutes.toString().padStart(2, '0')}`;
-  
+
       if (!groupedData[timeKey]) {
         groupedData[timeKey] = [];
       }
       groupedData[timeKey].push(entry[sensorKey]);
     });
-  
+
     return Object.keys(groupedData).map(timeKey => ({
       timeKey,
       value: groupedData[timeKey].reduce((sum, val) => sum + val, 0) / groupedData[timeKey].length, // Average value
     }));
   };
-  
+
   const getBarChartData = (data) => {
     if (!data || data.length === 0) {
-      // console.error("No data available for the chart.");
       return {
         labels: [],
         datasets: [{
@@ -72,19 +71,19 @@ const Bargraph = ({ loginId }) => {
         }]
       };
     }
-  
+
     const labels = data.map(entry => entry.timeKey);
     const chartData = data.map(entry => entry.value);
-  
+
     return {
       labels: labels,
       datasets: [
         {
           data: chartData,
           colors: chartData.map(value => {
-            if (value <= 1250) return () => `rgba(255, 0, 0, 1)`; // Red for values 0-1250
-            if (value <= 3800) return () => `rgba(0, 255, 0, 1)`; // Green for values 1251-3800
-            return () => `rgba(255, 0, 0, 1)`; // Red for values above 3800
+            if (value > 3800) return () => `rgba(255, 0, 0, 1)`; // Red for values above 3800
+            if (value > 1250) return () => `rgba(0, 255, 0, 1)`; // Green for values 1251-3800
+            return () => `rgba(255, 0, 0, 1)`; // Red for values 0-1250
           }),
         },
       ],
@@ -132,7 +131,7 @@ const chartConfig = {
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
+    flex: 1,
     padding: 1,
     flexGrow: 1,
   },

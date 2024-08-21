@@ -124,7 +124,7 @@ const PlantStatus = ({ loginId }) => {
                     
                     <AnimatedIcon 
                         name="water" 
-                        size={48} 
+                        size={40} 
                         style={{ 
                             color: animatedColor, 
                             transform: [{ scale: animatedValue.interpolate({
