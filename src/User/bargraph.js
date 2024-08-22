@@ -36,12 +36,12 @@ const Bargraph = ({ loginId }) => {
 
     fetchData();
 
-    const intervalId = setInterval(fetchData, 1000); // Auto-refresh every 10 minutes
+    const intervalId = setInterval(fetchData, 500); // Auto-refresh every 0.5 seconds for real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [loginId]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 1) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 10) => {
     const groupedData = {};
 
     data.forEach(entry => {

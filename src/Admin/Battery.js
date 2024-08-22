@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import LottieView from 'lottie-react-native';
 
 const Battery = ({ deviceId }) => {
   const [batteryPercentage, setBatteryPercentage] = useState(0);
-  const [batteryColor, setBatteryColor] = useState('green');
-  let animationRef = React.createRef();
+  const [batteryColor, setBatteryColor] = useState('blue');
+  const animationRef = useRef(null);
 
   // Fetch battery data
   useEffect(() => {
@@ -19,22 +19,17 @@ const Battery = ({ deviceId }) => {
             const calculatedBatteryLevel = (sensor1_value + sensor2_value) / 2;
 
             // Convert the battery level (0 to 4000) to percentage (0% to 100%)
-            const percentage = Math.min(100, Math.max(0, (calculatedBatteryLevel / 4000) * 100)) ;
+            const percentage = Math.min(100, Math.max(0, (calculatedBatteryLevel / 4000) * 100));
 
             setBatteryPercentage(percentage);
 
             // Determine battery color based on percentage
             if (percentage <= 10) {
               setBatteryColor('red');
-            } else if (percentage <= 75 && percentage == 50) {
+            } else if (percentage <= 50) {
               setBatteryColor('yellow');
             } else {
               setBatteryColor('blue');
-            }
-
-            // Control Lottie animation based on percentage
-            if (animationRef.current) {
-              animationRef.current.play(0, percentage); // Start from 0 and go to the calculated percentage
             }
           } else {
             console.error('Sensor data not found or data is empty');
@@ -45,25 +40,24 @@ const Battery = ({ deviceId }) => {
       };
 
       fetchBatteryData();
-      const interval = setInterval(fetchBatteryData, 1000); // Refresh every 5 seconds
+      const interval = setInterval(fetchBatteryData, 5000); // Refresh every 5 seconds
       return () => clearInterval(interval); // Clear interval on component unmount
     }
   }, [deviceId]);
 
   return (
     <View style={styles.container}>
-        <Text style={styles.percentageText}> {batteryPercentage.toFixed(2)}%</Text>
+      <Text style={styles.percentageText}>{batteryPercentage}%</Text>
       <LottieView
         ref={animationRef}
-        source={require('../../assets/Animation - 1724231949735.json')}
-        loop={false} 
+        source={require('../../assets/Animation - 1724310049122.json')}
+        loop={true}
         style={[
           styles.animation,
           { tintColor: batteryColor } // Apply battery color to the Lottie animation
         ]}
-        progress={batteryPercentage / 100} // Set initial progress
+        progress={1 - (batteryPercentage / 100)} // Reverse the progress calculation
       />
-      
     </View>
   );
 };
@@ -81,6 +75,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 10, // Adjusted margin
   },
 });
 
