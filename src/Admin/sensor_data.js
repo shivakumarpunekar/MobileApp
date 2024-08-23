@@ -55,7 +55,7 @@ const SensorData = ({ route }) => {
                 </TouchableOpacity>
             </View>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId, isAdmin: true })}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId, isAdmin })}>
                     <Text style={styles.buttonText}>Switch</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>

@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Switch, StyleSheet, Alert } from "react-native";
 
-const SwitchAdmin = ({ deviceId, isAdmin  }) => {
+const SwitchAdmin = ({ deviceId, isAdmin }) => {
   const [isSwitchOn, setIsSwitchOn] = useState(false);
- 
+
   useEffect(() => {
     if (deviceId && isAdmin) {
       fetchSwitchState();
     }
   }, [deviceId, isAdmin]);
-
-  if (!isAdmin) {
-    return null; // Render nothing if the user is not an admin
-  }
 
   const fetchSwitchState = async () => {
     try {
@@ -71,32 +67,51 @@ const SwitchAdmin = ({ deviceId, isAdmin  }) => {
     );
   };
 
-  useEffect(() => {
-    if (deviceId) {
-      fetchSwitchState();
-    }
-  }, [deviceId]);
+  if (!isAdmin) {
+    return null; // Render nothing if the user is not an admin
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{isSwitchOn ? "ON" : "OFF"}</Text>
-      <Switch
-        trackColor={{ false: "red", true: "green" }}
-        thumbColor={isSwitchOn ? "green" : "red"}
-        onValueChange={toggleSwitch}
-        value={isSwitchOn}
-        style={styles.switch}
-      />
+      {/* Admin text at the top */}
+      <View style={styles.textContainer}>
+        <Text style={styles.adminText}>This is for admin</Text>
+      </View>
+
+      {/* Switch and status */}
+      <View style={styles.switchContainer}>
+        <Text style={styles.text}>{isSwitchOn ? "ON" : "OFF"}</Text>
+        <Switch
+          trackColor={{ false: "red", true: "green" }}
+          thumbColor={isSwitchOn ? "green" : "red"}
+          onValueChange={toggleSwitch}
+          value={isSwitchOn}
+          style={styles.switch}
+        />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+  },
+  textContainer: {
+    marginBottom: 10, // Add space between the admin text and the switch
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adminText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     fontSize: 22,
