@@ -47,7 +47,7 @@ const Bargraph = ({ loginId }) => {
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [loginId, deviceId, sensor1Data, sensor2Data]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 10) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 2) => {
     const groupedData = {};
 
     data.forEach(entry => {

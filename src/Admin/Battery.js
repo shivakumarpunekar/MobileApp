@@ -47,7 +47,7 @@ const Battery = ({ deviceId }) => {
           styles.animation,
           { tintColor: batteryColor } // Apply battery color to the Lottie animation
         ]}
-        progress={(batteryPercentage / 100)} // Reverse the progress calculation
+        progress={1 - (batteryPercentage / 100)} // Reverse the progress calculation
       />
     </View>
   );
