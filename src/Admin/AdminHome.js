@@ -11,7 +11,10 @@ import Threshold from "./Threshold";
 
 const Tab = createBottomTabNavigator();
 
-const AdminHome = () => {
+const AdminHome = ({ route }) => {
+     
+    const { isAdmin } = route.params; 
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -31,6 +34,8 @@ const AdminHome = () => {
                         iconName = 'download';
                     } else if (route.name === 'Threshold') {
                         iconName = 'user';
+                    } else if (route.name === 'SwitchAdmin') {
+                        iconName = 'toggle-on';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;
@@ -44,7 +49,7 @@ const AdminHome = () => {
             <Tab.Screen name="Home" component={AdminHomeScreen} options={{ headerShown: false }} />
             <Tab.Screen name="AdminProfileScreen" component={AdminProfileScreen} options={{ headerShown: false }} />
             <Tab.Screen name="PiChartScreen" component={PiChartScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="SensorDataButton" component={SensorDataButton} options={{ headerShown: false }} />
+            <Tab.Screen name="SensorDataButton" component={SensorDataButton} options={{ headerShown: false }} initialParams={{ isAdmin: true }} />
             <Tab.Screen name="UserDevice" component={UserDevice} options={{ headerShown: false }} />
             <Tab.Screen name="download" component={DownloadExcel} options={{ headerShown: false }} />
             <Tab.Screen name="Threshold" component={Threshold} options={{ headerShown: false }} />

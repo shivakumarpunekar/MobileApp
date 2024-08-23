@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, Switch, StyleSheet, Alert } from "react-native";
 
-const SwitchAdmin = ({ deviceId }) => {
+const SwitchAdmin = ({ deviceId, isAdmin  }) => {
   const [isSwitchOn, setIsSwitchOn] = useState(false);
+ 
+  useEffect(() => {
+    if (deviceId && isAdmin) {
+      fetchSwitchState();
+    }
+  }, [deviceId, isAdmin]);
+
+  if (!isAdmin) {
+    return null; // Render nothing if the user is not an admin
+  }
 
   const fetchSwitchState = async () => {
     try {

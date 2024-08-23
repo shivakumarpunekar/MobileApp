@@ -35,7 +35,7 @@ export default function LoginPage({ navigation }) {
 
       if (data.isAdmin) {
         Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
-        navigation.navigate('AdminHome');
+        navigation.navigate('AdminHome', { isAdmin: true });
       } else {
         setLoginId(data.loginId);
         navigation.navigate('Welcome', { loginId: data.loginId });

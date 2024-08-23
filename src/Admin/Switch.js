@@ -4,7 +4,7 @@ import Battery from "./Battery";
 import SwitchAdmin from "./SwitchAdmin";
 
 const SwitchPage = ({ route, navigation }) => {
-  const { deviceId, loginId } = route.params;
+  const { deviceId, loginId, isAdmin } = route.params;
   const [isEnabled, setIsEnabled] = useState(false);
   const [batteryPercentage, setBatteryPercentage] = useState(0);
 
@@ -126,7 +126,7 @@ const SwitchPage = ({ route, navigation }) => {
           // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
           />
         </View>
-        <SwitchAdmin loginId={loginId} deviceId={deviceId} />
+        <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={ isAdmin }/>
       </View>
     </ScrollView>
   );

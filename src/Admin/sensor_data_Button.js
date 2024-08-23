@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
 
-const SensorDataButton = () => {
+const SensorDataButton = ({ isAdmin }) => {
   const [data, setData] = useState([]);
   const [devices, setDevices] = useState([]);
   const navigation = useNavigation();
@@ -28,9 +28,9 @@ const SensorDataButton = () => {
     const interval = setInterval(fetchData, 1000); // Fetch data every 1 seconds
     return () => clearInterval(interval);
   }, []);
-
-  const handleButtonPress = (deviceId) => {
-    navigation.navigate('SensorData', { deviceId });
+  const handleButtonPress = ( deviceId,isAdmin ) => {
+     
+    navigation.navigate('SensorData', { deviceId, isAdmin: true });
   };
 
   const renderButtonsInGrid = () => {
@@ -88,7 +88,7 @@ const SensorDataButton = () => {
               </View>
               <TouchableOpacity
                 style={[styles.button, { backgroundColor }]}
-                onPress={() => handleButtonPress(deviceId)}
+                onPress={() => handleButtonPress(deviceId, isAdmin)}
               >
                 <Text style={styles.buttonText}>{buttonText}</Text>
                 {dataCount > 0}

@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const SensorData = () => {
+const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const navigation = useNavigation();
-    const route = useRoute();
-    const { deviceId, loginId } = route.params; // Destructure loginId here
+    const { deviceId, loginId, isAdmin } = route.params; // Destructure loginId here
 
     const fetchSensorData = async () => {
         try {
@@ -56,7 +55,7 @@ const SensorData = () => {
                 </TouchableOpacity>
             </View>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId })}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId, isAdmin: true })}>
                     <Text style={styles.buttonText}>Switch</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>
