@@ -16,16 +16,22 @@ const Bargraph = ({ loginId }) => {
         const deviceData = await deviceResponse.json();
 
         if (Array.isArray(deviceData) && deviceData.length > 0) {
-          const deviceId = deviceData[0].deviceId;
-          setDeviceId(deviceId);
+          const newDeviceId = deviceData[0].deviceId;
+          if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Only update if deviceId changes
 
-          const sensor1Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
+          const sensor1Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`);
           const sensor1Values = await sensor1Response.json();
-          setSensor1Data(groupDataByInterval(sensor1Values, "sensor1_value"));
+          const newSensor1Data = groupDataByInterval(sensor1Values, "sensor1_value");
+          if (JSON.stringify(newSensor1Data) !== JSON.stringify(sensor1Data)) {
+            setSensor1Data(newSensor1Data);
+          }
 
-          const sensor2Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
+          const sensor2Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`);
           const sensor2Values = await sensor2Response.json();
-          setSensor2Data(groupDataByInterval(sensor2Values, "sensor2_value"));
+          const newSensor2Data = groupDataByInterval(sensor2Values, "sensor2_value");
+          if (JSON.stringify(newSensor2Data) !== JSON.stringify(sensor2Data)) {
+            setSensor2Data(newSensor2Data);
+          }
         } else {
           console.error("Device data array is empty or not an array.");
         }
@@ -36,12 +42,12 @@ const Bargraph = ({ loginId }) => {
 
     fetchData();
 
-    const intervalId = setInterval(fetchData, 500); // Auto-refresh every 0.5 seconds for real-time updates
+    const intervalId = setInterval(fetchData, 1000); // Adjusted to 1 second for real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [loginId]);
+  }, [loginId, deviceId, sensor1Data, sensor2Data]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 3) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 10) => {
     const groupedData = {};
 
     data.forEach(entry => {
