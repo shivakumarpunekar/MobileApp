@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Switch, StyleSheet, Alert } from "react-native";
+import { View, Text, Switch, StyleSheet, Alert, ScrollView } from "react-native";
 import Battery from "./Battery";
+import SwitchAdmin from "./SwitchAdmin";
 
 const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId } = route.params;
@@ -56,90 +57,93 @@ const SwitchPage = ({ route, navigation }) => {
 
   // Toggle switch
   const toggleSwitch = async () => {
-    
-    // if (batteryPercentage > 75) {
-    //   Alert.alert('Battery level too high', 'Switch is disabled due to high battery level');
-    //   return;
-    // }
-
     const newValue = isEnabled ? 0 : 1;
-  
-  Alert.alert(
-    "Confirm Switch",
-    newValue === 1 ? "Are you sure you want to turn ON the switch?" : "Are you sure you want to turn OFF the switch?",
-    [
-      {
-        text: "Cancel",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel"
-      },
-      {
-        text: "OK",
-        onPress: async () => {
-          setIsEnabled((previousState) => !previousState);
-          try {
-            const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`, {
-              method: 'PUT',
-              headers: {
-                'Accept': '*/*',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                valveStatusOnOrOff: newValue,
-                deviceId: deviceId,
-                userProfileId: loginId,
-                createdDate: new Date().toISOString(),
-                updatedDate: new Date().toISOString(),
-              }),
-            });
 
-            if (response.ok) {
-              console.log('Switch state updated successfully');
-              navigation.goBack();
-              Alert.alert(
-                'Switch Updated',
-                newValue === 1 ? 'Switch ON the water' : 'Switch OFF the water'
-              );
-            } else {
-              console.error('Failed to update switch state');
+    Alert.alert(
+      "Confirm Switch",
+      newValue === 1 ? "Are you sure you want to turn ON the switch?" : "Are you sure you want to turn OFF the switch?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            setIsEnabled((previousState) => !previousState);
+            try {
+              const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`, {
+                method: 'PUT',
+                headers: {
+                  'Accept': '*/*',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  valveStatusOnOrOff: newValue,
+                  deviceId: deviceId,
+                  userProfileId: loginId,
+                  createdDate: new Date().toISOString(),
+                  updatedDate: new Date().toISOString(),
+                }),
+              });
+
+              if (response.ok) {
+                console.log('Switch state updated successfully');
+                navigation.goBack();
+                Alert.alert(
+                  'Switch Updated',
+                  newValue === 1 ? 'Switch ON the water' : 'Switch OFF the water'
+                );
+              } else {
+                console.error('Failed to update switch state');
+              }
+            } catch (error) {
+              console.error('Error:', error);
             }
-          } catch (error) {
-            console.error('Error:', error);
           }
         }
-      }
-    ],
-    { cancelable: true }
-  );
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
-    <View style={styles.container}>
-  <Battery deviceId={deviceId} />
-  <View style={styles.switchContainer}>
-    <Text style={styles.switchText}>{isEnabled ? "On" : "Off"}</Text>
-    <Switch
-      trackColor={{ false: "red", true: "green" }}
-      thumbColor={isEnabled ? "green" : "red"}
-      ios_backgroundColor="#3e3e3e"
-      onValueChange={toggleSwitch}
-      value={isEnabled}
-      style={styles.switch}
-      // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
-    />
-  </View>
-</View>
-
+    <ScrollView contentContainerStyle={styles.scrollView}>
+      <View style={styles.container}>
+        
+        <Battery deviceId={deviceId} />
+        
+        <View style={styles.switchContainer}>
+          <Text style={styles.switchText}>{isEnabled ? "ON" : "OFF"}</Text>
+          <Switch
+            trackColor={{ false: "red", true: "green" }}
+            thumbColor={isEnabled ? "green" : "red"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={isEnabled}
+            style={styles.switch}
+          // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
+          />
+        </View>
+        <SwitchAdmin loginId={loginId} deviceId={deviceId} />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollView: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F6F3E7',
     padding: 20,
+  },
+  container: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   switchContainer: {
     flexDirection: 'row',

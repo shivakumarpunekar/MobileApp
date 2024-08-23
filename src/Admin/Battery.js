@@ -22,15 +22,6 @@ const Battery = ({ deviceId }) => {
             const percentage = Math.min(100, Math.max(0, (calculatedBatteryLevel / 4000) * 100));
 
             setBatteryPercentage(percentage);
-
-            // Determine battery color based on percentage
-            if (percentage <= 10) {
-              setBatteryColor('red');
-            } else if (percentage <= 50) {
-              setBatteryColor('yellow');
-            } else {
-              setBatteryColor('blue');
-            }
           } else {
             console.error('Sensor data not found or data is empty');
           }
@@ -50,13 +41,13 @@ const Battery = ({ deviceId }) => {
       <Text style={styles.percentageText}>{batteryPercentage}%</Text>
       <LottieView
         ref={animationRef}
-        source={require('../../assets/Animation - 1724310049122.json')}
+        source={require('../../assets/Battery.json')}
         loop={true}
         style={[
           styles.animation,
           { tintColor: batteryColor } // Apply battery color to the Lottie animation
         ]}
-        progress={1 - (batteryPercentage / 100)} // Reverse the progress calculation
+        progress={(batteryPercentage / 100)} // Reverse the progress calculation
       />
     </View>
   );
@@ -68,14 +59,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   animation: {
-    width: 400, // Adjusted size
-    height: 400, // Adjusted size
+    width: 450, // Adjusted size
+    height: 450, // Adjusted size
   },
   percentageText: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10, // Adjusted margin
   },
 });
 
