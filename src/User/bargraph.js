@@ -110,7 +110,6 @@ const Bargraph = ({ loginId }) => {
         flatColor={true}
         yAxisInterval={1} // Add this to set a static interval for Y-axis
         yAxisSuffix=""  // Remove unit suffix
-        // yAxisLabel=""
       />
 
       <Text style={styles.title}>Sensor 2</Text>
@@ -125,7 +124,6 @@ const Bargraph = ({ loginId }) => {
         flatColor={true}
         yAxisInterval={1} // Add this to set a static interval for Y-axis
         yAxisSuffix=""  // Remove unit suffix
-        // yAxisLabel=""
       />
     </ScrollView>
   );
