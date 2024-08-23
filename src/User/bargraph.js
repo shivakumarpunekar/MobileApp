@@ -47,7 +47,7 @@ const Bargraph = ({ loginId }) => {
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [loginId, deviceId, sensor1Data, sensor2Data]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 2) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 3) => {
     const groupedData = {};
 
     data.forEach(entry => {
@@ -108,6 +108,9 @@ const Bargraph = ({ loginId }) => {
         fromZero={true}
         withCustomBarColorFromData={true}
         flatColor={true}
+        yAxisInterval={1} // Add this to set a static interval for Y-axis
+        yAxisSuffix=""  // Remove unit suffix
+        // yAxisLabel=""
       />
 
       <Text style={styles.title}>Sensor 2</Text>
@@ -120,6 +123,9 @@ const Bargraph = ({ loginId }) => {
         fromZero={true}
         withCustomBarColorFromData={true}
         flatColor={true}
+        yAxisInterval={1} // Add this to set a static interval for Y-axis
+        yAxisSuffix=""  // Remove unit suffix
+        // yAxisLabel=""
       />
     </ScrollView>
   );
@@ -133,6 +139,14 @@ const chartConfig = {
   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
   barPercentage: 0.5,
   decimalPlaces: 0,
+  yAxisLabel: '', // Set this to empty to remove the units
+  yAxisInterval: 1, // Ensure Y-axis values are spaced appropriately
+  propsForBackgroundLines: {
+    strokeDasharray: '',
+  },
+  propsForYAxisLabels: {
+    fontSize: 12,
+  },
 };
 
 const styles = StyleSheet.create({
