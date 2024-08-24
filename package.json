@@ -44,6 +44,7 @@
     "react-native-document-picker": "^9.3.0",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.17.1",
+    "react-native-gifted-charts": "^1.4.30",
     "react-native-image-picker": "^7.1.2",
     "react-native-logs": "^5.1.0",
     "react-native-modal": "^13.0.1",

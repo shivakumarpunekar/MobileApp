@@ -4891,6 +4891,11 @@ get-symbol-description@^1.0.2:
     es-errors "^1.3.0"
     get-intrinsic "^1.2.4"
 
+gifted-charts-core@^0.1.31:
+  version "0.1.31"
+  resolved "https://registry.npmjs.org/gifted-charts-core/-/gifted-charts-core-0.1.31.tgz"
+  integrity sha512-u7G+RyfX390gqM62i7HBzmfEGmJz252BYhs0Y7mlp2MBFWqxmDUE4g3fIsUTko67CkUWv0QHoQezLsV8OzXELQ==
+
 github-from-package@0.0.0:
   version "0.0.0"
   resolved "https://registry.npmjs.org/github-from-package/-/github-from-package-0.0.0.tgz"
@@ -7474,6 +7479,13 @@ react-native-gesture-handler@^2.17.1:
     hoist-non-react-statics "^3.3.0"
     invariant "^2.2.4"
     prop-types "^15.7.2"
+
+react-native-gifted-charts@^1.4.30:
+  version "1.4.30"
+  resolved "https://registry.npmjs.org/react-native-gifted-charts/-/react-native-gifted-charts-1.4.30.tgz"
+  integrity sha512-Pxdw8LAlrdbqHgXEqtsBt3BKdwV3oapQfAhphdVQO1+P4rD4sR1DOMPeskW32LjSuCGYXgXdBnpfiCNw5KT93Q==
+  dependencies:
+    gifted-charts-core "^0.1.31"
 
 react-native-image-picker@^7.1.2:
   version "7.1.2"

@@ -104,17 +104,6 @@ const PlantStatus = ({ loginId }) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.dateNav}>
-                <TouchableOpacity style={styles.navButton} onPress={handlePrevDay}>
-                    <Icon style={styles.arrow} name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
-
-                <Text style={styles.dateText}>{selectedDate.format('YYYY-MM-DD')}</Text>
-
-                <TouchableOpacity style={styles.navButton} onPress={handleNextDay}>
-                    <Icon style={styles.arrow} name="arrow-forward" size={24} color="#000" />
-                </TouchableOpacity>
-            </View>
 
             <View style={styles.waterCard}> 
                 <Text style={styles.waterHeader}>Water level</Text>
@@ -144,20 +133,6 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         marginBottom:50,
-    },
-    dateNav: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    dateText: {
-        fontSize: 18,
-        backgroundColor: 'lightblue',
-        color: '#000',
-        textAlign: 'center',
-        flex: 1,
-        paddingVertical: 5,
     },
     waterCard: {
         padding: 20,
