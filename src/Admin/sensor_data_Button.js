@@ -28,7 +28,7 @@ const SensorDataButton = ({ isAdmin }) => {
     const interval = setInterval(fetchData, 1000); // Fetch data every 1 seconds
     return () => clearInterval(interval);
   }, []);
-  const handleButtonPress = ( deviceId,isAdmin ) => {
+  const handleButtonPress = ( deviceId ) => {
      
     navigation.navigate('SensorData', { deviceId, isAdmin: true });
   };
