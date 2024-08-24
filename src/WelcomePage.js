@@ -17,16 +17,7 @@ function HomeScreen({ route }) {
     );
 }
 
-// function AdminScreen() {
-//     return (
-//         <AdminDetail />
-//     );
-// }
-// function SingleUserScreen() {
-//     return (
-//         <SingleUser />
-//     );
-// }
+
 
 function ProfileScreen({ route }) {
     const { loginId } = route.params;

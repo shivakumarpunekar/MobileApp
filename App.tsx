@@ -16,6 +16,7 @@ import {
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { AuthProvider } from './src/AuthContext/AuthContext';
 import LoginPage from './src/LoginPage';
 import WelcomePage from './src/WelcomePage';
 import RegistrationPage from './src/RegistationPage';
@@ -30,8 +31,6 @@ import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
-import PlantStatus from './src/User/PlantStatus';
-import Bargraph from './src/User/bargraph';
 
 const Stack = createStackNavigator();
 
@@ -45,17 +44,18 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={[styles.container, backgroundStyle]}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+    <AuthProvider>
+      <SafeAreaView style={[styles.container, backgroundStyle]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login">
             <Stack.Screen
               name="Login" //This is For login page
               component={LoginPage}
-              options={{ headerShown: false}}
+              options={{ headerShown: false }}
             />
             {/* This is a User Database  */}
             <Stack.Screen
@@ -70,9 +70,9 @@ function App(): React.JSX.Element {
                     color="#BFA100"
                   />
                 ),
-                headerTitle:'aairos Technologies',
+                headerTitle: 'aairos Technologies',
                 headerLeftContainerStyle: { marginLeft: 15 },
-                headerRightContainerStyle: {marginRight: 20},
+                headerRightContainerStyle: { marginRight: 20 },
                 headerBackTitleVisible: false,
                 headerBackAccessibilityLabel: 'Back',
                 gestureEnabled: false,
@@ -80,25 +80,25 @@ function App(): React.JSX.Element {
             />
             {/* This is a Admin Database  */}
             <Stack.Screen
-            name="AdminHome" //This is for AdminHome Page
-            component={AdminHome}
-            options={({ navigation }) => ({
-              headerLeft: () => null,
-              headerRight: () => (
-                <Button
-                  onPress={() => navigation.navigate('Login')}
-                  title="Logout"
-                  color="#BFA100"
-                />
-              ),
-              headerTitle:'Admin',
-              headerLeftContainerStyle: { marginLeft: 15 },
-              headerRightContainerStyle: {marginRight: 20},
-              headerBackTitleVisible: false,
-              headerBackAccessibilityLabel: 'Back',
-              gestureEnabled: false,
-            })}
-          />
+              name="AdminHome" //This is for AdminHome Page
+              component={AdminHome}
+              options={({ navigation }) => ({
+                headerLeft: () => null,
+                headerRight: () => (
+                  <Button
+                    onPress={() => navigation.navigate('Login')}
+                    title="Logout"
+                    color="#BFA100"
+                  />
+                ),
+                headerTitle: 'Admin',
+                headerLeftContainerStyle: { marginLeft: 15 },
+                headerRightContainerStyle: { marginRight: 20 },
+                headerBackTitleVisible: false,
+                headerBackAccessibilityLabel: 'Back',
+                gestureEnabled: false,
+              })}
+            />
             <Stack.Screen
               name="RegistrationPage" //This is for Registation Page
               component={RegistrationPage}
@@ -123,7 +123,7 @@ function App(): React.JSX.Element {
               options={{ headerTitle: 'device' }}
             />
 
-            
+
             <Stack.Screen
               name="GraphPage" //This is for Admin Graph Page
               component={GraphPage}
@@ -179,8 +179,9 @@ function App(): React.JSX.Element {
               options={ {headerTitle: 'Bargraph'} }
             /> */}
           </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaView>
+        </NavigationContainer>
+      </SafeAreaView>
+    </AuthProvider>
   );
 }
 

@@ -6,6 +6,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
+import PushNotification from 'react-native-push-notification'; // Import PushNotification
+
 
 const DeviceTable = ({ loginId }) => {
   const [userDevices, setUserDevices] = useState([]);
@@ -81,6 +83,15 @@ const DeviceTable = ({ loginId }) => {
           let backgroundColor;
           const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
           const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
+
+          // Trigger a notification when the color is red (dates do not match)
+          if (heartIconColor === '#FF0000') {
+            PushNotification.localNotification({
+              title: 'Device is Stop',
+              message: `the Device ${deviceId} is stop`,
+            });
+          }
+
           let valveIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000'; // Green for on, Red for off
           let buttonText = `Device ${deviceId}`;
 

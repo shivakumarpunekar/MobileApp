@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
+import PushNotification from 'react-native-push-notification'; // Import PushNotification
 
 const SensorDataButton = ({ isAdmin }) => {
   const [data, setData] = useState([]);
@@ -56,7 +57,39 @@ const SensorDataButton = ({ isAdmin }) => {
           // Determine heart icon color based on create date and current date
           const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
           const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
-          let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
+
+          // Trigger a notification when the color is red (dates do not match)
+          if (heartIconColor === '#FF0000') {
+            PushNotification.localNotification({
+              title: 'Device is Stop',
+              message: `the Device ${deviceId} is stop`,
+            });
+          }
+
+
+          // Handle valve status notifications
+          let valveIconColor = '#808080'; // Default gray if null
+          if (solenoidValveStatus === 'On') {
+            valveIconColor = '#00FF00'; // Green
+            if (prevValveStatus[deviceId] !== 'On') {
+              PushNotification.localNotification({
+                title: 'Valve Status Changed',
+                message: `The valve on device ${deviceId} is now ON.`,
+              });
+            }
+          } else if (solenoidValveStatus === 'Off') {
+            valveIconColor = '#FF0000'; // Red
+            if (prevValveStatus[deviceId] !== 'Off') {
+              PushNotification.localNotification({
+                title: 'Valve Status Changed',
+                message: `The valve on device ${deviceId} is now OFF.`,
+              });
+            }
+          }
+
+          // Update the previous valve status
+          setPrevValveStatus(prev => ({ ...prev, [deviceId]: solenoidValveStatus }));
+          // let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
           let buttonText;
 
           if (sensor1 === null || sensor2 === null) {
@@ -91,7 +124,6 @@ const SensorDataButton = ({ isAdmin }) => {
                 onPress={() => handleButtonPress(deviceId, isAdmin)}
               >
                 <Text style={styles.buttonText}>{buttonText}</Text>
-                {dataCount > 0}
               </TouchableOpacity>
             </View>
           );
@@ -147,11 +179,6 @@ const styles = StyleSheet.create({
   valveIcon: {
     marginLeft: 10,
   },
-  dataCount: {
-    marginTop: 5,
-    color: '#000',
-    fontSize: 14,
-  }
 });
 
 export default SensorDataButton;
