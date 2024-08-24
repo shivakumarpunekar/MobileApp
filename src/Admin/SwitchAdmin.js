@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Switch, StyleSheet, Alert } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated } from "react-native";
 
 const SwitchAdmin = ({ deviceId, isAdmin }) => {
   const [isSwitchOn, setIsSwitchOn] = useState(false);
+  const animationValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (deviceId && isAdmin) {
@@ -16,6 +17,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
       if (response.ok) {
         const data = await response.json();
         setIsSwitchOn(data.adminValveStatus === 1);
+        animateButton(data.adminValveStatus === 1);
       } else {
         console.error('Failed to fetch switch state');
         Alert.alert('No device is found');
@@ -38,6 +40,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
       if (response.ok) {
         Alert.alert('Success', `Switch turned ${newState ? 'ON' : 'OFF'}`);
         setIsSwitchOn(newState);
+        animateButton(newState);
       } else {
         console.error('Failed to update switch state');
         Alert.alert('Failed to update switch state');
@@ -46,6 +49,14 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
       console.error('Error:', error);
       Alert.alert('Error updating switch state');
     }
+  };
+
+  const animateButton = (newState) => {
+    Animated.timing(animationValue, {
+      toValue: newState ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
   };
 
   const toggleSwitch = () => {
@@ -71,24 +82,23 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
     return null; // Render nothing if the user is not an admin
   }
 
+  const buttonBackgroundColor = animationValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['red', 'green'],
+  });
+
+  const buttonText = isSwitchOn ? 'ON' : 'OFF';
+
   return (
     <View style={styles.container}>
-      {/* Admin text at the top */}
       <View style={styles.textContainer}>
         <Text style={styles.adminText}>This is for admin</Text>
       </View>
-
-      {/* Switch and status */}
-      <View style={styles.switchContainer}>
-        <Text style={styles.text}>{isSwitchOn ? "ON" : "OFF"}</Text>
-        <Switch
-          trackColor={{ false: "red", true: "green" }}
-          thumbColor={isSwitchOn ? "green" : "red"}
-          onValueChange={toggleSwitch}
-          value={isSwitchOn}
-          style={styles.switch}
-        />
-      </View>
+      <TouchableOpacity onPress={toggleSwitch} activeOpacity={0.7}>
+        <Animated.View style={[styles.button, { backgroundColor: buttonBackgroundColor }]}>
+          <Text style={styles.buttonText}>{buttonText}</Text>
+        </Animated.View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -100,7 +110,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   textContainer: {
-    marginBottom: 10, // Add space between the admin text and the switch
+    marginBottom: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -108,17 +118,18 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
   },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  button: {
+    width: 120,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
   },
-  text: {
-    fontSize: 22,
-    marginRight: 20,
-  },
-  switch: {
-    transform: [{ scaleX: 2 }, { scaleY: 2 }],
+  buttonText: {
+    fontSize: 24,
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
