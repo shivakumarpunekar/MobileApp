@@ -12,7 +12,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
 
   const fetchSwitchState = async () => {
     try {
-      const response = await fetch(`http://192.168.1.10:2030/api/ValveStatus/admin/device/${deviceId}`);
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`);
       if (response.ok) {
         const data = await response.json();
         setIsSwitchOn(data.adminValveStatus === 1);
@@ -28,7 +28,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
 
   const updateSwitchState = async (newState) => {
     try {
-      const response = await fetch(`http://192.168.1.10:2030/api/ValveStatus/admin/device/${deviceId}`, {
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

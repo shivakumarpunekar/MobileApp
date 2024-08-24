@@ -10,9 +10,9 @@ const Valva_status_detail = () => {
   const fetchSensorData = async () => {
     try {
       // const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/date/${date}/device/${deviceId}`);
-      const response = await fetch(`http://192.168.1.10:2030/api/sensor_data/date/${date}/device/${deviceId}`);
+      const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/date/${date}/device/${deviceId}`);
       const result = await response.json();
-      setData(result); 
+      setData(result);
     } catch (error) {
       console.error('Failed to fetch sensor data:', error);
     }
@@ -26,9 +26,9 @@ const Valva_status_detail = () => {
 
   const renderItemContainerStyle = (sensor1, sensor2) => {
     if ((sensor1 >= 4000 && sensor2 >= 4000) ||
-        (sensor1 <= 1250 && sensor2 <= 1250) ||
-        (sensor1 >= 4000 && sensor2 <= 1250) ||
-        (sensor1 <= 1250 && sensor2 >= 4000)) {
+      (sensor1 <= 1250 && sensor2 <= 1250) ||
+      (sensor1 >= 4000 && sensor2 <= 1250) ||
+      (sensor1 <= 1250 && sensor2 >= 4000)) {
       return styles.itemContainerRed;
     } else {
       return styles.itemContainerGreen;
@@ -37,9 +37,9 @@ const Valva_status_detail = () => {
 
   const renderItemTextStyle = (sensor1, sensor2) => {
     if ((sensor1 >= 4000 && sensor2 >= 4000) ||
-        (sensor1 <= 1250 && sensor2 <= 1250) ||
-        (sensor1 >= 4000 && sensor2 <= 1250) ||
-        (sensor1 <= 1250 && sensor2 >= 4000)) {
+      (sensor1 <= 1250 && sensor2 <= 1250) ||
+      (sensor1 >= 4000 && sensor2 <= 1250) ||
+      (sensor1 <= 1250 && sensor2 >= 4000)) {
       return styles.itemTextWhite;
     } else {
       return styles.itemText;
