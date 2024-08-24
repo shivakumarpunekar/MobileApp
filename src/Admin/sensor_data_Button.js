@@ -66,30 +66,7 @@ const SensorDataButton = ({ isAdmin }) => {
             });
           }
 
-
-          // Handle valve status notifications
-          let valveIconColor = '#808080'; // Default gray if null
-          if (solenoidValveStatus === 'On') {
-            valveIconColor = '#00FF00'; // Green
-            if (prevValveStatus[deviceId] !== 'On') {
-              PushNotification.localNotification({
-                title: 'Valve Status Changed',
-                message: `The valve on device ${deviceId} is now ON.`,
-              });
-            }
-          } else if (solenoidValveStatus === 'Off') {
-            valveIconColor = '#FF0000'; // Red
-            if (prevValveStatus[deviceId] !== 'Off') {
-              PushNotification.localNotification({
-                title: 'Valve Status Changed',
-                message: `The valve on device ${deviceId} is now OFF.`,
-              });
-            }
-          }
-
-          // Update the previous valve status
-          setPrevValveStatus(prev => ({ ...prev, [deviceId]: solenoidValveStatus }));
-          // let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
+          let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
           let buttonText;
 
           if (sensor1 === null || sensor2 === null) {
