@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import AdminDetail from './AdminDetail';
-import SingleUser from './SingleUser';
 import ProfilePage from './ProfileScreen';
 import DeviceTable from './DeviceTable';
 
@@ -16,8 +14,6 @@ function HomeScreen({ route }) {
         <DeviceTable loginId={loginId} />
     );
 }
-
-
 
 function ProfileScreen({ route }) {
     const { loginId } = route.params;
@@ -50,10 +46,6 @@ export default function WelcomePage({ route }) {
 
                     if (route.name === 'Home') {
                         iconName = focused ? 'home' : 'home';
-                    } else if (route.name === 'Admin') {
-                        iconName = focused ? 'info-circle' : 'info-circle';
-                    } else if (route.name === 'User') {
-                        iconName = focused ? 'database' : 'database';
                     } else if (route.name === 'ProfileScreen') {
                         iconName = focused ? 'user' : 'user';
                     } else if (route.name === 'About') {
@@ -69,8 +61,6 @@ export default function WelcomePage({ route }) {
             }}
         >
             <Tab.Screen name="Home" component={HomeScreen} initialParams={{ loginId }} options={{ headerShown: false }} />
-            {/* <Tab.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="User" component={SingleUserScreen} options={{ headerShown: false }} /> */}
             <Tab.Screen name="ProfileScreen" component={ProfileScreen} initialParams={{ loginId }} options={{ headerShown: false }} />
             <Tab.Screen name="About" component={AboutScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
