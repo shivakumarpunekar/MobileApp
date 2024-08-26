@@ -31,16 +31,68 @@ import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 const Stack = createStackNavigator();
 
+const requestPermissions = async () => {
+  if (Platform.OS === 'android') {
+    try {
+      // Request camera permission
+      const cameraGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'This app needs access to your camera.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
 
+      // Request location permissions
+      const locationGranted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+      ]);
+
+      // Request notification permission (Android 13+)
+      const notificationGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        {
+          title: 'Notification Permission',
+          message: 'This app needs access to send notifications.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+
+      if (
+        cameraGranted === PermissionsAndroid.RESULTS.GRANTED &&
+        locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
+        locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
+        notificationGranted === PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log('All permissions granted');
+      } else {
+        console.log('Some permissions denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+};
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [initialRoute, setInitialRoute] = useState('Login');
 
   useEffect(() => {
+    // Request permissions on app startup
+    requestPermissions();
+
+
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId');
       const isAdmin = await AsyncStorage.getItem('isAdmin');
