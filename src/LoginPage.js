@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import RainAnimation from './RainAnimation/RainAnimation';
 
 export default function LoginPage({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginId, setLoginId] = useState('');
-  const [captchaVerified, setCaptchaVerified] = useState(false);
+
+
+  useEffect(() => {
+    // Check if the user is already logged in
+    const checkLoginStatus = async () => {
+      const storedLoginId = await AsyncStorage.getItem('loginId');
+      const isAdmin = await AsyncStorage.getItem('isAdmin');
+      if (storedLoginId) {
+        if (isAdmin === 'true') {
+          navigation.navigate('AdminHome', { isAdmin: true });
+        } else {
+          navigation.navigate('Welcome', { loginId: storedLoginId });
+        }
+      }
+    };
+
+    checkLoginStatus();
+  }, [navigation]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -23,7 +41,7 @@ export default function LoginPage({ navigation }) {
         body: JSON.stringify({
           Username: username,
           password: password,
-          loginId: loginId,
+          /* loginId: loginId, */
         }),
       });
 
@@ -34,13 +52,18 @@ export default function LoginPage({ navigation }) {
       const data = await response.json();
 
       if (data.isAdmin) {
+        await AsyncStorage.setItem('isAdmin', 'true'); // Save isAdmin status
+          await AsyncStorage.setItem('loginId', data.loginId.toString()); // Save loginId as string
         Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
         navigation.navigate('AdminHome', { isAdmin: true });
       } else {
+        await AsyncStorage.setItem('isAdmin', 'false');
+        await AsyncStorage.setItem('loginId', data.loginId.toString()); // Save loginId as string
         setLoginId(data.loginId);
         navigation.navigate('Welcome', { loginId: data.loginId });
-      }
+      } 
     } catch (error) {
+      console.error('Login error:', error); // Log the error for debugging
       Alert.alert('Login Failed', 'Please verify username and password.');
     }
   };

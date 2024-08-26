@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -13,6 +13,7 @@ import {
   useColorScheme,
   Button,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -30,8 +31,6 @@ import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
-import PlantStatus from './src/User/PlantStatus';
-import Bargraph from './src/User/bargraph';
 
 const Stack = createStackNavigator();
 
@@ -39,6 +38,20 @@ const Stack = createStackNavigator();
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  const [initialRoute, setInitialRoute] = useState('Login');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const loginId = await AsyncStorage.getItem('loginId');
+      const isAdmin = await AsyncStorage.getItem('isAdmin');
+
+      if (loginId) {
+        setInitialRoute(isAdmin === 'true' ? 'AdminHome' : 'Welcome');
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -51,7 +64,7 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="initialRoute">
             <Stack.Screen
               name="Login" //This is For login page
               component={LoginPage}
@@ -166,18 +179,6 @@ function App(): React.JSX.Element {
               component={ThresholdEdit}
               options={{ headerTitle: 'ThresholdEdit' }}
             />
-
-            {/* <Stack.Screen
-            name='PlantStatus' //This is for user PlantStatus
-            component={PlantStatus }
-            options={ {headerTitle: 'PlantStatus'} }
-            /> */}
-
-            {/* <Stack.Screen
-              name='Bargraph'
-              component={Bargraph}
-              options={ {headerTitle: 'Bargraph'} }
-            /> */}
           </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>
