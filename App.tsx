@@ -35,6 +35,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 
 const Stack = createStackNavigator();
 
+// This is a Permissions
 const requestPermissions = async () => {
   if (Platform.OS === 'android') {
     try {
