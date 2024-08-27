@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Switch, StyleSheet, Alert, ScrollView } from "react-native";
 import Battery from "./Battery";
 import SwitchAdmin from "./SwitchAdmin";
+import SwitchLabel from "../User/SwitchLabel";
 
 const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId, isAdmin } = route.params;
@@ -111,9 +112,11 @@ const SwitchPage = ({ route, navigation }) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
       <View style={styles.container}>
-        
+
+        {/* This is a Battery View */}
         <Battery deviceId={deviceId} />
-        
+
+        {/* This is a Switch View */}
         <View style={styles.switchContainer}>
           <Text style={styles.switchText}>{isEnabled ? "ON" : "OFF"}</Text>
           <Switch
@@ -126,7 +129,12 @@ const SwitchPage = ({ route, navigation }) => {
           // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
           />
         </View>
+
+        {/* This is a Admin Switch View */}
         <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={ isAdmin }/>
+
+        {/* This is a User Switch Label */} 
+        <SwitchLabel deviceId={deviceId} isAdmin={isAdmin}/>
       </View>
     </ScrollView>
   );
