@@ -9,6 +9,7 @@ import PushNotification from 'react-native-push-notification'; // Import PushNot
 const SensorDataButton = ({ isAdmin }) => {
   const [data, setData] = useState([]);
   const [devices, setDevices] = useState([]);
+  const [deviceStatus, setDeviceStatus] = useState({});
   const navigation = useNavigation();
 
   const fetchData = () => {
@@ -29,6 +30,50 @@ const SensorDataButton = ({ isAdmin }) => {
     const interval = setInterval(fetchData, 1000); // Fetch data every 1 seconds
     return () => clearInterval(interval);
   }, []);
+
+   // Set up notifications based on current device statuses
+   useEffect(() => {
+    devices.forEach((deviceId) => {
+      const deviceData = data.filter((item) => item.deviceId === deviceId);
+      if (deviceData.length) {
+        const solenoidValveStatus = deviceData[0].solenoidValveStatus;
+        const createdDateTime = deviceData[0].createdDateTime;
+
+        const currentDate = moment().format('DD-MM-YYYY');
+        const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
+        const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
+
+        let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'; // Default gray if null
+
+        setDeviceStatus((prevStatus) => ({
+          ...prevStatus,
+          [deviceId]: { heartIconColor, valveIconColor }
+        }));
+
+        if (heartIconColor === '#FF0000') {
+          PushNotification.localNotification({
+            title: 'Device is Stop',
+            message: `The Device ${deviceId} is stopped`,
+          });
+        }
+
+        if (valveIconColor === '#FF0000') {
+          PushNotification.localNotification({
+            title: 'Device Status Alert',
+            message: `Device ${deviceId} has stopped.`,
+            importance: 'high',
+          });
+        } else if (valveIconColor === '#00FF00') {
+          PushNotification.localNotification({
+            title: 'Device Status Alert',
+            message: `Device ${deviceId} is running smoothly.`,
+            importance: 'high',
+          });
+        }
+      }
+    });
+  }, [data, devices]);
+
   const handleButtonPress = ( deviceId ) => {
      
     navigation.navigate('SensorData', { deviceId, isAdmin: true });
@@ -41,7 +86,7 @@ const SensorDataButton = ({ isAdmin }) => {
       rows.push(row);
     }
 
-    const currentDate = moment().format('DD-MM-YYYY');
+    /* const currentDate = moment().format('DD-MM-YYYY'); */
 
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
@@ -49,25 +94,15 @@ const SensorDataButton = ({ isAdmin }) => {
           const deviceData = data.filter(item => item.deviceId === deviceId);
           const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
           const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
-          const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
+          /* const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
           const createdDateTime = deviceData.length ? deviceData[0].createdDateTime : null;
-          const dataCount = deviceData.length;
+          const dataCount = deviceData.length; */
+          const { heartIconColor, valveIconColor } = deviceStatus[deviceId] || {};
 
           let backgroundColor;
-          // Determine heart icon color based on create date and current date
-          const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
-          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if dates match, red otherwise
-
-          // Trigger a notification when the color is red (dates do not match)
-          if (heartIconColor === '#FF0000') {
-            PushNotification.localNotification({
-              title: 'Device is Stop',
-              message: `the Device ${deviceId} is stop`,
-            });
-          }
-
-          let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : (solenoidValveStatus === 'Off' ? '#FF0000' : '#808080'); // Default gray if null
           let buttonText;
+
+         
 
           if (sensor1 === null || sensor2 === null) {
             backgroundColor = '#808080'; // Gray for no data
@@ -82,7 +117,7 @@ const SensorDataButton = ({ isAdmin }) => {
             (sensor1 >= 4000 || sensor1 <= 1250) ||
             (sensor2 >= 4000 || sensor2 <= 1250)
           ) {
-            backgroundColor = '#FFA500'; // Orange
+            backgroundColor = '#FFA500'; // Yellow
             buttonText = `Device ${deviceId}`;
           } else {
             backgroundColor = '#00FF00'; // Green
@@ -93,10 +128,11 @@ const SensorDataButton = ({ isAdmin }) => {
           return (
             <View key={deviceId} style={styles.buttonContainer}>
               <View style={styles.iconContainer}>
-                <Icon name="heart" size={30} color={heartIconColor} />
+                <Icon name="heartbeat" size={30} color={heartIconColor} />
                 <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
               </View>
               <TouchableOpacity
+                key={deviceId}
                 style={[styles.button, { backgroundColor }]}
                 onPress={() => handleButtonPress(deviceId, isAdmin)}
               >

@@ -93,7 +93,6 @@ function App(): React.JSX.Element {
     // Request permissions on app startup
     requestPermissions();
 
-
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId');
       const isAdmin = await AsyncStorage.getItem('isAdmin');
