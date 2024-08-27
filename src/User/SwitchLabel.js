@@ -60,7 +60,7 @@ const SwitchLabel = ({ deviceId, isAdmin }) => {
                     <Text style={[styles.innerText, { color: getStatusStyle("Off").color }]}>Off</Text>
                 </View>
                 <View style={[styles.outerCircle, { backgroundColor: getStatusStyle("Undecided").backgroundColor }]}>
-                    <Text style={[styles.innerText, { color: getStatusStyle("Undecided").color }]}>😊</Text>
+                    <Text style={[styles.innerText, { color: getStatusStyle("Undecided").color }]}>😐</Text>
                 </View>
             </View>
         );

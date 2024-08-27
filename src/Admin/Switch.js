@@ -35,7 +35,7 @@ const SwitchPage = ({ route, navigation }) => {
     }
   }, [deviceId, loginId]);
 
-  // Fetch switch state
+  // Fetch switch state and auto-refresh every second
   useEffect(() => {
     const fetchSwitchState = async () => {
       try {
@@ -54,7 +54,9 @@ const SwitchPage = ({ route, navigation }) => {
     };
 
     fetchSwitchState();
-  }, [deviceId, loginId]);
+    const interval = setInterval(fetchSwitchState, 1000); // Refresh every 1 second
+    return () => clearInterval(interval); // Clear interval on component unmount
+  }, [deviceId]);
 
   // Toggle switch
   const toggleSwitch = async () => {
@@ -126,15 +128,15 @@ const SwitchPage = ({ route, navigation }) => {
             onValueChange={toggleSwitch}
             value={isEnabled}
             style={styles.switch}
-          // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
+            // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
           />
         </View>
 
-        {/* This is a Admin Switch View */}
-        <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={ isAdmin }/>
+        {/* This is an Admin Switch View */}
+        <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={isAdmin} />
 
-        {/* This is a User Switch Label */} 
-        <SwitchLabel deviceId={deviceId} isAdmin={isAdmin}/>
+        {/* This is a User Switch Label */}
+        <SwitchLabel deviceId={deviceId} isAdmin={isAdmin} />
       </View>
     </ScrollView>
   );

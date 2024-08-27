@@ -8,6 +8,11 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
   useEffect(() => {
     if (deviceId && isAdmin) {
       fetchSwitchState();
+      const intervalId = setInterval(() => {
+        fetchSwitchState();
+      }, 1000); // Refresh every 1 second
+
+      return () => clearInterval(intervalId); // Clear interval on component unmount
     }
   }, [deviceId, isAdmin]);
 
