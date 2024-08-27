@@ -102,7 +102,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
           <Text style={styles.buttonText}>OFF</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handlePress("Undecided")} style={[styles.button, { backgroundColor: status === "Undecided" ? 'orange' : 'lightblue' }]}>
-          <Text style={styles.buttonText}>😐</Text>
+          <Text style={styles.buttonText}>Auto</Text>
         </TouchableOpacity>
       </View>
     </View>

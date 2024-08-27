@@ -14,38 +14,44 @@ const Battery = ({ deviceId }) => {
         try {
           const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
           const data = await response.json();
+
           if (data && data.length > 0) {
             const { sensor1_value, sensor2_value } = data[0];
-            let validSensors = [];
+            let validSensorValues = [];
+            let usedValue;
 
-            // Check and collect valid sensor values (<= 4095)
-            if (sensor1_value <= 4095) validSensors.push(sensor1_value);
-            if (sensor2_value <= 4095) validSensors.push(sensor2_value);
+            // Collect only valid sensor values
+            if (sensor1_value < 4095) validSensorValues.push(sensor1_value);
+            if (sensor2_value < 4095) validSensorValues.push(sensor2_value);
 
             // Specific case handling
             if (sensor1_value === sensor2_value) {
               if (sensor1_value === 4095) {
                 setBatteryPercentage(0); // 4095 should be 0%
                 setBatteryColor('red');
+                return;
               } else if (sensor1_value === 0) {
                 setBatteryPercentage(100); // 0 should be 100%
                 setBatteryColor('green');
+                return;
               }
-            } else if (validSensors.length > 0) {
-              // Calculate battery level using only valid sensor values
-              const calculatedBatteryLevel = validSensors.reduce((a, b) => a + b, 0) / validSensors.length;
+            }
 
-              // Convert the battery level (0 to 4095) to percentage (0% to 100%)
-              const percentage = Math.max(0, Math.min(100, (calculatedBatteryLevel / 4095) * 100));
+            // Use only one valid sensor value if one is above 4095
+            if (validSensorValues.length === 1) {
+              usedValue = validSensorValues[0];
+            } else if (validSensorValues.length === 2) {
+              usedValue = (validSensorValues[0] + validSensorValues[1]) / 2;
+            }
 
-              // Round the percentage to two decimal places
-              const roundedPercentage = parseFloat(percentage.toFixed(2));
-
-              // Reverse the percentage for display and animation
-              const reversedPercentage = 100 - roundedPercentage;
+            // Convert the valid value (0 to 4095) to a percentage (0% to 100%)
+            if (usedValue !== undefined) {
+              const percentage = Math.max(0, Math.min(100, (usedValue / 4095) * 100));
+              // Reverse the percentage for display
+              const reversedPercentage = 100 - percentage;
 
               setBatteryPercentage(reversedPercentage);
-
+              setBatteryColor(reversedPercentage > 75 ? 'green' : reversedPercentage > 50 ? 'yellow' : 'red');
             } else {
               // If no valid sensors are found, set to 100% (reversed 0%)
               setBatteryPercentage(100);
