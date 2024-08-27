@@ -134,9 +134,6 @@ const SwitchPage = ({ route, navigation }) => {
 
         {/* This is an Admin Switch View */}
         <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={isAdmin} />
-
-        {/* This is a User Switch Label */}
-        <SwitchLabel deviceId={deviceId} isAdmin={isAdmin} />
       </View>
     </ScrollView>
   );

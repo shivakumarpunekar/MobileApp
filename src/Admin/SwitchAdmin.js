@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated } from "react-native";
 
 const SwitchAdmin = ({ deviceId, isAdmin }) => {
-  const [isSwitchOn, setIsSwitchOn] = useState(false);
+  const [status, setStatus] = useState("Undecided");
   const animationValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -21,7 +21,13 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
       const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`);
       if (response.ok) {
         const data = await response.json();
-        setIsSwitchOn(data.adminValveStatus === 1);
+        setStatus(
+          data.adminValveStatus === 1
+            ? "On"
+            : data.adminValveStatus === 0
+            ? "Off"
+            : "Undecided"
+        );
         animateButton(data.adminValveStatus === 1);
       } else {
         console.error('Failed to fetch switch state');
@@ -33,19 +39,19 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
     }
   };
 
-  const updateSwitchState = async (newState) => {
+  const updateSwitchState = async (newStatus) => {
     try {
       const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ adminValveStatus: newState ? 1 : 0 }),
+        body: JSON.stringify({ adminValveStatus: newStatus === "On" ? 1 : newStatus === "Off" ? 0 : 2 }),
       });
       if (response.ok) {
-        Alert.alert('Success', `Switch turned ${newState ? 'ON' : 'OFF'}`);
-        setIsSwitchOn(newState);
-        animateButton(newState);
+        Alert.alert('Success', `Switch turned ${newStatus}`);
+        setStatus(newStatus);
+        animateButton(newStatus === "On");
       } else {
         console.error('Failed to update switch state');
         Alert.alert('Failed to update switch state');
@@ -64,11 +70,10 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
     }).start();
   };
 
-  const toggleSwitch = () => {
-    const newState = !isSwitchOn;
+  const handlePress = (newStatus) => {
     Alert.alert(
-      'Confirm Switch Change',
-      `Are you sure you want to turn the switch ${newState ? 'ON' : 'OFF'}?`,
+      'Confirm Switch',
+      `Are you sure you want to switch ${newStatus}?`,
       [
         {
           text: 'Cancel',
@@ -77,7 +82,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
         },
         {
           text: 'OK',
-          onPress: () => updateSwitchState(newState),
+          onPress: () => updateSwitchState(newStatus),
         },
       ]
     );
@@ -87,52 +92,53 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
     return null; // Render nothing if the user is not an admin
   }
 
-  const buttonBackgroundColor = animationValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['red', 'green'],
-  });
-
-  const buttonText = isSwitchOn ? 'ON' : 'OFF';
-
   return (
     <View style={styles.container}>
-      <View style={styles.textContainer}>
-        <Text style={styles.adminText}>This is for admin</Text>
+      <View style={styles.statusRow}>
+        <TouchableOpacity onPress={() => handlePress("On")} style={[styles.button, { backgroundColor: status === "On" ? 'green' : 'lightblue' }]}>
+          <Text style={styles.buttonText}>ON</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handlePress("Off")} style={[styles.button, { backgroundColor: status === "Off" ? 'red' : 'lightblue' }]}>
+          <Text style={styles.buttonText}>OFF</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handlePress("Undecided")} style={[styles.button, { backgroundColor: status === "Undecided" ? 'orange' : 'lightblue' }]}>
+          <Text style={styles.buttonText}>😐</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={toggleSwitch} activeOpacity={0.7}>
-        <Animated.View style={[styles.button, { backgroundColor: buttonBackgroundColor }]}>
-          <Text style={styles.buttonText}>{buttonText}</Text>
-        </Animated.View>
-      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
+    backgroundColor: 'lightblue',
+        padding: 20,
+        borderRadius: 50, // Increase border radius for a more pronounced curve
+        elevation: 3, // For shadow on Android
+        shadowColor: '#000', // For shadow on iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        alignItems: 'center', // Centering content horizontally
+        justifyContent: 'center', // Centering content vertically
+        marginTop: 50,
+        width: 350,
   },
-  textContainer: {
-    marginBottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  adminText: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  statusRow: {
+    flexDirection: 'row', // Arrange buttons in a row
   },
   button: {
-    width: 120,
-    height: 60,
-    borderRadius: 30,
+    width: 80,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginHorizontal: 5,
+    borderWidth: 2,
+    borderColor: '#000',
   },
   buttonText: {
-    fontSize: 24,
+    fontSize: 18,
     color: 'white',
     fontWeight: 'bold',
   },
