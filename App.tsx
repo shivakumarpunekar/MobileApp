@@ -32,6 +32,7 @@ import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
 import { PermissionsAndroid, Platform } from 'react-native';
+import { configureNotifications } from './src/NotificationService/NotificationService';
 
 const Stack = createStackNavigator();
 
@@ -92,6 +93,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     // Request permissions on app startup
     requestPermissions();
+    configureNotifications();
 
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId');

@@ -1,38 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
-import PushNotification from 'react-native-push-notification'; // Import PushNotification
+import PushNotification from 'react-native-push-notification';
+
+const sendNotification = (deviceId, message) => {
+  PushNotification.localNotification({
+    channelId: 'default-channel-id',
+    title: 'Device Status Alert',
+    message: `Device ${deviceId}: ${message}`,
+    importance: 'high',
+    priority: 'high',
+    soundName: 'default',
+    playSound: true,
+    vibrate: true,
+  });
+};
 
 const SensorDataButton = ({ isAdmin }) => {
   const [data, setData] = useState([]);
   const [devices, setDevices] = useState([]);
   const [deviceStatus, setDeviceStatus] = useState({});
+  const previousStatus = useRef({});
+  const initialized = useRef(false); // To track the initial load
   const navigation = useNavigation();
 
-  const fetchData = () => {
-    axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
-      .then(response => {
-        setData(response.data);
-        // Extract unique device IDs from the data
-        const uniqueDevices = [...new Set(response.data.map(item => item.deviceId))];
-        setDevices(uniqueDevices);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  };
-
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 1000); // Fetch data every 1 seconds
-    return () => clearInterval(interval);
-  }, []);
+    const handleStatusChange = (deviceId, heartIconColor, valveIconColor) => {
+      const prevStatus = previousStatus.current[deviceId] || {};
 
-   // Set up notifications based on current device statuses
-   useEffect(() => {
+      // Only send notifications if the app has been initialized and there's a change in status
+      if (initialized.current) {
+        if (prevStatus.heartIconColor !== heartIconColor) {
+          sendNotification(deviceId, heartIconColor === '#FF0000' ? 'has stopped' : 'is running smoothly');
+        }
+        if (prevStatus.valveIconColor !== valveIconColor) {
+          sendNotification(deviceId, valveIconColor === '#FF0000' ? 'has stopped' : 'is running smoothly');
+        }
+      }
+
+      // Update the previous status reference
+      previousStatus.current[deviceId] = { heartIconColor, valveIconColor };
+    };
+
     devices.forEach((deviceId) => {
       const deviceData = data.filter((item) => item.deviceId === deviceId);
       if (deviceData.length) {
@@ -50,32 +62,36 @@ const SensorDataButton = ({ isAdmin }) => {
           [deviceId]: { heartIconColor, valveIconColor }
         }));
 
-        if (heartIconColor === '#FF0000') {
-          PushNotification.localNotification({
-            title: 'Device is Stop',
-            message: `The Device ${deviceId} is stopped`,
-          });
-        }
-
-        if (valveIconColor === '#FF0000') {
-          PushNotification.localNotification({
-            title: 'Device Status Alert',
-            message: `Device ${deviceId} has stopped.`,
-            importance: 'high',
-          });
-        } else if (valveIconColor === '#00FF00') {
-          PushNotification.localNotification({
-            title: 'Device Status Alert',
-            message: `Device ${deviceId} is running smoothly.`,
-            importance: 'high',
-          });
-        }
+        // Check for changes in status
+        handleStatusChange(deviceId, heartIconColor, valveIconColor);
       }
     });
+
+    // Mark as initialized after first data load
+    if (!initialized.current) {
+      initialized.current = true;
+    }
   }, [data, devices]);
 
-  const handleButtonPress = ( deviceId ) => {
-     
+  const fetchData = () => {
+    axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice')
+      .then(response => {
+        setData(response.data);
+        const uniqueDevices = [...new Set(response.data.map(item => item.deviceId))];
+        setDevices(uniqueDevices);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 1000); // Fetch data every 1 second
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleButtonPress = (deviceId) => {
     navigation.navigate('SensorData', { deviceId, isAdmin: true });
   };
 
@@ -86,23 +102,16 @@ const SensorDataButton = ({ isAdmin }) => {
       rows.push(row);
     }
 
-    /* const currentDate = moment().format('DD-MM-YYYY'); */
-
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
         {row.map(deviceId => {
           const deviceData = data.filter(item => item.deviceId === deviceId);
           const sensor1 = deviceData.length ? deviceData[0].sensor1_value : null;
           const sensor2 = deviceData.length ? deviceData[0].sensor2_value : null;
-          /* const solenoidValveStatus = deviceData.length ? deviceData[0].solenoidValveStatus : null;
-          const createdDateTime = deviceData.length ? deviceData[0].createdDateTime : null;
-          const dataCount = deviceData.length; */
           const { heartIconColor, valveIconColor } = deviceStatus[deviceId] || {};
 
           let backgroundColor;
           let buttonText;
-
-         
 
           if (sensor1 === null || sensor2 === null) {
             backgroundColor = '#808080'; // Gray for no data
@@ -123,7 +132,6 @@ const SensorDataButton = ({ isAdmin }) => {
             backgroundColor = '#00FF00'; // Green
             buttonText = `Device ${deviceId}`;
           }
-
 
           return (
             <View key={deviceId} style={styles.buttonContainer}>
