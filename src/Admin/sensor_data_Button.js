@@ -34,16 +34,24 @@ const SensorDataButton = ({ isAdmin }) => {
       // Only send notifications if the app has been initialized and there's a change in status
       if (initialized.current) {
         if (prevStatus.heartIconColor !== heartIconColor) {
-          sendNotification(deviceId, heartIconColor === '#FF0000' ? 'has stopped' : 'is running smoothly');
+          if (heartIconColor === '#00FF00') {
+            sendNotification(deviceId, 'is running smoothly');
+          } else if (heartIconColor === '#FF0000') {
+            sendNotification(deviceId, 'has stopped');
+          }
         }
         if (prevStatus.valveIconColor !== valveIconColor) {
-          sendNotification(deviceId, valveIconColor === '#FF0000' ? 'has stopped' : 'is running smoothly');
+          if (valveIconColor === '#00FF00') {
+            sendNotification(deviceId, 'is running smoothly');
+          } else if (valveIconColor === '#FF0000') {
+            sendNotification(deviceId, 'has stopped');
+          }
         }
       }
 
       // Update the previous status reference
       previousStatus.current[deviceId] = { heartIconColor, valveIconColor };
-    };
+    }
 
     devices.forEach((deviceId) => {
       const deviceData = data.filter((item) => item.deviceId === deviceId);
