@@ -7,6 +7,7 @@ import moment from 'moment';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
 import PushNotification from 'react-native-push-notification';
+import WeatherComponent from './WeatherService/WeatherComponent';
 
 // Function to send notifications
 const sendNotification = (deviceId, color, type) => {
@@ -179,6 +180,7 @@ const DeviceTable = ({ loginId }) => {
       <PlantStatus loginId={loginId} />
       <View style={styles.spacer} />
       <Bargraph loginId={loginId} />
+      <WeatherComponent />
     </ScrollView>
   );
 };
@@ -188,6 +190,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#F6F3E7',
+    paddingBottom:10,
   },
   row: {
     flexDirection: 'row',

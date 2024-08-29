@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -26,13 +26,26 @@ const SensorDataButton = ({ isAdmin }) => {
   const previousStatus = useRef({});
   const initialized = useRef(false); // To track the initial load
   const navigation = useNavigation();
+  const appState = useRef(AppState.currentState);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      appState.current = nextAppState;
+    };
+
+    AppState.addEventListener('change', handleAppStateChange);
+
+    /* return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    }; */
+  }, []);
 
   useEffect(() => {
     const handleStatusChange = (deviceId, heartIconColor, valveIconColor) => {
       const prevStatus = previousStatus.current[deviceId] || {};
 
-      // Only send notifications if the app has been initialized and there's a change in status
-      if (initialized.current) {
+      // Only send notifications if the app has been initialized, there's a change in status, and the app is not in the foreground
+      if (initialized.current && appState.current !== 'active') {
         if (prevStatus.heartIconColor !== heartIconColor) {
           if (heartIconColor === '#00FF00') {
             sendNotification(deviceId, 'is running smoothly');
@@ -51,7 +64,7 @@ const SensorDataButton = ({ isAdmin }) => {
 
       // Update the previous status reference
       previousStatus.current[deviceId] = { heartIconColor, valveIconColor };
-    }
+    };
 
     devices.forEach((deviceId) => {
       const deviceData = data.filter((item) => item.deviceId === deviceId);
