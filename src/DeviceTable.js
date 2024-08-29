@@ -12,7 +12,7 @@ import WeatherComponent from './WeatherService/WeatherComponent';
 // Function to send notifications
 const sendNotification = (deviceId, color) => {
   const title = color === '#FF0000' ? 'Device Alert' : 'Device Status';
-  const message = `Device ${deviceId} ${color === '#FF0000' ? 'has stopped' : 'is running smoothly'}`;
+  const message = `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
 
   PushNotification.localNotification({
     channelId: 'default-channel-id',
@@ -179,8 +179,9 @@ const DeviceTable = ({ loginId }) => {
       <View style={styles.spacer} />
       <PlantStatus loginId={loginId} />
       <View style={styles.spacer} />
-      <Bargraph loginId={loginId} />
       <WeatherComponent />
+      <Bargraph loginId={loginId} />
+      
     </ScrollView>
   );
 };
