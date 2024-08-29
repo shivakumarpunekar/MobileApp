@@ -74,9 +74,8 @@ const Bargraph = ({ loginId }) => {
       };
     }
 
-    // Only show every nth label
-    const labelInterval = Math.ceil(data.length / 5); // Adjust this number to control how many labels are shown
-    const labels = data.map((entry, index) => (index % labelInterval === 0 ? entry.timeKey : ''));
+    // Map each timeKey to its label
+    const labels = data.map(entry => entry.timeKey);
     const chartData = data.map(entry => entry.value);
 
     // Normalize chart data to fit within the 0-4500 range
@@ -97,7 +96,6 @@ const Bargraph = ({ loginId }) => {
     };
   };
 
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Sensor 1</Text>
@@ -116,11 +114,10 @@ const Bargraph = ({ loginId }) => {
         />
       </ScrollView>
 
-
       <Text style={styles.title}>Sensor 2</Text>
       <ScrollView horizontal>
         <BarChart
-          data={getBarChartData(sensor1Data)}
+          data={getBarChartData(sensor2Data)}
           width={width * 2} // Adjust width to make the chart scrollable horizontally
           height={220}
           yAxisLabel=""
@@ -132,7 +129,6 @@ const Bargraph = ({ loginId }) => {
           showBarTops={false}
         />
       </ScrollView>
-
     </ScrollView>
   );
 };
@@ -160,7 +156,6 @@ const chartConfig = {
   yAxisMax: 4500,
   yAxisMin: 0,
 };
-
 
 const styles = StyleSheet.create({
   container: {
