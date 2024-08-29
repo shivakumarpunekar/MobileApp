@@ -10,7 +10,7 @@ import PushNotification from 'react-native-push-notification';
 import WeatherComponent from './WeatherService/WeatherComponent';
 
 // Function to send notifications
-const sendNotification = (deviceId, color, type) => {
+const sendNotification = (deviceId, color) => {
   const title = color === '#FF0000' ? 'Device Alert' : 'Device Status';
   const message = `Device ${deviceId} ${color === '#FF0000' ? 'has stopped' : 'is running smoothly'}`;
 
