@@ -25,7 +25,9 @@
         "downlord",
         "esutils",
         "excal",
+        "fetcha",
         "fetchdevice",
+        "fetchuser",
         "fontawesome",
         "fortawesome",
         "gensync",
@@ -78,7 +80,8 @@
         "typeof",
         "undici",
         "updateduser",
-        "userdevice"
+        "userdevice",
+        "userprofiles"
     ],
     "java.configuration.updateBuildConfiguration": "automatic"
 }

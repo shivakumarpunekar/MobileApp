@@ -111,6 +111,16 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  // Logout function to clear AsyncStorage and navigate to Login
+  const handleLogout = async (navigation) => {
+    try {
+      await AsyncStorage.clear();
+      navigation.navigate('Login');
+    } catch (e) {
+      console.error('Failed to clear the async storage.', e);
+    }
+  }; 
+
   return (
     <SafeAreaView style={[styles.container, backgroundStyle]}>
       <StatusBar
@@ -118,7 +128,7 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="initialRoute">
+      <Stack.Navigator initialRouteName={initialRoute}>
             <Stack.Screen
               name="Login" //This is For login page
               component={LoginPage}
@@ -132,7 +142,7 @@ function App(): React.JSX.Element {
                 headerLeft: () => null,
                 headerRight: () => (
                   <Button
-                    onPress={() => navigation.navigate('Login')}
+                    onPress={() => handleLogout(navigation)}
                     title="Logout"
                     color="#BFA100"
                   />
@@ -153,7 +163,7 @@ function App(): React.JSX.Element {
               headerLeft: () => null,
               headerRight: () => (
                 <Button
-                  onPress={() => navigation.navigate('Login')}
+                  onPress={() => handleLogout(navigation)}
                   title="Logout"
                   color="#BFA100"
                 />

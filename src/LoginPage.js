@@ -70,7 +70,7 @@ export default function LoginPage({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <RainAnimation/>
+      {/* <RainAnimation/> */}
       <Image
         source={require('../assets/aairos.png')}
         style={styles.profileImage}
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F6F3E7',
+    backgroundColor: '#3A3A3A',
     padding: 16,
     position: 'absolute', // Position absolute to ensure it's above the rain animation
     zIndex: 1, // Higher zIndex to make sure it appears above the rain animation
