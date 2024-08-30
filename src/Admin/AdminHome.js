@@ -29,13 +29,11 @@ const AdminHome = ({ route }) => {
                     } else if (route.name === 'SensorDataButton') {
                         iconName = 'tachometer';
                     } else if (route.name === 'UserDevice') {
-                        iconName = 'desktop';
+                        iconName = 'mobile';
                     } else if (route.name === 'download') {
                         iconName = 'download';
                     } else if (route.name === 'Threshold') {
-                        iconName = 'user';
-                    } else if (route.name === 'SwitchAdmin') {
-                        iconName = 'toggle-on';
+                        iconName = 'sliders';
                     }
                     // Return the icon component
                     return <Icon name={iconName} size={size} color={color} />;
