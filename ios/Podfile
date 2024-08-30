@@ -1,43 +1,26 @@
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
-    "react-native/scripts/react_native_pods.rb",
-    {paths: [process.argv[1]]},
-  )', __dir__]).strip
-
-platform :ios, min_ios_version_supported
-prepare_react_native_project!
-
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
-
-# Enable modular headers globally
-use_modular_headers!
+platform :ios, '11.0'
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 target 'AAIROS' do
-  pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
-  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    # Uncomment the next line to enable Flipper.
+    # :flipper_configuration => FlipperConfiguration.enabled(["Flipper-Folly"]),
+    :production => false
   )
 
   target 'AAIROSTests' do
     inherit! :complete
-    # Pods for testing
   end
 
+  # If you have Flipper installed, you should uncomment the following line
+  # use_flipper!({ 'Flipper' => '0.164.0' }) # You can specify the Flipper version you want to use
+
   post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
+    react_native_post_install(installer)
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end
