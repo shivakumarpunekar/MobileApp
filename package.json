@@ -19,6 +19,7 @@
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-community/datetimepicker": "^8.2.0",
     "@react-native-community/masked-view": "^0.1.11",
+    "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-native-firebase/app": "^20.4.0",
     "@react-native-firebase/messaging": "^20.4.0",
     "@react-native-google-signin/google-signin": "^12.2.1",

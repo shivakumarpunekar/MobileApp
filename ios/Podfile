@@ -1,4 +1,3 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
@@ -14,10 +13,12 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# Enable modular headers globally
+use_modular_headers!
+
 target 'AAIROS' do
   pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
-
-
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
   config = use_native_modules!
 
   use_react_native!(
@@ -32,7 +33,6 @@ target 'AAIROS' do
   end
 
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
       config[:reactNativePath],
