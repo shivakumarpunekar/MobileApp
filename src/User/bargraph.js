@@ -21,12 +21,12 @@ const Bargraph = ({ loginId }) => {
 
           const sensor1Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`);
           const sensor1Values = await sensor1Response.json();
-          const newSensor1Data = groupDataByInterval(sensor1Values, "sensor1_value");
+          const newSensor1Data = filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value"));
           setSensor1Data(newSensor1Data);
 
           const sensor2Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`);
           const sensor2Values = await sensor2Response.json();
-          const newSensor2Data = groupDataByInterval(sensor2Values, "sensor2_value");
+          const newSensor2Data = filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"));
           setSensor2Data(newSensor2Data);
         } else {
           console.error("Device data array is empty or not an array.");
@@ -61,6 +61,18 @@ const Bargraph = ({ loginId }) => {
       timeKey,
       value: groupedData[timeKey].reduce((sum, val) => sum + val, 0) / groupedData[timeKey].length, // Average value
     }));
+  };
+
+  const filterDataByLastHour = (data) => {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    return data.filter(entry => {
+      const [hours, minutes] = entry.timeKey.split(":").map(Number);
+      const entryTime = new Date();
+      entryTime.setHours(hours);
+      entryTime.setMinutes(minutes);
+      entryTime.setSeconds(0);
+      return entryTime >= oneHourAgo;
+    });
   };
 
   const getBarChartData = (data) => {
