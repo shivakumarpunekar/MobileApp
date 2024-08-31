@@ -32,6 +32,7 @@ import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
 import { PermissionsAndroid, Platform } from 'react-native';
+
 import { configureNotifications } from './src/NotificationService/NotificationService';
 
 const Stack = createStackNavigator();
@@ -40,7 +41,6 @@ const Stack = createStackNavigator();
 const requestPermissions = async () => {
   if (Platform.OS === 'android') {
     try {
-      // Request camera permission
       const cameraGranted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
@@ -49,16 +49,14 @@ const requestPermissions = async () => {
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
-        },
+        }
       );
 
-      // Request location permissions
       const locationGranted = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
       ]);
 
-      // Request notification permission (Android 13+)
       const notificationGranted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         {
@@ -67,7 +65,7 @@ const requestPermissions = async () => {
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
-        },
+        }
       );
 
       if (
