@@ -3591,9 +3591,9 @@ available-typed-arrays@^1.0.7:
     possible-typed-array-names "^1.0.0"
 
 axios@^1.4.0, axios@^1.7.2:
-  version "1.7.5"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.7.5.tgz"
-  integrity sha512-fZu86yCo+svH3uqJ/yTdQ0QHpQu5oL+/QE+QPSv6BZSkDAoky9vytxp7u5qk83OJFS3kEBcesWni9WTZAv3tSw==
+  version "1.7.6"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.7.6.tgz"
+  integrity sha512-Ekur6XDwhnJ5RgOCaxFnXyqlPALI3rVeukZMwOdfghW7/wGz784BYKiQq+QD8NPcr91KRo30KfHOchyijwWw7g==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
@@ -8061,9 +8061,9 @@ react-native-country-picker-modal@^2.0.0:
     react-async-hook "3.6.1"
 
 react-native-date-picker@^5.0.4:
-  version "5.0.5"
-  resolved "https://registry.npmjs.org/react-native-date-picker/-/react-native-date-picker-5.0.5.tgz"
-  integrity sha512-a72rYzqiatQ126Wl2e5HPIfJwqfBMzI3pNT5STvPkRJs1n9DyClQmz6VTMf3em1JgLgVTZoaAGdljU+b8LiPFw==
+  version "5.0.7"
+  resolved "https://registry.npmjs.org/react-native-date-picker/-/react-native-date-picker-5.0.7.tgz"
+  integrity sha512-/RodyCZWjb+f3f4YHqKbWFYczGm+tNngwbVSB6MLGgt5Kl7LQXpv4QE6ybnHW+DM4LteTP8A6lj8LEkQ7+usLQ==
 
 react-native-datepicker@^1.7.2:
   version "1.7.2"
