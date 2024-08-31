@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Button, TouchableOpacity } from "react-native";
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
+    const [relayData, setRelayData] = useState([]);
     const navigation = useNavigation();
-    const { deviceId, loginId, isAdmin } = route.params; // Destructure loginId here
+    const { deviceId, loginId, isAdmin } = route.params;
 
+    // Function to fetch sensor data
     const fetchSensorData = async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
@@ -18,11 +20,33 @@ const SensorData = ({ route }) => {
         }
     };
 
+    // Function to fetch relay duration data
+    const fetchRelayData = async () => {
+        try {
+            const response = await fetch(`http://103.145.50.185:2030/api/relay_durations/Device/${deviceId}`);
+            const result = await response.json();
+            setRelayData(result);
+        } catch (error) {
+            console.error('Failed to fetch relay data:', error);
+        }
+    };
+
     useEffect(() => {
         fetchSensorData();
-        const intervalId = setInterval(fetchSensorData, 1000); // Fetch data every 1 second
+        fetchRelayData();
+        const intervalId = setInterval(() => {
+            fetchSensorData();
+            fetchRelayData();
+        }, 1000); // Fetch data every 1 second
         return () => clearInterval(intervalId);
     }, []);
+
+    // Function to get the latest relay state based on timestamp
+    const getLatestRelayState = () => {
+        if (relayData.length === 0) return "N/A";
+        const latestRelay = relayData.reduce((a, b) => new Date(a.timestamp) > new Date(b.timestamp) ? a : b);
+        return latestRelay.state;
+    };
 
     const renderItemContainerStyle = (sensor1, sensor2) => {
         if ((sensor1 >= 4000 && sensor2 >= 4000) ||
@@ -67,7 +91,10 @@ const SensorData = ({ route }) => {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Device Id: {item.deviceId}</Text>
+                        <View style={styles.row}>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Device Id: {item.deviceId}</Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value), { marginLeft: 'auto' }]}>State: {getLatestRelayState()}</Text>
+                        </View>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-1: {item.sensor1_value}</Text>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-2: {item.sensor2_value}</Text>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Valve Status: {item.solenoidValveStatus}</Text>
@@ -128,6 +155,11 @@ const styles = StyleSheet.create({
     },
     itemTextBlack: {
         color: '#000',
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
 });
 
