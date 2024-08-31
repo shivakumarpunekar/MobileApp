@@ -8,3 +8,8 @@ import {name as appName} from './app.json';
 
 
 AppRegistry.registerComponent(appName, () => App);
+
+// Register headless task for background notifications
+AppRegistry.registerHeadlessTask('RNPushNotificationListenerService', () =>
+    require('./src/NotificationService/backgroundNotificationHandler')
+  );

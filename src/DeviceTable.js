@@ -26,6 +26,7 @@ const sendNotification = (deviceId, color) => {
   });
 };
 
+
 const DeviceTable = ({ loginId }) => {
   const [userDevices, setUserDevices] = useState([]);
   const [sensorData, setSensorData] = useState([]);
