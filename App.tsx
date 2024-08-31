@@ -12,6 +12,7 @@ import {
   StyleSheet,
   useColorScheme,
   Button,
+  AppRegistry,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -85,6 +86,11 @@ const requestPermissions = async () => {
     }
   }
 };
+
+AppRegistry.registerHeadlessTask('RNPushNotificationListenerService', () =>
+  require('./src/NotificationService/backgroundNotificationHandler.js')
+);
+
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';

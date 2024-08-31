@@ -1,8 +1,8 @@
-// backgroundNotificationHandler.js
+// src/NotificationService/backgroundNotificationHandler.js
 import PushNotification from 'react-native-push-notification';
 
 module.exports = async (taskData) => {
-    const { title, message } = taskData;
+    const { title, message } = taskData.data; // Ensure taskData.data is used if coming from FCM
 
     // Log for debugging
     console.log('Running background notification handler', taskData);
