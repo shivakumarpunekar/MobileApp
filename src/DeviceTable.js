@@ -10,9 +10,11 @@ import PushNotification from 'react-native-push-notification';
 import WeatherComponent from './WeatherService/WeatherComponent';
 
 // Function to send notifications
-const sendNotification = (deviceId, color) => {
-  const title = color === '#FF0000' ? 'Device Alert' : 'Device Status';
-  const message = `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
+const sendNotification = (deviceId, color, type) => {
+  const title = type === 'heart' ? (color === '#FF0000' ? 'Device Alert' : 'Device Status') : 'Device Status';
+  const message = type === 'heart' 
+    ? `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}` 
+    : `Device ${deviceId} status changed.`;
 
   PushNotification.localNotification({
     channelId: 'default-channel-id',
@@ -25,6 +27,7 @@ const sendNotification = (deviceId, color) => {
     vibrate: true,
   });
 };
+
 
 
 const DeviceTable = ({ loginId }) => {
