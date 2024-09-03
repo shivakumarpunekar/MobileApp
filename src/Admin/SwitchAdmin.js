@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated } from "react-native";
 
 const SwitchAdmin = ({ deviceId, isAdmin }) => {
-  const [status, setStatus] = useState("Undecided");
+  const [status, setStatus] = useState("Auto");
   const animationValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
             ? "On"
             : data.adminValveStatus === 0
             ? "Off"
-            : "Undecided"
+            : "Auto"
         );
         animateButton(data.adminValveStatus === 1);
       } else {
@@ -101,7 +101,7 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
         <TouchableOpacity onPress={() => handlePress("Off")} style={[styles.button, { backgroundColor: status === "Off" ? 'red' : 'lightblue' }]}>
           <Text style={styles.buttonText}>OFF</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handlePress("Undecided")} style={[styles.button, { backgroundColor: status === "Undecided" ? 'orange' : 'lightblue' }]}>
+        <TouchableOpacity onPress={() => handlePress("Auto")} style={[styles.button, { backgroundColor: status === "Auto" ? 'orange' : 'lightblue' }]}>
           <Text style={styles.buttonText}>Auto</Text>
         </TouchableOpacity>
       </View>

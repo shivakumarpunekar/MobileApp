@@ -9,9 +9,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-
-    <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> -->
-
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -37,11 +34,6 @@
        <!-- Ensure the PushNotification service is registered -->
        <service
   android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"
-  android:exported="true"
-/>
-<service
-  android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
-  android:permission="android.permission.BIND_JOB_SERVICE"
   android:exported="true"
 />
 <receiver
