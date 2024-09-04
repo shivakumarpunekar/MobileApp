@@ -14,7 +14,7 @@ const sendNotification = (deviceId, color, type) => {
   const title = type === 'heart' ? (color === '#FF0000' ? 'Device Alert' : 'Device Status') : 'Device Status';
   const message = type === 'heart' 
     ? `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}` 
-    : `Device ${deviceId} status changed.`;
+    : `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
 
   PushNotification.localNotification({
     channelId: 'default-channel-id',

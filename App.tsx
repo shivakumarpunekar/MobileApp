@@ -12,6 +12,9 @@ import {
   StyleSheet,
   useColorScheme,
   Button,
+  Alert,
+  Linking,
+  AppRegistry,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -34,6 +37,8 @@ import ThresholdEdit from './src/Admin/ThresholdEdit';
 import { PermissionsAndroid, Platform } from 'react-native';
 
 import { configureNotifications } from './src/NotificationService/NotificationService';
+import backgroundNotificationHandler from './src/NotificationService/backgroundNotificationHandler';
+import backgroundTask from './src/backgroundTaskApp/backgroundTask';
 
 const Stack = createStackNavigator();
 
@@ -68,21 +73,44 @@ const requestPermissions = async () => {
         }
       );
 
-      if (
-        cameraGranted === PermissionsAndroid.RESULTS.GRANTED &&
-        locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
-        locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
-        notificationGranted === PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log('All permissions granted');
+      // Explicitly declare the type of deniedPermissions as an array of strings
+      const deniedPermissions: string[] = [];
+
+      if (cameraGranted !== PermissionsAndroid.RESULTS.GRANTED) {
+        deniedPermissions.push('Camera');
+      }
+
+      if (locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] !== PermissionsAndroid.RESULTS.GRANTED) {
+        deniedPermissions.push('Access Fine Location');
+      }
+
+      if (locationGranted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] !== PermissionsAndroid.RESULTS.GRANTED) {
+        deniedPermissions.push('Access Coarse Location');
+      }
+
+      if (notificationGranted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert(
+          "Notification Permission Denied",
+          "This app needs notification permissions to alert you. Please enable notifications in the app settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+
+      if (deniedPermissions.length > 0) {
+        console.log('Some permissions denied:', deniedPermissions.join(', '));
       } else {
-        console.log('Some permissions denied');
+        console.log('All permissions granted');
       }
     } catch (err) {
       console.warn(err);
     }
   }
 };
+
+
 
 
 function App(): React.JSX.Element {
@@ -93,6 +121,8 @@ function App(): React.JSX.Element {
     // Request permissions on app startup
     requestPermissions();
     configureNotifications();
+    AppRegistry.registerHeadlessTask('NotificationService', () => backgroundNotificationHandler);
+    AppRegistry.registerHeadlessTask('BackgroundTask', () => backgroundTask);
 
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId');
