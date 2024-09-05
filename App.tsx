@@ -14,7 +14,7 @@ import {
   Button,
   Alert,
   Linking,
-  AppRegistry,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -34,11 +34,10 @@ import Switch from './src/Admin/Switch';
 import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
-import { PermissionsAndroid, Platform } from 'react-native';
-
+import { PermissionsAndroid } from 'react-native';
+// import BackgroundFetch from "react-native-background-fetch";
 import { configureNotifications } from './src/NotificationService/NotificationService';
-import backgroundNotificationHandler from './src/NotificationService/backgroundNotificationHandler';
-import backgroundTask from './src/backgroundTaskApp/backgroundTask';
+
 
 const Stack = createStackNavigator();
 
@@ -110,7 +109,17 @@ const requestPermissions = async () => {
   }
 };
 
-
+// BackgroundFetch.configure({
+//   minimumFetchInterval: 15, // minutes
+//   stopOnTerminate: false,
+//   startOnBoot: true,
+// }, async (taskId) => {
+//   console.log("[BackgroundFetch] taskId:", taskId);
+//   // Perform background work here
+//   BackgroundFetch.finish(taskId);
+// }, (error) => {
+//   console.log("[BackgroundFetch] failed to start:", error);
+// });
 
 
 function App(): React.JSX.Element {
@@ -121,8 +130,6 @@ function App(): React.JSX.Element {
     // Request permissions on app startup
     requestPermissions();
     configureNotifications();
-    AppRegistry.registerHeadlessTask('NotificationService', () => backgroundNotificationHandler);
-    AppRegistry.registerHeadlessTask('BackgroundTask', () => backgroundTask);
 
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId');
