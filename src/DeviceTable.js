@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -8,6 +8,7 @@ import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
 import PushNotification from 'react-native-push-notification';
 import WeatherComponent from './WeatherService/WeatherComponent';
+import BackgroundFetch from 'react-native-background-fetch';
 
 // Function to send notifications
 const sendNotification = (deviceId, color, type) => {
@@ -28,35 +29,89 @@ const sendNotification = (deviceId, color, type) => {
   });
 };
 
-
-
 const DeviceTable = ({ loginId }) => {
   const [userDevices, setUserDevices] = useState([]);
   const [sensorData, setSensorData] = useState([]);
   const [deviceStatus, setDeviceStatus] = useState({});
   const [previousStatus, setPreviousStatus] = useState({});
   const navigation = useNavigation();
+  const [appState, setAppState] = useState(AppState.currentState);
+
+  // Fetch data function
+  const fetchData = () => {
+    Promise.all([
+      axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`).then(response => response.data),
+      axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice').then(response => response.data),
+    ])
+    .then(([userDevicesData, sensorData]) => {
+      setUserDevices(userDevicesData);
+      setSensorData(sensorData);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+  };
 
   useEffect(() => {
-    const fetchData = () => {
-      Promise.all([
-        axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`).then(response => response.data),
-        axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice').then(response => response.data),
-      ])
-      .then(([userDevicesData, sensorData]) => {
-        setUserDevices(userDevicesData);
-        setSensorData(sensorData);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    // Fetch data initially
+    fetchData();
+
+    // Set up foreground auto-refresh with setInterval
+    const interval = setInterval(() => {
+      if (appState === 'active') {
+        fetchData();
+      }
+    }, 1000); // Every 1 seconds
+
+    // Listen to app state changes
+    const appStateListener = AppState.addEventListener('change', (nextAppState) => {
+      setAppState(nextAppState);
+    });
+
+    return () => {
+      clearInterval(interval);
+      appStateListener.remove();
+    };
+  }, [loginId, appState]);
+
+  useEffect(() => {
+    // Handle background fetch setup
+    const configureBackgroundFetch = () => {
+      BackgroundFetch.configure(
+        {
+          minimumFetchInterval: 15, // Fetch every 15 minutes in background
+          stopOnTerminate: false,
+          startOnBoot: true,
+        },
+        async (taskId) => {
+          console.log('[BackgroundFetch] taskId:', taskId);
+          fetchData(); // Fetch data in the background
+          BackgroundFetch.finish(taskId);
+        },
+        (error) => {
+          console.error("[BackgroundFetch] Failed to start:", error);
+        }
+      );
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 10000); // Fetch data every 10 seconds
-    return () => clearInterval(interval);
-  }, [loginId]);
+    configureBackgroundFetch();
+  }, []);
 
+  // Function to get sensor values
+  const getSensorValues = (deviceId) => {
+    const deviceSensorData = sensorData.find(sensor => sensor.deviceId === deviceId);
+    if (deviceSensorData) {
+      return {
+        sensor1: deviceSensorData.sensor1_value,
+        sensor2: deviceSensorData.sensor2_value,
+        solenoidValveStatus: deviceSensorData.solenoidValveStatus,
+        createdDateTime: deviceSensorData.createdDateTime,
+      };
+    }
+    return { sensor1: null, sensor2: null, solenoidValveStatus: null, createdDateTime: null };
+  };
+
+  // Handle notification logic based on device status
   useEffect(() => {
     userDevices.forEach(device => {
       const deviceId = device.deviceId;
@@ -106,19 +161,6 @@ const DeviceTable = ({ loginId }) => {
 
   const handleButtonPress = (deviceId) => {
     navigation.navigate('SensorData', { deviceId, loginId });
-  };
-
-  const getSensorValues = (deviceId) => {
-    const deviceSensorData = sensorData.find(sensor => sensor.deviceId === deviceId);
-    if (deviceSensorData) {
-      return {
-        sensor1: deviceSensorData.sensor1_value,
-        sensor2: deviceSensorData.sensor2_value,
-        solenoidValveStatus: deviceSensorData.solenoidValveStatus,
-        createdDateTime: deviceSensorData.createdDateTime,
-      };
-    }
-    return { sensor1: null, sensor2: null, solenoidValveStatus: null, createdDateTime: null };
   };
 
   const renderButtonsInGrid = () => {
@@ -185,7 +227,6 @@ const DeviceTable = ({ loginId }) => {
       <View style={styles.spacer} />
       <WeatherComponent />
       <Bargraph loginId={loginId} />
-      
     </ScrollView>
   );
 };
