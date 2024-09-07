@@ -36,10 +36,9 @@ import Valva_status_detail from './src/Admin/Valva_status_detail';
 import Tresholdreg from './src/Admin/Tresholdreg';
 import ThresholdEdit from './src/Admin/ThresholdEdit';
 import { PermissionsAndroid } from 'react-native';
-import { configureNotifications,  sendNotification } from './src/NotificationService/NotificationService';
+import { configureNotifications } from './src/NotificationService/NotificationService';
 import BackgroundFetch from "react-native-background-fetch";
-import axios from 'axios';
-import moment from 'moment';
+import DeviceTable from './src/DeviceTable';
 
 const Stack = createStackNavigator();
 
@@ -47,7 +46,9 @@ function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [initialRoute, setInitialRoute] = useState('Login');
   const [appState, setAppState] = useState(AppState.currentState);
-  const [previousStatus, setPreviousStatus] = useState({});
+  const [loginId, setLoginId] = useState<string | null>(null);
+
+
 
   // Request Permissions
   const requestPermissions = async () => {
@@ -88,118 +89,46 @@ function App(): React.JSX.Element {
       }
     }
   };
-
+  // Background Fetching config
   const configureBackgroundFetch = () => {
     BackgroundFetch.configure(
       {
-        minimumFetchInterval: 15, // Fetch every 15 minutes
+        minimumFetchInterval: 15, // Fetch every 15 minutes, adjust as necessary
         stopOnTerminate: false, // Continue background fetch even after app termination
         startOnBoot: true, // Start background fetch when device boots
         enableHeadless: true, // For Android headless tasks
         requiresCharging: false, // Run task even when device is not charging
-        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE, // Run task regardless of network connectivity
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY, // Run task regardless of network connectivity
       },
       async (taskId) => {
         console.log('[BackgroundFetch] taskId:', taskId);
-
-        // Call your background function
-        await checkDeviceStatusInBackground();
-
-        // Remove or delay the finish call if you want continuous fetching
-        // BackgroundFetch.finish(taskId); // Only call when you want to stop
-
-        // Optionally, you can reschedule the fetch task here if needed
+        // Fetch data and send notifications
+        await DeviceTable({ loginId }); // Ensure loginId is passed correctly
+        /* BackgroundFetch.finish(taskId); */ // Mark the task as complete
       },
       (error) => {
         console.error("[BackgroundFetch] Failed to start:", error);
       }
     );
   };
-
-  const checkDeviceStatusInBackground = async () => {
-    try {
-      const loginId = await AsyncStorage.getItem('loginId'); // Retrieve loginId
-      if (!loginId) {
-        console.error('Login ID not found.');
-        return;
-      }
   
-      const deviceId = loginId; // Assuming loginId is the same as deviceId
-      const sensorDataResponse = await axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-      const sensorData = sensorDataResponse.data;
-  
-      const solenoidValveStatus = sensorData.solenoidValveStatus;
-      const createdDateTime = sensorData.createdDateTime;
-  
-      const currentDate = moment().format('DD-MM-YYYY');
-      const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
-  
-      // Determine icon colors
-      const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
-      const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' :
-                             solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
-  
-      const previous = previousStatus[deviceId] || {};
-  
-      // Compare current status with previous and send notifications if changed
-      if (heartIconColor !== previous.heartIconColor) {
-        sendNotification(deviceId, heartIconColor, 'heart');
-      }
-      if (valveIconColor !== previous.valveIconColor) {
-        sendNotification(deviceId, valveIconColor, 'valve');
-      }
-  
-      // Update the previous status for this device
-      setPreviousStatus(prevStatus => ({
-        ...prevStatus,
-        [deviceId]: { heartIconColor, valveIconColor }
-      }));
-    } catch (error) {
-      console.error('Error checking device status in background:', error);
-    }
-  };
-
-  const scheduleBackgroundFetch = async () => {
-    try {
-      await BackgroundFetch.scheduleTask({
-        taskId: 'com.aairos.continuousFetch',
-        delay: 60000, // Delay in milliseconds (e.g., 1 minute)
-        periodic: true, // Repeat task
-        stopOnTerminate: false, // Continue fetching even if app is killed
-        startOnBoot: true, // Start fetching on device boot
-        enableHeadless: true, // Use headless tasks for Android
-      });
-      console.log('Scheduled background fetch');
-    } catch (error) {
-      console.error('Failed to schedule background fetch:', error);
-    }
-  };
-  
-  // Register your Headless Task
-  BackgroundFetch.registerHeadlessTask(async (event) => {
-    const taskId = event.taskId;
-    console.log('[BackgroundFetch HeadlessTask] Start: ', taskId);
-    // Run your background fetch logic
-    await checkDeviceStatusInBackground();
-    await scheduleBackgroundFetch();
-    // Only finish if you want to stop the task
-    // BackgroundFetch.finish(taskId);
-  });
   
   useEffect(() => {
     // Request permissions on app startup
     requestPermissions();
     configureNotifications();
-    configureBackgroundFetch();
+    configureBackgroundFetch()
 
     const checkLoginStatus = async () => {
-      const loginId = await AsyncStorage.getItem('loginId');
+      const loginId = await AsyncStorage.getItem('loginId'); // Fetch the loginId from AsyncStorage
       const isAdmin = await AsyncStorage.getItem('isAdmin');
-
+      console.log('Login ID:', loginId); // Add this line to check the loginId
       if (loginId) {
+        setLoginId(loginId);  // Store loginId in state
         setInitialRoute(isAdmin === 'true' ? 'AdminHome' : 'Welcome');
       }
     };
+    
 
     checkLoginStatus();
     
@@ -211,14 +140,12 @@ function App(): React.JSX.Element {
       
       if (nextAppState === 'background') {
         console.log('App is in the background, checking device status...');
-        checkDeviceStatusInBackground();
+        
+        DeviceTable({loginId});
       }
-  
       setAppState(nextAppState);
     };
-
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-
     return () => {
       subscription.remove();
     };
@@ -255,6 +182,7 @@ function App(): React.JSX.Element {
             <Stack.Screen
               name="Welcome" // This is For Welcome Page
               component={WelcomePage}
+              initialParams={{ loginId: loginId }}
               options={({ navigation }) => ({
                 headerLeft: () => null,
                 headerRight: () => (
@@ -276,6 +204,7 @@ function App(): React.JSX.Element {
             <Stack.Screen
             name="AdminHome" //This is for AdminHome Page
             component={AdminHome}
+            initialParams={{ loginId: loginId }}
             options={({ navigation }) => ({
               headerLeft: () => null,
               headerRight: () => (

@@ -15,6 +15,7 @@
 
     <application
       android:name=".MainApplication"
+      android:largeHeap="true"
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher"
@@ -34,17 +35,15 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <!-- Background Fetch Service -->
       <service
         android:name="com.transistorsoft.tsbackgroundfetch.HeadlessTaskService"
         android:permission="android.permission.BIND_JOB_SERVICE"
         android:exported="true"/>
-        
+      <!-- Push Notification Services -->
       <service
         android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"
         android:exported="true"/>
-
-      <service android:name=".MyForegroundService" android:permission="android.permission.BIND_JOB_SERVICE" />
-        
       <receiver
         android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions"
         android:exported="true"/>
@@ -55,7 +54,7 @@
             <action android:name="android.intent.action.BOOT_COMPLETED"/>
         </intent-filter>
       </receiver>
-
+      <!-- Firebase Messaging Service -->
       <service
         android:name=".MyFirebaseMessagingService"
         android:exported="true">

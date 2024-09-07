@@ -4,18 +4,20 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
+import PushNotification from 'react-native-push-notification';
+import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
-import PushNotification from 'react-native-push-notification';
 import WeatherComponent from './WeatherService/WeatherComponent';
-import BackgroundFetch from 'react-native-background-fetch';
 
 // Function to send notifications
-const sendNotification = (deviceId, color, type) => {
-  const title = type === 'heart' ? (color === '#FF0000' ? 'Device Alert' : 'Device Status') : 'Device Status';
-  const message = type === 'heart' 
-    ? `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}` 
-    : `Device ${deviceId} ${color === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
+// Function to send notifications
+const sendNotification = (deviceId, heartIconColor, valveIconColor) => {
+  const heartStatus = heartIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering';
+  const valveStatus = valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering';
+  
+  const title = 'Device Status';
+  const message = `Device ${deviceId}: Heart ${heartStatus}, Valve ${valveStatus}`;
 
   PushNotification.localNotification({
     channelId: 'default-channel-id',
@@ -29,7 +31,12 @@ const sendNotification = (deviceId, color, type) => {
   });
 };
 
+
 const DeviceTable = ({ loginId }) => {
+  if (!loginId) {
+    console.error('loginId is undefined');
+    return null; // or return some fallback UI
+  }
   const [userDevices, setUserDevices] = useState([]);
   const [sensorData, setSensorData] = useState([]);
   const [deviceStatus, setDeviceStatus] = useState({});
@@ -79,7 +86,7 @@ const DeviceTable = ({ loginId }) => {
     const configureBackgroundFetch = () => {
       BackgroundFetch.configure(
         {
-          minimumFetchInterval: 15, // Fetch every 15 minutes in background
+          minimumFetchInterval: 1, // Fetch every 1 minutes in background
           stopOnTerminate: false,
           startOnBoot: true,
         },
@@ -119,37 +126,27 @@ const DeviceTable = ({ loginId }) => {
       if (deviceData.length) {
         const solenoidValveStatus = deviceData[0].solenoidValveStatus;
         const createdDateTime = deviceData[0].createdDateTime;
-
+  
         const currentDate = moment().format('DD-MM-YYYY');
         const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
         const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
         let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
-
+  
         // Update the device status state
         setDeviceStatus(prevStatus => ({
           ...prevStatus,
           [deviceId]: { heartIconColor, valveIconColor }
         }));
-
+  
         // Compare current status with previous status and send notifications accordingly
         const previous = previousStatus[deviceId] || {};
         const prevHeartColor = previous.heartIconColor;
         const prevValveColor = previous.valveIconColor;
-
-        if (heartIconColor !== prevHeartColor) {
-          if ((heartIconColor === '#FF0000' && prevHeartColor === '#00FF00') || 
-              (heartIconColor === '#00FF00' && prevHeartColor === '#FF0000')) {
-            sendNotification(deviceId, heartIconColor, 'heart');
-          }
+  
+        if (heartIconColor !== prevHeartColor || valveIconColor !== prevValveColor) {
+          sendNotification(deviceId, heartIconColor, valveIconColor);
         }
-
-        if (valveIconColor !== prevValveColor) {
-          if ((valveIconColor === '#FF0000' && prevValveColor === '#00FF00') || 
-              (valveIconColor === '#00FF00' && prevValveColor === '#FF0000')) {
-            sendNotification(deviceId, valveIconColor, 'valve');
-          }
-        }
-
+  
         // Update the previous status
         setPreviousStatus(prevStatus => ({
           ...prevStatus,
@@ -157,7 +154,7 @@ const DeviceTable = ({ loginId }) => {
         }));
       }
     });
-  }, [sensorData, userDevices]);
+  }, [sensorData, userDevices]);  
 
   const handleButtonPress = (deviceId) => {
     navigation.navigate('SensorData', { deviceId, loginId });
