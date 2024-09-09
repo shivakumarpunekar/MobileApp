@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const [relayData, setRelayData] = useState([]);
+    const [thresholdData, setThresholdData] = useState({});
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
 
@@ -13,8 +14,17 @@ const SensorData = ({ route }) => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
             const result = await response.json();
-            const latestData = result.slice(0, 30);
-            setData(latestData);
+            const latestData = result.slice(0, 30); // Only keep the latest 30 entries
+            // Merge threshold data into sensor data
+            const updatedData = latestData.map(item => {
+                const threshold = thresholdData[item.deviceId] || {};
+                return {
+                    ...item,
+                    threshold_1: threshold.threshold_1,
+                    threshold_2: threshold.threshold_2,
+                };
+            });
+            setData(updatedData);
         } catch (error) {
             console.error('Failed to fetch sensor data:', error);
         }
@@ -31,15 +41,35 @@ const SensorData = ({ route }) => {
         }
     };
 
+    // Function to fetch Threshold data and update it for the specific device
+    const fetchThreshold = async () => {
+        try {
+            const response = await fetch(`http://103.145.50.185:2030/api/Threshold/device/${deviceId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            const data = await response.json();
+            // Ensure that we only update the entry for the current deviceId
+            setThresholdData(prevData => ({
+                ...prevData,
+                [deviceId]: data, // Store threshold data keyed by deviceId
+            }));
+        } catch (error) {
+            console.error('Error fetching threshold data:', error);
+        }
+    };
+
     useEffect(() => {
         fetchSensorData();
         fetchRelayData();
+        fetchThreshold();
         const intervalId = setInterval(() => {
             fetchSensorData();
             fetchRelayData();
+            fetchThreshold();
         }, 1000); // Fetch data every 1 second
         return () => clearInterval(intervalId);
-    }, []);
+    }, [thresholdData]); // Ensure we re-fetch if threshold data changes
 
     // Function to get the latest relay state based on timestamp
     const getLatestRelayState = () => {
@@ -98,6 +128,9 @@ const SensorData = ({ route }) => {
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-1: {item.sensor1_value}</Text>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-2: {item.sensor2_value}</Text>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Valve Status: {item.solenoidValveStatus}</Text>
+                        {/* Render threshold data */}
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Threshold 1: {item.threshold_1 || 'N/A'}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Threshold 2: {item.threshold_2 || 'N/A'}</Text>
                         <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Date Time: {item.createdDateTime}</Text>
                     </View>
                 )}

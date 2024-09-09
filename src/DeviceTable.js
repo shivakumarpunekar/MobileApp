@@ -9,16 +9,10 @@ import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
 import WeatherComponent from './WeatherService/WeatherComponent';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Function to send notifications
-// Function to send notifications
-const sendNotification = (deviceId, heartIconColor, valveIconColor) => {
-  const heartStatus = heartIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering';
-  const valveStatus = valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering';
-  
-  const title = 'Device Status';
-  const message = `Device ${deviceId}: Heart ${heartStatus}, Valve ${valveStatus}`;
-
+const sendNotification = (title, message) => {
   PushNotification.localNotification({
     channelId: 'default-channel-id',
     title: title,
@@ -31,18 +25,16 @@ const sendNotification = (deviceId, heartIconColor, valveIconColor) => {
   });
 };
 
-
 const DeviceTable = ({ loginId }) => {
   if (!loginId) {
     console.error('loginId is undefined');
     return null; // or return some fallback UI
   }
+  
   const [userDevices, setUserDevices] = useState([]);
   const [sensorData, setSensorData] = useState([]);
-  const [deviceStatus, setDeviceStatus] = useState({});
-  const [previousStatus, setPreviousStatus] = useState({});
-  const navigation = useNavigation();
   const [appState, setAppState] = useState(AppState.currentState);
+  const navigation = useNavigation();
 
   // Fetch data function
   const fetchData = () => {
@@ -50,13 +42,13 @@ const DeviceTable = ({ loginId }) => {
       axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`).then(response => response.data),
       axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice').then(response => response.data),
     ])
-    .then(([userDevicesData, sensorData]) => {
-      setUserDevices(userDevicesData);
-      setSensorData(sensorData);
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
-    });
+      .then(([userDevicesData, sensorData]) => {
+        setUserDevices(userDevicesData);
+        setSensorData(sensorData);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
   };
 
   useEffect(() => {
@@ -68,7 +60,7 @@ const DeviceTable = ({ loginId }) => {
       if (appState === 'active') {
         fetchData();
       }
-    }, 1000); // Every 1 seconds
+    }, 1000); // Every 1 second
 
     // Listen to app state changes
     const appStateListener = AppState.addEventListener('change', (nextAppState) => {
@@ -86,13 +78,13 @@ const DeviceTable = ({ loginId }) => {
     const configureBackgroundFetch = () => {
       BackgroundFetch.configure(
         {
-          minimumFetchInterval: 1, // Fetch every 1 minutes in background
+          minimumFetchInterval: 1, // Fetch every 1 minute in background
           stopOnTerminate: false,
           startOnBoot: true,
         },
         async (taskId) => {
           console.log('[BackgroundFetch] taskId:', taskId);
-          fetchData(); // Fetch data in the background
+          fetchData();
           BackgroundFetch.finish(taskId);
         },
         (error) => {
@@ -120,41 +112,51 @@ const DeviceTable = ({ loginId }) => {
 
   // Handle notification logic based on device status
   useEffect(() => {
-    userDevices.forEach(device => {
-      const deviceId = device.deviceId;
-      const deviceData = sensorData.filter(item => item.deviceId === deviceId);
-      if (deviceData.length) {
-        const solenoidValveStatus = deviceData[0].solenoidValveStatus;
-        const createdDateTime = deviceData[0].createdDateTime;
-  
-        const currentDate = moment().format('DD-MM-YYYY');
-        const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
-        const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
-        let valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
-  
-        // Update the device status state
-        setDeviceStatus(prevStatus => ({
-          ...prevStatus,
-          [deviceId]: { heartIconColor, valveIconColor }
-        }));
-  
-        // Compare current status with previous status and send notifications accordingly
-        const previous = previousStatus[deviceId] || {};
-        const prevHeartColor = previous.heartIconColor;
-        const prevValveColor = previous.valveIconColor;
-  
-        if (heartIconColor !== prevHeartColor || valveIconColor !== prevValveColor) {
-          sendNotification(deviceId, heartIconColor, valveIconColor);
+    const checkAndSendNotifications = async () => {
+      const previousStatus = await AsyncStorage.getItem('deviceStatus');
+      const parsedPreviousStatus = previousStatus ? JSON.parse(previousStatus) : {};
+
+      userDevices.forEach(device => {
+        const deviceId = device.deviceId;
+        const deviceData = sensorData.find(item => item.deviceId === deviceId);
+
+        if (deviceData) {
+          const solenoidValveStatus = deviceData.solenoidValveStatus;
+          const createdDateTime = deviceData.createdDateTime;
+
+          const currentDate = moment().format('DD-MM-YYYY');
+          const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
+          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
+          const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
+
+          const previousDeviceStatus = parsedPreviousStatus[deviceId] || {};
+          const prevHeartColor = previousDeviceStatus.heartIconColor;
+          const prevValveColor = previousDeviceStatus.valveIconColor;
+
+          // Send separate notifications for heart and valve status changes
+          if (heartIconColor !== prevHeartColor) {
+            const heartTitle = 'Heart Status Change';
+            const heartMessage = `Device ${deviceId}: Heart ${heartIconColor === '#FF0000' ? 'Today Not Active' : 'Today Active'}`;
+            sendNotification(heartTitle, heartMessage);
+          }
+
+          if (valveIconColor !== prevValveColor) {
+            const valveTitle = 'Valve Status Change';
+            const valveMessage = `Device ${deviceId}: Valve ${valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
+            sendNotification(valveTitle, valveMessage);
+          }
+
+          // Save the new status in AsyncStorage
+          parsedPreviousStatus[deviceId] = { heartIconColor, valveIconColor };
         }
-  
-        // Update the previous status
-        setPreviousStatus(prevStatus => ({
-          ...prevStatus,
-          [deviceId]: { heartIconColor, valveIconColor }
-        }));
-      }
-    });
-  }, [sensorData, userDevices]);  
+      });
+
+      // Update AsyncStorage with the latest status
+      await AsyncStorage.setItem('deviceStatus', JSON.stringify(parsedPreviousStatus));
+    };
+
+    checkAndSendNotifications();
+  }, [sensorData, userDevices]);
 
   const handleButtonPress = (deviceId) => {
     navigation.navigate('SensorData', { deviceId, loginId });
@@ -233,43 +235,49 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#F6F3E7',
-    paddingBottom:10,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  buttonContainer: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  button: {
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    paddingBottom: 10,
   },
   headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  buttonContainer: {
+    flex: 1,
+    marginHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 100,
+  },
+  buttonText: {
+    color: 'black',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   valveIcon: {
     marginLeft: 10,
   },
   spacer: {
-    height: 20,
+    height: 30,
   },
 });
 
