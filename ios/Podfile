@@ -1,3 +1,4 @@
+use_modular_headers!
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -13,10 +14,11 @@ if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
-
+use_frameworks! :linkage => :static
 target 'AAIROS' do
   config = use_native_modules!
 
+  pod 'ReactCommon', :path => '../node_modules/react-native/ReactCommon'
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
@@ -26,6 +28,7 @@ target 'AAIROS' do
   target 'AAIROSTests' do
     inherit! :complete
     # Pods for testing
+    pod 'ReactCommon', :path => '../node_modules/react-native/ReactCommon'
   end
 
   post_install do |installer|
