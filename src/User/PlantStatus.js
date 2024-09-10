@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import moment from "moment";
+import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; 
+import moment from "moment";
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
@@ -12,11 +11,14 @@ const PlantStatus = ({ loginId }) => {
     const [deviceId, setDeviceId] = useState(null);
     const animatedValue = useState(new Animated.Value(0))[0];
 
+    // Fetch deviceId based on loginId
     useEffect(() => {
-        // Fetch deviceId based on loginId
         const fetchLoginAndDevice = async () => {
             try {
                 const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const data = await response.json();
                 if (data.length > 0 && data[0].deviceId) {
                     setDeviceId(data[0].deviceId);
@@ -33,11 +35,15 @@ const PlantStatus = ({ loginId }) => {
         }
     }, [loginId]);
 
+    // Fetch water data based on deviceId and update flow rate
     useEffect(() => {
         if (deviceId) {
             const fetchWaterData = async () => {
                 try {
                     const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/profile/${loginId}/device/${deviceId}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
                     const data = await response.json();
                     if (data && data.length > 0) {
                         const { sensor1_value, sensor2_value } = data[0];
@@ -62,6 +68,7 @@ const PlantStatus = ({ loginId }) => {
         }
     }, [deviceId, loginId]);
 
+    // Animate the water icon based on flow rate
     useEffect(() => {
         Animated.timing(animatedValue, {
             toValue: flowRate < 1250 ? 0 : flowRate > 3800 ? 1 : 0.5,
@@ -75,23 +82,7 @@ const PlantStatus = ({ loginId }) => {
         outputRange: ["#FF0000", "#00FF00", "#FF0000"],
     });
 
-    const handlePrevDay = () => {
-        setSelectedDate(prevDate => moment(prevDate).subtract(1, 'day'));
-    };
-
-    const handleNextDay = () => {
-        setSelectedDate(prevDate => {
-            const today = moment();
-            const nextDate = moment(prevDate).add(1, 'day');
-
-            if (nextDate.isAfter(today, 'day')) {
-                return prevDate; 
-            }
-
-            return nextDate;
-        });
-    };
-
+    // Handle water flow status text
     const handleWaterFlow = (flowRate) => {
         if (flowRate < 1250) {
             return "Soil is more Moisture";
@@ -104,7 +95,6 @@ const PlantStatus = ({ loginId }) => {
 
     return (
         <View style={styles.container}>
-
             <View style={styles.waterCard}> 
                 <Text style={styles.waterHeader}>Water level</Text>
                 
@@ -116,10 +106,12 @@ const PlantStatus = ({ loginId }) => {
                         size={40} 
                         style={{ 
                             color: animatedColor, 
-                            transform: [{ scale: animatedValue.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.8, 1.2],  // Adjusted scale range
-                            }) }] 
+                            transform: [{ 
+                                scale: animatedValue.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 1.2],  // Adjusted scale range
+                                }) 
+                            }] 
                         }} 
                     />
                 </View>
@@ -132,7 +124,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        marginBottom:50,
+        marginBottom: 50,
     },
     waterCard: {
         padding: 20,
