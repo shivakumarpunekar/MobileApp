@@ -73,9 +73,9 @@ const SensorData = ({ route }) => {
 
     // Function to get the latest relay state based on timestamp
     const getLatestRelayState = () => {
-        if (relayData.length === 0) return "N/A";
-        const latestRelay = relayData.reduce((a, b) => new Date(a.timestamp) > new Date(b.timestamp) ? a : b);
-        return latestRelay.state;
+        if (relayData.length === 0) return { state: "N/A", last_updated: "N/A" };
+        const latestRelay = relayData.reduce((a, b) => new Date(a.last_updated) > new Date(b.last_updated) ? a : b);
+        return { state: latestRelay.state, last_updated: latestRelay.last_updated };
     };
 
     const renderItemContainerStyle = (sensor1, sensor2) => {
@@ -119,41 +119,51 @@ const SensorData = ({ route }) => {
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                        {/* Left column: Device Id, Sensor-1, Sensor-2, Valve Status, Date Time */}
-                        <View style={styles.leftColumn}>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Device Id: {item.deviceId}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Sensor-1: {item.sensor1_value}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Sensor-2: {item.sensor2_value}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Valve Status: {item.solenoidValveStatus}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Date Time: {item.createdDateTime}
-                            </Text>
-                        </View>
+                renderItem={({ item }) => {
+                    const thresholdAvg = item.threshold_1 ? item.threshold_1 - 1000 : 'N/A'; // Moved inside renderItem
+                    const { state, last_updated } = getLatestRelayState(); // Destructure relay state and last_updated
+                    return (
+                        <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
+                            {/* Left column: Device Id, Sensor-1, Sensor-2, Valve Status, Date Time */}
+                            <View style={styles.leftColumn}>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Device Id: {item.deviceId}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Sensor-1: {item.sensor1_value}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Sensor-2: {item.sensor2_value}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Valve Status: {item.solenoidValveStatus}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Date Time: {item.createdDateTime}
+                                </Text>
+                            </View>
 
-                        {/* Right column: State, Threshold 1, Threshold 2 */}
-                        <View style={styles.rightColumn}>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                State: {getLatestRelayState()}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Threshold 1: {item.threshold_1 || 'N/A'}
-                            </Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Threshold 2: {item.threshold_2 || 'N/A'}
-                            </Text>
+                            {/* Right column: State, Threshold 1, Threshold 2 */}
+                            <View style={styles.rightColumn}>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    State: {state}
+                                </Text>
+                                {/* <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Date Time:{last_updated}
+                                </Text> */}
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Threshold 1: {item.threshold_1 || 'N/A'}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Threshold 2: {item.threshold_2 || 'N/A'}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Threshold Avg: {thresholdAvg}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
-                )}
+                    );
+                }}
             />
         </View>
     );
@@ -221,7 +231,5 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end', // Align items to the right
     },
 });
-
-
 
 export default SensorData;

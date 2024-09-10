@@ -176,7 +176,7 @@ const SensorDataButton = ({ isAdmin }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Device Detail Links</Text>
+      <Text style={styles.headerText}>Devices</Text>
       {renderButtonsInGrid()}
     </ScrollView>
   );
