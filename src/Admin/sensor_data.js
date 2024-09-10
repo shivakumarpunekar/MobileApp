@@ -121,44 +121,40 @@ const SensorData = ({ route }) => {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                        <View style={styles.row}>
-                            {/* Left-aligned text */}
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value), styles.flexText]}>
+                        {/* Left column: Device Id, Sensor-1, Sensor-2, Valve Status, Date Time */}
+                        <View style={styles.leftColumn}>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
                                 Device Id: {item.deviceId}
                             </Text>
-
-                            {/* Right-aligned text for State and Threshold */}
-                            <View style={styles.rightContainer}>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    State: {getLatestRelayState()}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Threshold 1: {item.threshold_1 || 'N/A'}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Threshold 2: {item.threshold_2 || 'N/A'}
-                                </Text>
-                            </View>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Sensor-1: {item.sensor1_value}
+                            </Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Sensor-2: {item.sensor2_value}
+                            </Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Valve Status: {item.solenoidValveStatus}
+                            </Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Date Time: {item.createdDateTime}
+                            </Text>
                         </View>
 
-                        {/* Rest of the data */}
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                            Sensor-1: {item.sensor1_value}
-                        </Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                            Sensor-2: {item.sensor2_value}
-                        </Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                            Valve Status: {item.solenoidValveStatus}
-                        </Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                            Date Time: {item.createdDateTime}
-                        </Text>
+                        {/* Right column: State, Threshold 1, Threshold 2 */}
+                        <View style={styles.rightColumn}>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                State: {getLatestRelayState()}
+                            </Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Threshold 1: {item.threshold_1 || 'N/A'}
+                            </Text>
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                Threshold 2: {item.threshold_2 || 'N/A'}
+                            </Text>
+                        </View>
                     </View>
                 )}
             />
-
-
         </View>
     );
 };
@@ -189,6 +185,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     itemContainer: {
+        flexDirection: 'row', // Added to allow left and right columns
+        justifyContent: 'space-between', // Space out left and right columns
         marginBottom: 20,
         padding: 10,
         borderRadius: 8,
@@ -206,7 +204,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 16,
-        lineHeight: 20, // Ensure equal spacing between lines of text
+        lineHeight: 20,
     },
     itemTextWhite: {
         color: '#fff',
@@ -214,19 +212,16 @@ const styles = StyleSheet.create({
     itemTextBlack: {
         color: '#000',
     },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    rightContainer: {
-        marginLeft: 'auto',
-        alignItems: 'flex-end',
-    },
-    flexText: {
+    leftColumn: {
         flex: 1,
+        justifyContent: 'flex-start', // Align items to the left
+    },
+    rightColumn: {
+        flex: 1,
+        alignItems: 'flex-end', // Align items to the right
     },
 });
+
 
 
 export default SensorData;
