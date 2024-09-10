@@ -122,19 +122,43 @@ const SensorData = ({ route }) => {
                 renderItem={({ item }) => (
                     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
                         <View style={styles.row}>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Device Id: {item.deviceId}</Text>
-                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value), { marginLeft: 'auto' }]}>State: {getLatestRelayState()}</Text>
+                            {/* Left-aligned text */}
+                            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value), styles.flexText]}>
+                                Device Id: {item.deviceId}
+                            </Text>
+
+                            {/* Right-aligned text for State and Threshold */}
+                            <View style={styles.rightContainer}>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    State: {getLatestRelayState()}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Threshold 1: {item.threshold_1 || 'N/A'}
+                                </Text>
+                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                                    Threshold 2: {item.threshold_2 || 'N/A'}
+                                </Text>
+                            </View>
                         </View>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-1: {item.sensor1_value}</Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-2: {item.sensor2_value}</Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Valve Status: {item.solenoidValveStatus}</Text>
-                        {/* Render threshold data */}
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Threshold 1: {item.threshold_1 || 'N/A'}</Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Threshold 2: {item.threshold_2 || 'N/A'}</Text>
-                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Date Time: {item.createdDateTime}</Text>
+
+                        {/* Rest of the data */}
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                            Sensor-1: {item.sensor1_value}
+                        </Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                            Sensor-2: {item.sensor2_value}
+                        </Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                            Valve Status: {item.solenoidValveStatus}
+                        </Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                            Date Time: {item.createdDateTime}
+                        </Text>
                     </View>
                 )}
             />
+
+
         </View>
     );
 };
@@ -143,7 +167,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#F6F3E7'
+        backgroundColor: '#F6F3E7',
     },
     header: {
         flexDirection: 'row',
@@ -182,6 +206,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 16,
+        lineHeight: 20, // Ensure equal spacing between lines of text
     },
     itemTextWhite: {
         color: '#fff',
@@ -191,9 +216,17 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    rightContainer: {
+        marginLeft: 'auto',
+        alignItems: 'flex-end',
+    },
+    flexText: {
+        flex: 1,
     },
 });
+
 
 export default SensorData;
