@@ -256,7 +256,7 @@ function App(): React.JSX.Element {
             <Stack.Screen
               name="Valva_status" //This is for Admin Valva_status Page
               component={Valva_status}
-              options={{ headerTitle: 'Valva_status' }}
+              options={{ headerTitle: 'Valva status' }}
             />
 
             <Stack.Screen

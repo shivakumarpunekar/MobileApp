@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const [relayData, setRelayData] = useState([]);
     const [thresholdData, setThresholdData] = useState({});
+    const [isFetching, setIsFetching] = useState(false); // Flag to prevent multiple fetches
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
 
-    // Function to fetch sensor data
     const fetchSensorData = async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
             const result = await response.json();
-            const latestData = result.slice(0, 30); // Only keep the latest 30 entries
-            // Merge threshold data into sensor data
+            const latestData = result.slice(0, 30);
             const updatedData = latestData.map(item => {
                 const threshold = thresholdData[item.deviceId] || {};
                 return {
@@ -30,7 +29,6 @@ const SensorData = ({ route }) => {
         }
     };
 
-    // Function to fetch relay duration data
     const fetchRelayData = async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/relay_durations/Device/${deviceId}`);
@@ -41,7 +39,6 @@ const SensorData = ({ route }) => {
         }
     };
 
-    // Function to fetch Threshold data and update it for the specific device
     const fetchThreshold = async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/Threshold/device/${deviceId}`);
@@ -49,29 +46,41 @@ const SensorData = ({ route }) => {
                 throw new Error('Network response was not ok.');
             }
             const data = await response.json();
-            // Ensure that we only update the entry for the current deviceId
             setThresholdData(prevData => ({
                 ...prevData,
-                [deviceId]: data, // Store threshold data keyed by deviceId
+                [deviceId]: data,
             }));
         } catch (error) {
             console.error('Error fetching threshold data:', error);
         }
     };
 
-    useEffect(() => {
-        fetchSensorData();
-        fetchRelayData();
-        fetchThreshold();
-        const intervalId = setInterval(() => {
-            fetchSensorData();
-            fetchRelayData();
-            fetchThreshold();
-        }, 1000); // Fetch data every 1 second
-        return () => clearInterval(intervalId);
-    }, [thresholdData]); // Ensure we re-fetch if threshold data changes
+    const fetchAllData = useCallback(async () => {
+        if (!isFetching) {
+            setIsFetching(true); // Set flag to prevent multiple fetches
+            await fetchSensorData();
+            await fetchRelayData();
+            await fetchThreshold();
+            setIsFetching(false); // Reset flag after fetching
+        }
+    }, [isFetching]);
 
-    // Function to get the latest relay state based on timestamp
+    // Fetch data immediately when the component is mounted
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
+
+    // Fetch data every time the screen is focused (mimics hot reload behavior)
+    useFocusEffect(
+        useCallback(() => {
+            const intervalId = setInterval(() => {
+                fetchAllData();
+            }, 1000); // Fetch data every 1 second
+
+            return () => clearInterval(intervalId); // Clean up the interval on blur
+        }, [fetchAllData])
+    );
+
     const getLatestRelayState = () => {
         if (relayData.length === 0) return { state: "N/A", last_updated: "N/A" };
         const latestRelay = relayData.reduce((a, b) => new Date(a.last_updated) > new Date(b.last_updated) ? a : b);

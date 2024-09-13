@@ -17,6 +17,7 @@ const sendNotification = (title, message) => {
     channelId: 'default-channel-id',
     title: title,
     message: message,
+    createdDateTime,
     importance: 'high',
     priority: 'high',
     soundName: 'default',
@@ -122,27 +123,15 @@ const DeviceTable = ({ loginId }) => {
 
         if (deviceData) {
           const solenoidValveStatus = deviceData.solenoidValveStatus;
-          const createdDateTime = deviceData.createdDateTime;
-
-          const currentDate = moment().format('DD-MM-YYYY');
-          const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
-          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
           const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
 
           const previousDeviceStatus = parsedPreviousStatus[deviceId] || {};
-          const prevHeartColor = previousDeviceStatus.heartIconColor;
           const prevValveColor = previousDeviceStatus.valveIconColor;
 
-          // Send separate notifications for heart and valve status changes
-          if (heartIconColor !== prevHeartColor) {
-            const heartTitle = 'Heart Status Change';
-            const heartMessage = `Device ${deviceId}: Heart ${heartIconColor === '#FF0000' ? 'Today Not Active' : 'Today Active'}`;
-            sendNotification(heartTitle, heartMessage);
-          }
 
           if (valveIconColor !== prevValveColor) {
-            const valveTitle = 'Valve Status Change';
-            const valveMessage = `Device ${deviceId}: Valve ${valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
+            const valveTitle = 'aairos Technologies';
+            const valveMessage = `Device ${valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
             sendNotification(valveTitle, valveMessage);
           }
 
@@ -277,7 +266,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   spacer: {
-    height: 30,
+    height: 20,
   },
 });
 

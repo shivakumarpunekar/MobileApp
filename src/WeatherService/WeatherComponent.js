@@ -163,10 +163,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 10,
   },
   location: {
-    fontSize: 18,
+    fontSize: 14,
     color: 'black',
     marginBottom: 20,
     fontWeight: 'bold',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   city: {
-    fontSize: 28,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 10,
   },
   temp: {
-    fontSize: 60,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#333',
     marginVertical: 10,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 10,
   },
   description: {
-    fontSize: 20,
+    fontSize: 14,
     color: '#fff',
     textShadowColor: '#000',
     textShadowOffset: { width: 1, height: 1 },
