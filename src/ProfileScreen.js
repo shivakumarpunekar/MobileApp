@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,49 +7,56 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchDataByIdFromApi, fetchuserProfileIdByLoginId } from './Api/api';
 
-// This is for date format
+// Date formatter function
 const formatDate = dateString => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
 const ProfilePage = ({ loginId }) => {
-
   const navigation = useNavigation();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  //function to fetch data
+  // Fetch data function
   const fetchData = async () => {
+    setLoading(true);
     try {
       const userProfileId = await fetchuserProfileIdByLoginId(loginId);
       if (!userProfileId) {
-        setError(new Error(`User profile not found`));
-        return;
+        throw new Error(`User profile not found`);
       }
       const result = await fetchDataByIdFromApi(userProfileId);
       setData(result);
     } catch (error) {
-      console.error(error);
+      setError(error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Pull to refresh handler
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchData().then(() => setRefreshing(false));
+  }, [loginId]);
 
   // Fetch data initially and on loginId change
   useEffect(() => {
     fetchData();
   }, [loginId]);
 
-  // Update data on focus (when returning from ProfileScreenEdit)
+  // Fetch data on screen focus
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchData();
     }, [])
   );
@@ -71,17 +78,25 @@ const ProfilePage = ({ loginId }) => {
   }
 
   return (
-    <ScrollView>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.container}>
         {data ? (
           <>
             <View style={styles.curvedBackground}>
               <ImageBackground
                 source={require('../assets/123.jpeg')}
-                style={styles.backgroundImage}>
+                style={styles.backgroundImage}
+              >
                 <TouchableOpacity
                   style={styles.editButton}
-                  onPress={() => navigation.navigate('ProfileScreenEdit', { data })}>
+                  onPress={() =>
+                    navigation.navigate('ProfileScreenEdit', { data })
+                  }
+                >
                   <Icon name="edit" size={30} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.header}>
@@ -276,6 +291,14 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     fontSize: 16,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#333',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
   },
 });
 

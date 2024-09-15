@@ -17,7 +17,6 @@ const sendNotification = (title, message) => {
     channelId: 'default-channel-id',
     title: title,
     message: message,
-    createdDateTime,
     importance: 'high',
     priority: 'high',
     soundName: 'default',
@@ -29,23 +28,32 @@ const sendNotification = (title, message) => {
 const DeviceTable = ({ loginId }) => {
   if (!loginId) {
     console.error('loginId is undefined');
-    return null; // or return some fallback UI
+    return null;
   }
-  
+
   const [userDevices, setUserDevices] = useState([]);
   const [sensorData, setSensorData] = useState([]);
   const [appState, setAppState] = useState(AppState.currentState);
   const navigation = useNavigation();
 
-  // Fetch data function
+  // Fetch user devices and sensor data
   const fetchData = () => {
-    Promise.all([
-      axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`).then(response => response.data),
-      axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice').then(response => response.data),
-    ])
-      .then(([userDevicesData, sensorData]) => {
-        setUserDevices(userDevicesData);
-        setSensorData(sensorData);
+    axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
+      .then(response => {
+        setUserDevices(response.data);
+        return response.data;
+      })
+      .then(userDevices => {
+        // Fetch sensor data for all devices
+        const deviceIds = userDevices.map(device => device.deviceId);
+        return Promise.all(
+          deviceIds.map(deviceId =>
+            axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`).then(res => res.data)
+          )
+        );
+      })
+      .then(allSensorData => {
+        setSensorData(allSensorData.flat());
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -53,17 +61,14 @@ const DeviceTable = ({ loginId }) => {
   };
 
   useEffect(() => {
-    // Fetch data initially
     fetchData();
 
-    // Set up foreground auto-refresh with setInterval
     const interval = setInterval(() => {
       if (appState === 'active') {
         fetchData();
       }
     }, 1000); // Every 1 second
 
-    // Listen to app state changes
     const appStateListener = AppState.addEventListener('change', (nextAppState) => {
       setAppState(nextAppState);
     });
@@ -75,16 +80,14 @@ const DeviceTable = ({ loginId }) => {
   }, [loginId, appState]);
 
   useEffect(() => {
-    // Handle background fetch setup
     const configureBackgroundFetch = () => {
       BackgroundFetch.configure(
         {
-          minimumFetchInterval: 1, // Fetch every 1 minute in background
+          minimumFetchInterval: 1,
           stopOnTerminate: false,
           startOnBoot: true,
         },
         async (taskId) => {
-          console.log('[BackgroundFetch] taskId:', taskId);
           fetchData();
           BackgroundFetch.finish(taskId);
         },
@@ -97,7 +100,6 @@ const DeviceTable = ({ loginId }) => {
     configureBackgroundFetch();
   }, []);
 
-  // Function to get sensor values
   const getSensorValues = (deviceId) => {
     const deviceSensorData = sensorData.find(sensor => sensor.deviceId === deviceId);
     if (deviceSensorData) {
@@ -111,7 +113,6 @@ const DeviceTable = ({ loginId }) => {
     return { sensor1: null, sensor2: null, solenoidValveStatus: null, createdDateTime: null };
   };
 
-  // Handle notification logic based on device status
   useEffect(() => {
     const checkAndSendNotifications = async () => {
       const previousStatus = await AsyncStorage.getItem('deviceStatus');
@@ -123,11 +124,10 @@ const DeviceTable = ({ loginId }) => {
 
         if (deviceData) {
           const solenoidValveStatus = deviceData.solenoidValveStatus;
-          const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
+          const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000';
 
           const previousDeviceStatus = parsedPreviousStatus[deviceId] || {};
           const prevValveColor = previousDeviceStatus.valveIconColor;
-
 
           if (valveIconColor !== prevValveColor) {
             const valveTitle = 'aairos Technologies';
@@ -135,12 +135,10 @@ const DeviceTable = ({ loginId }) => {
             sendNotification(valveTitle, valveMessage);
           }
 
-          // Save the new status in AsyncStorage
-          parsedPreviousStatus[deviceId] = { heartIconColor, valveIconColor };
+          parsedPreviousStatus[deviceId] = { valveIconColor };
         }
       });
 
-      // Update AsyncStorage with the latest status
       await AsyncStorage.setItem('deviceStatus', JSON.stringify(parsedPreviousStatus));
     };
 
@@ -168,8 +166,7 @@ const DeviceTable = ({ loginId }) => {
           let backgroundColor;
           const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
           const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
-          let valveIconColor = solenoidValveStatus === "On" ? '#00FF00' : '#FF0000';
-          let buttonText = `Device ${deviceId}`;
+          const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000';
 
           if (sensor1 === null || sensor2 === null) {
             backgroundColor = '#808080';
@@ -197,7 +194,7 @@ const DeviceTable = ({ loginId }) => {
                 style={[styles.button, { backgroundColor }]}
                 onPress={() => handleButtonPress(deviceId)}
               >
-                <Text style={styles.buttonText}>{buttonText}</Text>
+                <Text style={styles.buttonText}>Device {deviceId}</Text>
               </TouchableOpacity>
             </View>
           );
@@ -256,17 +253,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  spacer: {
+    height: 20,
+  },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 5,
   },
   valveIcon: {
     marginLeft: 10,
-  },
-  spacer: {
-    height: 20,
   },
 });
 

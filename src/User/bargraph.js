@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ScrollView, Text, StyleSheet, Dimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 
@@ -9,39 +9,41 @@ const Bargraph = ({ loginId }) => {
   const [sensor2Data, setSensor2Data] = useState([]);
   const [deviceId, setDeviceId] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
-        const deviceData = await deviceResponse.json();
+  const fetchData = useCallback(async () => {
+    try {
+      const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
+      const deviceData = await deviceResponse.json();
 
-        if (Array.isArray(deviceData) && deviceData.length > 0) {
-          const newDeviceId = deviceData[0].deviceId;
-          if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Update deviceId only if changed
+      if (Array.isArray(deviceData) && deviceData.length > 0) {
+        const newDeviceId = deviceData[0].deviceId;
+        if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Update deviceId only if changed
 
-          const sensor1Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`);
-          const sensor1Values = await sensor1Response.json();
-          const newSensor1Data = filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value"));
-          setSensor1Data(newSensor1Data);
+        const [sensor1Response, sensor2Response] = await Promise.all([
+          fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`),
+          fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`)
+        ]);
 
-          const sensor2Response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`);
-          const sensor2Values = await sensor2Response.json();
-          const newSensor2Data = filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"));
-          setSensor2Data(newSensor2Data);
-        } else {
-          console.error("Device data array is empty or not an array.");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        const sensor1Values = await sensor1Response.json();
+        const newSensor1Data = filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value"));
+
+        const sensor2Values = await sensor2Response.json();
+        const newSensor2Data = filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"));
+
+        setSensor1Data(newSensor1Data);
+        setSensor2Data(newSensor2Data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }, [deviceId, loginId]); // Memoize fetchData to prevent unnecessary recreation on each render
 
-    fetchData();
+  useEffect(() => {
+    fetchData(); // Fetch data on component mount
 
-    const intervalId = setInterval(fetchData, 1000); // 1-second interval for real-time updates
+    const intervalId = setInterval(fetchData, 2000); // 2-second interval for real-time updates
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, [loginId, deviceId]);
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, [fetchData]);
 
   const groupDataByInterval = (data, sensorKey, intervalMinutes = 2) => {
     const groupedData = {};
