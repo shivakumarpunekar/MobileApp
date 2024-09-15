@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
@@ -6,30 +6,29 @@ const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const [relayData, setRelayData] = useState([]);
     const [thresholdData, setThresholdData] = useState({});
-    const [isFetching, setIsFetching] = useState(false); // Flag to prevent multiple fetches
+    const [isFetching, setIsFetching] = useState(false);
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
 
-    const fetchSensorData = async () => {
+    // Fetch sensor data
+    const fetchSensorData = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
             const result = await response.json();
             const latestData = result.slice(0, 30);
-            const updatedData = latestData.map(item => {
-                const threshold = thresholdData[item.deviceId] || {};
-                return {
-                    ...item,
-                    threshold_1: threshold.threshold_1,
-                    threshold_2: threshold.threshold_2,
-                };
-            });
+            const updatedData = latestData.map(item => ({
+                ...item,
+                threshold_1: thresholdData[item.deviceId]?.threshold_1,
+                threshold_2: thresholdData[item.deviceId]?.threshold_2,
+            }));
             setData(updatedData);
         } catch (error) {
             console.error('Failed to fetch sensor data:', error);
         }
-    };
+    }, [deviceId, thresholdData]);
 
-    const fetchRelayData = async () => {
+    // Fetch relay data
+    const fetchRelayData = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/relay_durations/Device/${deviceId}`);
             const result = await response.json();
@@ -37,9 +36,10 @@ const SensorData = ({ route }) => {
         } catch (error) {
             console.error('Failed to fetch relay data:', error);
         }
-    };
+    }, [deviceId]);
 
-    const fetchThreshold = async () => {
+    // Fetch threshold data
+    const fetchThreshold = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/Threshold/device/${deviceId}`);
             if (!response.ok) {
@@ -53,61 +53,50 @@ const SensorData = ({ route }) => {
         } catch (error) {
             console.error('Error fetching threshold data:', error);
         }
-    };
+    }, [deviceId]);
 
+    // Fetch all data
     const fetchAllData = useCallback(async () => {
         if (!isFetching) {
-            setIsFetching(true); // Set flag to prevent multiple fetches
-            await fetchSensorData();
-            await fetchRelayData();
-            await fetchThreshold();
-            setIsFetching(false); // Reset flag after fetching
+            setIsFetching(true);
+            await Promise.all([fetchSensorData(), fetchRelayData(), fetchThreshold()]);
+            setIsFetching(false);
         }
-    }, [isFetching]);
+    }, [isFetching, fetchSensorData, fetchRelayData, fetchThreshold]);
 
-    // Fetch data immediately when the component is mounted
     useEffect(() => {
         fetchAllData();
     }, [fetchAllData]);
 
-    // Fetch data every time the screen is focused (mimics hot reload behavior)
     useFocusEffect(
         useCallback(() => {
-            const intervalId = setInterval(() => {
-                fetchAllData();
-            }, 1000); // Fetch data every 1 second
-
-            return () => clearInterval(intervalId); // Clean up the interval on blur
+            fetchAllData(); // Fetch data on screen focus
         }, [fetchAllData])
     );
 
-    const getLatestRelayState = () => {
+    const getLatestRelayState = useMemo(() => {
         if (relayData.length === 0) return { state: "N/A", last_updated: "N/A" };
         const latestRelay = relayData.reduce((a, b) => new Date(a.last_updated) > new Date(b.last_updated) ? a : b);
         return { state: latestRelay.state, last_updated: latestRelay.last_updated };
-    };
+    }, [relayData]);
 
-    const renderItemContainerStyle = (sensor1, sensor2) => {
-        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
-            (sensor1 <= 1250 && sensor2 <= 1250) ||
-            (sensor1 >= 4000 && sensor2 <= 1250) ||
-            (sensor1 <= 1250 && sensor2 >= 4000)) {
-            return styles.itemContainerRed;
-        } else {
-            return styles.itemContainerGreen;
-        }
-    };
+    const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
+        return (sensor1 >= 4000 && sensor2 >= 4000) ||
+               (sensor1 <= 1250 && sensor2 <= 1250) ||
+               (sensor1 >= 4000 && sensor2 <= 1250) ||
+               (sensor1 <= 1250 && sensor2 >= 4000)
+            ? styles.itemContainerRed
+            : styles.itemContainerGreen;
+    }, []);
 
-    const renderTextStyle = (sensor1, sensor2) => {
-        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
-            (sensor1 <= 1250 && sensor2 <= 1250) ||
-            (sensor1 >= 4000 && sensor2 <= 1250) ||
-            (sensor1 <= 1250 && sensor2 >= 4000)) {
-            return styles.itemTextWhite;
-        } else {
-            return styles.itemTextBlack;
-        }
-    };
+    const renderTextStyle = useCallback((sensor1, sensor2) => {
+        return (sensor1 >= 4000 && sensor2 >= 4000) ||
+               (sensor1 <= 1250 && sensor2 <= 1250) ||
+               (sensor1 >= 4000 && sensor2 <= 1250) ||
+               (sensor1 <= 1250 && sensor2 >= 4000)
+            ? styles.itemTextWhite
+            : styles.itemTextBlack;
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -129,11 +118,10 @@ const SensorData = ({ route }) => {
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => {
-                    const thresholdAvg = item.threshold_1 ? item.threshold_1 - 1000 : 'N/A'; // Moved inside renderItem
-                    const { state, last_updated } = getLatestRelayState(); // Destructure relay state and last_updated
+                    const thresholdAvg = item.threshold_1 ? item.threshold_1 - 1000 : 'N/A';
+                    const { state, last_updated } = getLatestRelayState;
                     return (
                         <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                            {/* Left column: Device Id, Sensor-1, Sensor-2, Valve Status, Date Time */}
                             <View style={styles.leftColumn}>
                                 <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
                                     Device Id: {item.deviceId}
@@ -151,15 +139,10 @@ const SensorData = ({ route }) => {
                                     Date Time: {item.createdDateTime}
                                 </Text>
                             </View>
-
-                            {/* Right column: State, Threshold 1, Threshold 2 */}
                             <View style={styles.rightColumn}>
                                 <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
                                     State: {state}
                                 </Text>
-                                {/* <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                Date Time:{last_updated}
-                                </Text> */}
                                 <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
                                     Threshold 1: {item.threshold_1 || 'N/A'}
                                 </Text>
@@ -204,8 +187,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     itemContainer: {
-        flexDirection: 'row', // Added to allow left and right columns
-        justifyContent: 'space-between', // Space out left and right columns
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginBottom: 20,
         padding: 10,
         borderRadius: 8,
@@ -233,11 +216,11 @@ const styles = StyleSheet.create({
     },
     leftColumn: {
         flex: 1,
-        justifyContent: 'flex-start', // Align items to the left
+        justifyContent: 'flex-start',
     },
     rightColumn: {
         flex: 1,
-        alignItems: 'flex-end', // Align items to the right
+        alignItems: 'flex-end',
     },
 });
 
