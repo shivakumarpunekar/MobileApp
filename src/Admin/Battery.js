@@ -88,7 +88,7 @@ const Battery = ({ deviceId }) => {
 
     if (deviceId) {
       loadData();
-      const interval = setInterval(fetchBatteryData, 5000); // Refresh every 5 seconds
+      const interval = setInterval(fetchBatteryData, 10000); // Refresh every 10 seconds
       return () => clearInterval(interval); // Clear interval on component unmount
     }
   }, [deviceId, fetchBatteryData]);
