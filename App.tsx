@@ -117,7 +117,7 @@ function App(): React.JSX.Element {
     // Request permissions on app startup
     requestPermissions();
     configureNotifications();
-    configureBackgroundFetch()
+    configureBackgroundFetch();
 
     const checkLoginStatus = async () => {
       const loginId = await AsyncStorage.getItem('loginId'); // Fetch the loginId from AsyncStorage

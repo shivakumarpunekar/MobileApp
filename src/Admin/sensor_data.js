@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchDeviceStateThreshold, fetchSensorData } from "../Api/api";
 
 // Memoized item component to avoid unnecessary re-renders
 const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextStyle }) => (
@@ -38,46 +39,21 @@ const SensorData = ({ route }) => {
     const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
 
-    // Optimized device state fetch
-    const fetchDeviceStateThreshold = useCallback(async () => {
-        try {
-            const response = await fetch(`http://103.145.50.185:2030/api/DeviceStateThreshold/${deviceId}`);
-            const result = await response.json();
-            await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(result));
-            setDeviceState(result);
-        } catch (error) {
-            console.error('Failed to fetch device state and threshold:', error);
-        }
-    }, [deviceId]);
-
-    // Optimized sensor data fetch
-    const fetchSensorData = useCallback(async () => {
-        try {
-            const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-            const result = await response.json();
-            const latestData = result.slice(0, 30);
-            const updatedData = latestData.map(item => ({
-                ...item,
-                threshold_1: deviceState?.threshold_1,
-                threshold_2: deviceState?.threshold_2,
-            }));
-            await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(updatedData));
-            setData(updatedData);
-        } catch (error) {
-            console.error('Failed to fetch sensor data:', error);
-        }
-    }, [deviceId, deviceState]);
-
     // Optimized fetch calls
     const fetchAllData = useCallback(async () => {
         if (!isFetching) {
             setIsFetching(true);
             setLoading(true);
-            await Promise.all([fetchSensorData(), fetchDeviceStateThreshold()]);
+            const deviceStateData = await fetchDeviceStateThreshold(deviceId);
+            setDeviceState(deviceStateData);
+
+            const sensorData = await fetchSensorData(deviceId, deviceStateData);
+            setData(sensorData);
+
             setLoading(false);
             setIsFetching(false);
         }
-    }, [isFetching, fetchSensorData, fetchDeviceStateThreshold]);
+    },[deviceId, isFetching]);
 
     // Load stored data when the component is mounted
     const loadStoredData = useCallback(async () => {
