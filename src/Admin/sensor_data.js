@@ -1,16 +1,56 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Memoized item component to avoid unnecessary re-renders
+const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextStyle }) => (
+    <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
+        <View style={styles.leftColumn}>
+            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                Device Id: {item.deviceId}
+            </Text>
+            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                Sensor-1: {item.sensor1_value}
+            </Text>
+            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                Sensor-2: {item.sensor2_value}
+            </Text>
+            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                Valve Status: {item.solenoidValveStatus}
+            </Text>
+            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
+                Date Time: {item.createdDateTime}
+            </Text>
+        </View>
+    </View>
+));
 
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
-    const [relayData, setRelayData] = useState([]);
-    const [thresholdData, setThresholdData] = useState({});
+    const [deviceState, setDeviceState] = useState({});
     const [isFetching, setIsFetching] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
 
-    // Fetch sensor data
+    const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
+    const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
+
+    // Optimized device state fetch
+    const fetchDeviceStateThreshold = useCallback(async () => {
+        try {
+            const response = await fetch(`http://103.145.50.185:2030/api/DeviceStateThreshold/${deviceId}`);
+            const result = await response.json();
+            await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(result));
+            setDeviceState(result);
+        } catch (error) {
+            console.error('Failed to fetch device state and threshold:', error);
+        }
+    }, [deviceId]);
+
+    // Optimized sensor data fetch
     const fetchSensorData = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
@@ -18,67 +58,58 @@ const SensorData = ({ route }) => {
             const latestData = result.slice(0, 30);
             const updatedData = latestData.map(item => ({
                 ...item,
-                threshold_1: thresholdData[item.deviceId]?.threshold_1,
-                threshold_2: thresholdData[item.deviceId]?.threshold_2,
+                threshold_1: deviceState?.threshold_1,
+                threshold_2: deviceState?.threshold_2,
             }));
+            await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(updatedData));
             setData(updatedData);
         } catch (error) {
             console.error('Failed to fetch sensor data:', error);
         }
-    }, [deviceId, thresholdData]);
+    }, [deviceId, deviceState]);
 
-    // Fetch relay data
-    const fetchRelayData = useCallback(async () => {
-        try {
-            const response = await fetch(`http://103.145.50.185:2030/api/relay_durations/Device/${deviceId}`);
-            const result = await response.json();
-            setRelayData(result);
-        } catch (error) {
-            console.error('Failed to fetch relay data:', error);
-        }
-    }, [deviceId]);
-
-    // Fetch threshold data
-    const fetchThreshold = useCallback(async () => {
-        try {
-            const response = await fetch(`http://103.145.50.185:2030/api/Threshold/device/${deviceId}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            const data = await response.json();
-            setThresholdData(prevData => ({
-                ...prevData,
-                [deviceId]: data,
-            }));
-        } catch (error) {
-            console.error('Error fetching threshold data:', error);
-        }
-    }, [deviceId]);
-
-    // Fetch all data
+    // Optimized fetch calls
     const fetchAllData = useCallback(async () => {
         if (!isFetching) {
             setIsFetching(true);
-            await Promise.all([fetchSensorData(), fetchRelayData(), fetchThreshold()]);
+            setLoading(true);
+            await Promise.all([fetchSensorData(), fetchDeviceStateThreshold()]);
+            setLoading(false);
             setIsFetching(false);
         }
-    }, [isFetching, fetchSensorData, fetchRelayData, fetchThreshold]);
+    }, [isFetching, fetchSensorData, fetchDeviceStateThreshold]);
+
+    // Load stored data when the component is mounted
+    const loadStoredData = useCallback(async () => {
+        try {
+            const storedSensorData = await AsyncStorage.getItem(DATA_STORAGE_KEY);
+            const storedDeviceState = await AsyncStorage.getItem(STATE_STORAGE_KEY);
+
+            if (storedSensorData) setData(JSON.parse(storedSensorData));
+            if (storedDeviceState) setDeviceState(JSON.parse(storedDeviceState));
+        } catch (error) {
+            console.error('Error loading stored data:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [deviceId]);
 
     useEffect(() => {
+        loadStoredData();
         fetchAllData();
-    }, [fetchAllData]);
+    }, [fetchAllData, loadStoredData]);
 
+    // Use focus effect to refresh data
     useFocusEffect(
         useCallback(() => {
-            fetchAllData(); // Fetch data on screen focus
+            fetchAllData();
         }, [fetchAllData])
     );
 
+    // Memoized value for relay state
     const getLatestRelayState = useMemo(() => {
-        if (relayData.length === 0) return { state: "N/A", last_updated: "N/A" };
-        const latestRelay = relayData.reduce((a, b) => new Date(a.last_updated) > new Date(b.last_updated) ? a : b);
-        return { state: latestRelay.state, last_updated: latestRelay.last_updated };
-    }, [relayData]);
+        return deviceState?.state || "N/A";
+    }, [deviceState]);
 
     const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
         return (sensor1 >= 4000 && sensor2 >= 4000) ||
@@ -98,6 +129,28 @@ const SensorData = ({ route }) => {
             : styles.itemTextBlack;
     }, []);
 
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchAllData();
+        setRefreshing(false);
+    }, [fetchAllData]);
+
+    const summaryData = useMemo(() => {
+        const threshold1 = deviceState?.threshold_1 || 'N/A';
+        const threshold2 = deviceState?.threshold_2 || 'N/A';
+        const thresholdAvg = (threshold1 !== 'N/A' && threshold2 !== 'N/A') ? (Number(threshold1)) - 1000 : 'N/A';
+
+        return { state: getLatestRelayState, threshold1, threshold2, thresholdAvg };
+    }, [deviceState, getLatestRelayState]);
+
+    if (loading) {
+        return (
+            <View style={styles.loader}>
+                <ActivityIndicator size="large" color="#BFA100" />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -110,52 +163,33 @@ const SensorData = ({ route }) => {
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId, isAdmin })}>
                     <Text style={styles.buttonText}>Switch</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ValveStatus', { deviceId })}>
                     <Text style={styles.buttonText}>Valve Status</Text>
                 </TouchableOpacity>
+            </View>
+            <View style={styles.summaryCard}>
+                <Text style={styles.summaryText}>State: {summaryData.state}</Text>
+                <Text style={styles.summaryText}>Threshold 1: {summaryData.threshold1}</Text>
+                <Text style={styles.summaryText}>Threshold 2: {summaryData.threshold2}</Text>
+                <Text style={styles.summaryText}>Threshold Avg: {summaryData.thresholdAvg}</Text>
             </View>
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => {
-                    const thresholdAvg = item.threshold_1 ? item.threshold_1 - 1000 : 'N/A';
-                    const { state, last_updated } = getLatestRelayState;
-                    return (
-                        <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-                            <View style={styles.leftColumn}>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Device Id: {item.deviceId}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Sensor-1: {item.sensor1_value}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Sensor-2: {item.sensor2_value}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Valve Status: {item.solenoidValveStatus}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Date Time: {item.createdDateTime}
-                                </Text>
-                            </View>
-                            <View style={styles.rightColumn}>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    State: {state}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Threshold 1: {item.threshold_1 || 'N/A'}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Threshold 2: {item.threshold_2 || 'N/A'}
-                                </Text>
-                                <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                                    Threshold Avg: {thresholdAvg}
-                                </Text>
-                            </View>
-                        </View>
-                    );
-                }}
+                renderItem={({ item }) => (
+                    <SensorDataItem
+                        item={item}
+                        renderItemContainerStyle={renderItemContainerStyle}
+                        renderTextStyle={renderTextStyle}
+                    />
+                )}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                // FlatList optimizations
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
+                windowSize={21}
+                removeClippedSubviews={true} // Reduce memory consumption
             />
         </View>
     );
@@ -167,60 +201,62 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#F6F3E7',
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    button: {
-        backgroundColor: '#BFA100',
-        padding: 10,
-        borderRadius: 5,
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
     itemContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-        padding: 10,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 8,
+        marginBottom: 10,
+        padding: 15,
+        borderRadius: 10,
     },
     itemContainerGreen: {
-        backgroundColor: '#7fff00',
+        backgroundColor: '#7ff000',
     },
     itemContainerRed: {
         backgroundColor: '#ff0000',
     },
     itemText: {
-        fontSize: 16,
-        lineHeight: 20,
-    },
-    itemTextWhite: {
-        color: '#fff',
+        fontSize: 14,
     },
     itemTextBlack: {
         color: '#000',
     },
-    leftColumn: {
-        flex: 1,
-        justifyContent: 'flex-start',
+    itemTextWhite: {
+        color: '#FFF',
     },
-    rightColumn: {
+    loader: {
         flex: 1,
-        alignItems: 'flex-end',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    button: {
+        backgroundColor: '#BFA100',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+    },
+    summaryCard: {
+        backgroundColor: 'orange',
+        padding: 15,
+        marginBottom: 10,
+        borderRadius: 25,
+        width:200,
+        alignSelf: 'flex-end',
+
+    },
+    summaryText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 

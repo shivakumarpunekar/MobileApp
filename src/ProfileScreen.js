@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchDataByIdFromApi, fetchuserProfileIdByLoginId } from './Api/api';
 
 // Date formatter function
-const formatDate = dateString => {
+const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
@@ -26,42 +27,56 @@ const ProfilePage = ({ loginId }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch data function
-  const fetchData = async () => {
+  const storageKey = `profileData_${loginId}`;
+
+  // Fetch data function with optimization
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const userProfileId = await fetchuserProfileIdByLoginId(loginId);
       if (!userProfileId) {
-        throw new Error(`User profile not found`);
+        throw new Error('User profile not found');
       }
       const result = await fetchDataByIdFromApi(userProfileId);
       setData(result);
+      await AsyncStorage.setItem(storageKey, JSON.stringify(result)); // Save fetched data to AsyncStorage
     } catch (error) {
       setError(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [loginId]);
 
   // Pull to refresh handler
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchData().then(() => setRefreshing(false));
-  }, [loginId]);
+  }, [fetchData]);
 
-  // Fetch data initially and on loginId change
+  // Load data from AsyncStorage and fetch latest data
   useEffect(() => {
-    fetchData();
-  }, [loginId]);
+    const initializeData = async () => {
+      try {
+        const cachedData = await AsyncStorage.getItem(storageKey);
+        if (cachedData) {
+          setData(JSON.parse(cachedData));
+        }
+        await fetchData(); // Fetch latest data in the background
+      } catch (e) {
+        console.error('Error loading data:', e);
+      }
+    };
+    initializeData();
+  }, [loginId, fetchData]);
 
   // Fetch data on screen focus
   useFocusEffect(
     useCallback(() => {
       fetchData();
-    }, [])
+    }, [fetchData])
   );
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <View style={styles.container}>
         <Text style={styles.loadingText}>Loading...</Text>
@@ -123,7 +138,7 @@ const ProfilePage = ({ loginId }) => {
                   size={30}
                   color="#BFA100"
                 />
-                <Text style={styles.sectionTitle}>dateOfBirth</Text>
+                <Text style={styles.sectionTitle}>Date of Birth</Text>
                 <Text style={styles.sectionContent}>
                   {formatDate(data.dateOfBirth)}
                 </Text>
@@ -135,7 +150,7 @@ const ProfilePage = ({ loginId }) => {
                   size={30}
                   color="#BFA100"
                 />
-                <Text style={styles.sectionTitle}>MobileNumber</Text>
+                <Text style={styles.sectionTitle}>Mobile Number</Text>
                 <Text style={styles.sectionContent}>{data.mobileNumber}</Text>
               </View>
               <View style={styles.section}>
@@ -145,7 +160,7 @@ const ProfilePage = ({ loginId }) => {
                   size={30}
                   color="#BFA100"
                 />
-                <Text style={styles.sectionTitle}>UserName</Text>
+                <Text style={styles.sectionTitle}>User Name</Text>
                 <Text style={styles.sectionContent}>{data.userName}</Text>
               </View>
               <View style={styles.section}>
@@ -214,7 +229,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6F3E7',
-    height: '100%',
   },
   curvedBackground: {
     width: '100%',
@@ -236,10 +250,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginRight: 10,
   },
-  editButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -260,7 +270,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 40,
   },
-
   inputname: {
     flexDirection: 'row',
   },
@@ -271,7 +280,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#000',
   },
-
   email: {
     fontSize: 16,
     color: '#000',

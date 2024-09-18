@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, Switch, StyleSheet, Alert, ScrollView } from "react-native";
 import Battery from "./Battery";
 import SwitchAdmin from "./SwitchAdmin";
@@ -10,53 +10,53 @@ const SwitchPage = ({ route, navigation }) => {
   const [batteryPercentage, setBatteryPercentage] = useState(0);
 
   // Fetch sensor data and calculate battery percentage
-  useEffect(() => {
+  const fetchSensorData = useCallback(async () => {
     if (deviceId) {
-      const fetchSensorData = async () => {
-        try {
-          const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-          const data = await response.json();
-          if (data && data.length > 0) {
-            const { sensor1_value, sensor2_value } = data[0];
-            const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
-            const percentage = Math.min(100, Math.max(0, calculatedFlowRate)); // Ensure percentage is between 0 and 100
-            setBatteryPercentage(percentage);
-          } else {
-            console.error('Sensor data not found or data is empty');
-          }
-        } catch (error) {
-          console.error('Error fetching sensor data:', error);
-        }
-      };
-
-      fetchSensorData();
-      const interval = setInterval(fetchSensorData, 5000); // Refresh every 5 seconds
-      return () => clearInterval(interval); // Clear interval on component unmount
-    }
-  }, [deviceId, loginId]);
-
-  // Fetch switch state and auto-refresh every second
-  useEffect(() => {
-    const fetchSwitchState = async () => {
       try {
-        const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
-        if (response.ok) {
-          const data = await response.json();
-          const valveStatus = data[0];
-          setIsEnabled(valveStatus.valveStatusOnOrOff === 1);
+        const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          const { sensor1_value, sensor2_value } = data[0];
+          const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
+          const percentage = Math.min(100, Math.max(0, calculatedFlowRate)); // Ensure percentage is between 0 and 100
+          setBatteryPercentage(percentage);
         } else {
-          console.error('Failed to fetch switch state');
-          Alert.alert('No device is found');
+          console.error('Sensor data not found or data is empty');
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching sensor data:', error);
       }
-    };
+    }
+  }, [deviceId]);
 
-    fetchSwitchState();
+  useEffect(() => {
+    fetchSensorData(); // Fetch data immediately on mount
+    const interval = setInterval(fetchSensorData, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval); // Clear interval on component unmount
+  }, [fetchSensorData]);
+
+  // Fetch switch state and auto-refresh every second
+  const fetchSwitchState = useCallback(async () => {
+    try {
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const valveStatus = data[0];
+        setIsEnabled(valveStatus.valveStatusOnOrOff === 1);
+      } else {
+        console.error('Failed to fetch switch state');
+        Alert.alert('No device is found');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }, [deviceId]);
+
+  useEffect(() => {
+    fetchSwitchState(); // Fetch state immediately on mount
     const interval = setInterval(fetchSwitchState, 1000); // Refresh every 1 second
     return () => clearInterval(interval); // Clear interval on component unmount
-  }, [deviceId]);
+  }, [fetchSwitchState]);
 
   // Toggle switch
   const toggleSwitch = async () => {

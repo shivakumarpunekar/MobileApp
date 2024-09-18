@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
@@ -12,54 +12,32 @@ const GraphPage = ({ route }) => {
 
     const screenWidth = Dimensions.get('window').width;
 
+    // Helper function to format timestamps
+    const formatTimestamp = useCallback((timestamp) => {
+        const date = new Date(timestamp);
+        return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    }, []);
+
     useEffect(() => {
-        const startDateISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days ago
-        const endDateISO = new Date().toISOString(); // current date and time
+        const todayStartISO = new Date().setHours(0, 0, 0, 0); // Start of today
+        const endDateISO = new Date().toISOString(); // Current date and time
 
-        // Fetch historical data for the last 7 days
-        fetchHistoricalData(deviceId, startDateISO, endDateISO);
+        // Fetch live data for today only
+        fetchLiveData(deviceId, new Date(todayStartISO).toISOString(), endDateISO);
 
-        // Start fetching live data (assuming it's updating in real-time)
+        // Refresh live data every 10 seconds
         const liveDataInterval = setInterval(() => {
-            fetchLiveData(deviceId);
-        }, 10000); // Fetch live data every 10 seconds
+            fetchLiveData(deviceId, new Date(todayStartISO).toISOString(), endDateISO);
+        }, 10000);
 
-        // Clean up interval on component unmount
         return () => clearInterval(liveDataInterval);
-    }, [deviceId]);
+    }, [deviceId, formatTimestamp]);
 
-    const fetchHistoricalData = async (deviceId, startDateISO, endDateISO) => {
+    const fetchLiveData = async (deviceId, startDateISO, endDateISO) => {
+        setLoading(true);
         try {
-            const response1 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
-            const response2 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
-
-            if (!response1.ok || !response2.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data1 = await response1.json();
-            const data2 = await response2.json();
-
-            // Assuming the data is an array of entries with timestamps
-            setSensor1Data(data1.reverse());
-            setSensor2Data(data2.reverse());
-
-            if (data1.length > 0) {
-                const timestamps = data1.map(entry => new Date(entry.timestamp));
-                const xLabels = timestamps.map(timestamp => `${timestamp.getHours()}:${String(timestamp.getMinutes()).padStart(2, '0')}`);
-                setXLabels(xLabels);
-            } else {
-                console.warn('No historical data received');
-            }
-        } catch (error) {
-            console.error('Error fetching historical data:', error);
-        }
-    };
-
-    const fetchLiveData = async (deviceId) => {
-        try {
-            const response1 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1`);
-            const response2 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2`);
+            const response1 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor1?start=${startDateISO}&end=${endDateISO}`);
+            const response2 = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}/sensor2?start=${startDateISO}&end=${endDateISO}`);
 
             if (!response1.ok || !response2.ok) {
                 throw new Error('Network response was not ok');
@@ -69,42 +47,30 @@ const GraphPage = ({ route }) => {
             const data2 = await response2.json();
 
             if (data1 && data2) {
-                setSensor1Data(prevData => [data1, ...prevData]);
-                setSensor2Data(prevData => [data2, ...prevData]);
+                setSensor1Data(data1.reverse());
+                setSensor2Data(data2.reverse());
 
-                // Update xLabels for live data as well
-                setXLabels(prevXLabels => [
-                    `${new Date(data1.timestamp).getHours()}:${String(new Date(data1.timestamp).getMinutes()).padStart(2, '0')}`,
-                    ...prevXLabels,
-                ]);
+                // Update xLabels for today's data
+                const newXLabels = data1.map(entry => formatTimestamp(entry.timestamp));
+                setXLabels(newXLabels);
             } else {
                 console.warn('Empty data received from API');
             }
         } catch (error) {
             console.error('Error fetching live data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    useEffect(() => {
-        setLoading(sensor1Data.length === 0 && sensor2Data.length === 0);
-    }, [sensor1Data, sensor2Data]);
-
     // Function to determine line color based on sensor values
     const getLineColor = (sensorValue) => {
-        if ((sensorValue >= 4000 || sensorValue <= 1250)) {
-            return 'red';
-        } else {
-            return 'green';
-        }
+        return sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green';
     };
 
     // Function to determine chart background color based on sensor values
     const getChartBackgroundColor = (sensorValue) => {
-        if ((sensorValue >= 4000 || sensorValue <= 1250)) {
-            return '#FFCDD2'; // Light red background
-        } else {
-            return '#C8E6C9'; // Light green background
-        }
+        return sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9'; // Light red or green background
     };
 
     return (

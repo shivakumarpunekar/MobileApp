@@ -41,11 +41,7 @@ const DeviceTable = ({ loginId }) => {
     axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
       .then(response => {
         setUserDevices(response.data);
-        return response.data;
-      })
-      .then(userDevices => {
-        // Fetch sensor data for all devices
-        const deviceIds = userDevices.map(device => device.deviceId);
+        const deviceIds = response.data.map(device => device.deviceId);
         return Promise.all(
           deviceIds.map(deviceId =>
             axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`).then(res => res.data)
@@ -59,6 +55,7 @@ const DeviceTable = ({ loginId }) => {
         console.error('Error fetching data:', error);
       });
   };
+  
 
   useEffect(() => {
     fetchData();

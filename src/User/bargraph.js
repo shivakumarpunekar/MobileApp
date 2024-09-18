@@ -13,29 +13,30 @@ const Bargraph = ({ loginId }) => {
     try {
       const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
       const deviceData = await deviceResponse.json();
-
+  
       if (Array.isArray(deviceData) && deviceData.length > 0) {
         const newDeviceId = deviceData[0].deviceId;
         if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Update deviceId only if changed
-
+  
         const [sensor1Response, sensor2Response] = await Promise.all([
           fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`),
           fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`)
         ]);
-
+  
         const sensor1Values = await sensor1Response.json();
         const newSensor1Data = filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value"));
-
+  
         const sensor2Values = await sensor2Response.json();
         const newSensor2Data = filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"));
-
+  
         setSensor1Data(newSensor1Data);
         setSensor2Data(newSensor2Data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [deviceId, loginId]); // Memoize fetchData to prevent unnecessary recreation on each render
+  }, [deviceId, loginId]);
+  
 
   useEffect(() => {
     fetchData(); // Fetch data on component mount
@@ -148,7 +149,7 @@ const Bargraph = ({ loginId }) => {
 };
 
 const chartConfig = {
-  backgroundColor: "#ffffff",
+  backgroundColor: "#F6F3E7",
   backgroundGradientFrom: "#ffffff",
   backgroundGradientTo: "#ffffff",
   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
