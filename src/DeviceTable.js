@@ -8,6 +8,7 @@ import PushNotification from 'react-native-push-notification';
 import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
+import { fetchData } from './Api/api';  // Make sure to import fetchData here
 import WeatherComponent from './WeatherService/WeatherComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -35,46 +36,31 @@ const DeviceTable = ({ loginId }) => {
   const [sensorData, setSensorData] = useState([]);
   const [appState, setAppState] = useState(AppState.currentState);
   const navigation = useNavigation();
-
-  // Fetch user devices and sensor data
-  const fetchData = () => {
-    axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
-      .then(response => {
-        setUserDevices(response.data);
-        const deviceIds = response.data.map(device => device.deviceId);
-        return Promise.all(
-          deviceIds.map(deviceId =>
-            axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`).then(res => res.data)
-          )
-        );
-      })
-      .then(allSensorData => {
-        setSensorData(allSensorData.flat());
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  };
   
-
   useEffect(() => {
-    fetchData();
-
+    // Fetch data on initial load and periodically every 1 second
+    const fetchDataWithLoginId = () => {
+      fetchData(loginId, setUserDevices, setSensorData);  // Pass loginId and state setters
+    };
+  
+    fetchDataWithLoginId();
+  
     const interval = setInterval(() => {
       if (appState === 'active') {
-        fetchData();
+        fetchDataWithLoginId();
       }
-    }, 1000); // Every 1 second
-
+    }, 1000);
+  
     const appStateListener = AppState.addEventListener('change', (nextAppState) => {
       setAppState(nextAppState);
     });
-
+  
     return () => {
       clearInterval(interval);
       appStateListener.remove();
     };
   }, [loginId, appState]);
+  
 
   useEffect(() => {
     const configureBackgroundFetch = () => {

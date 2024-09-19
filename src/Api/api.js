@@ -9,7 +9,7 @@ const apiClient = axios.create({
   },
 });
 
-//Get Method of Userprofile
+//Get Method of Userprofile getting
 export const fetchaDataFromApi = async () => {
   try {
     const response = await apiClient.get('/api/userprofiles');
@@ -21,8 +21,7 @@ export const fetchaDataFromApi = async () => {
 };
 
 
-//This is a get method by Id
-
+//This is a get method by userprofile userprofileedit page
 export const fetchDataByIdFromApi = async (userProfileId) => {
   try {
     const response = await apiClient.get(`/api/userprofiles/${userProfileId}`);
@@ -32,7 +31,7 @@ export const fetchDataByIdFromApi = async (userProfileId) => {
   }
 };
 
-//This is a LoginId To get a userProfileId get Method
+//This is a LoginId To get a userProfileId get Method for Login
 export const fetchuserProfileIdByLoginId = async (loginId) => {
   try {
     const response = await apiClient.get(`/api/Auth/login/${loginId}`);
@@ -74,6 +73,64 @@ export const fetchSensorData = async (deviceId, deviceState) => {
     console.error('Failed to fetch sensor data:', error);
   }
 };
+//This is a end of sensor detail page method.
+
+//this is a user device button api
+// Fetch user devices and sensor data
+export const fetchData = (loginId, setUserDevices, setSensorData) => {
+  if (!loginId) {
+    console.error('loginId is undefined');
+    return;
+  }
+
+  axios.get(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`)
+    .then(response => {
+      setUserDevices(response.data);
+      const deviceIds = response.data.map(device => device.deviceId);
+      return Promise.all(
+        deviceIds.map(deviceId =>
+          axios.get(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`).then(res => res.data)
+        )
+      );
+    })
+    .then(allSensorData => {
+      setSensorData(allSensorData.flat());
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+};
+//This is a plant status api
+export const fetchLoginAndDevice = async (loginId, setDeviceId) => {
+  try {
+      const response = await apiClient.get(`/api/UserDevice/byProfile/${loginId}`);
+      if (response.data.length > 0 && response.data[0].deviceId) {
+          setDeviceId(response.data[0].deviceId);
+      } else {
+          console.error('Device ID not found or data is empty');
+      }
+  } catch (error) {
+      console.error('Error fetching login and device data:', error);
+  }
+};
+
+export const fetchWaterData = async (loginId, deviceId, setFlowRate) => {
+  try {
+      const response = await apiClient.get(`/api/sensor_data/profile/${loginId}/device/${deviceId}`);
+      if (response.data && response.data.length > 0) {
+          const { sensor1_value, sensor2_value } = response.data[0];
+          const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
+          setFlowRate(calculatedFlowRate);
+      } else {
+          console.error('Sensor data not found or data is empty');
+      }
+  } catch (error) {
+      console.error('Error fetching water data:', error);
+  }
+};
+
+//this is end of user device button api
+
 
 // Error handler
 const handleApiError = (error) => {

@@ -195,6 +195,7 @@
         "updateduser",
         "userdevice",
         "userland",
+        "userprofileedit",
         "userprofiles",
         "visionos",
         "wcwidth",

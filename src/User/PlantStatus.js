@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import moment from "moment";
+import { fetchLoginAndDevice, fetchWaterData } from "../Api/api";
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
@@ -13,54 +14,18 @@ const PlantStatus = ({ loginId }) => {
 
     // Fetch deviceId based on loginId
     useEffect(() => {
-        const fetchLoginAndDevice = async () => {
-            try {
-                const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.length > 0 && data[0].deviceId) {
-                    setDeviceId(data[0].deviceId);
-                } else {
-                    console.error('Device ID not found or data is empty');
-                }
-            } catch (error) {
-                console.error('Error fetching login and device data:', error);
-            }
-        };
-
         if (loginId) {
-            fetchLoginAndDevice();
+            fetchLoginAndDevice(loginId, setDeviceId);
         }
     }, [loginId]);
 
     // Fetch water data based on deviceId and update flow rate
     useEffect(() => {
         if (deviceId) {
-            const fetchWaterData = async () => {
-                try {
-                    const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/profile/${loginId}/device/${deviceId}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        const { sensor1_value, sensor2_value } = data[0];
-                        const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
-                        setFlowRate(calculatedFlowRate);
-                    } else {
-                        console.error('Sensor data not found or data is empty');
-                    }
-                } catch (error) {
-                    console.error('Error fetching water data:', error);
-                }
-            };
-
-            fetchWaterData();
+            fetchWaterData(loginId, deviceId, setFlowRate);
 
             const interval = setInterval(() => {
-                fetchWaterData();
+                fetchWaterData(loginId, deviceId, setFlowRate);
             }, 5000); // Refresh every 5 seconds
 
             // Clear the interval on component unmount
