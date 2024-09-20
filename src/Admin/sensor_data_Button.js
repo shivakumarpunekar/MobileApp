@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState } from 'react-native';
+import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
@@ -29,20 +29,11 @@ const SensorDataButton = ({ isAdmin }) => {
   const previousStatus = useRef({});
   const initialized = useRef(false);
   const navigation = useNavigation();
-  const appState = useRef(AppState.currentState);
-
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState) => {
-      appState.current = nextAppState;
-    };
-    AppState.addEventListener('change', handleAppStateChange);
-    return () => AppState.removeEventListener('change', handleAppStateChange);
-  }, []);
 
   useEffect(() => {
     const handleStatusChange = (deviceId, heartIconColor, valveIconColor) => {
       const prevStatus = previousStatus.current[deviceId] || {};
-      if (initialized.current && appState.current !== 'active') {
+      if (initialized.current) {
         if (prevStatus.heartIconColor !== heartIconColor) {
           sendNotification(deviceId, heartIconColor === '#00FF00' ? 'is running smoothly' : 'has stopped');
         }

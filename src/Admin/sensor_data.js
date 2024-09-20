@@ -44,16 +44,27 @@ const SensorData = ({ route }) => {
         if (!isFetching) {
             setIsFetching(true);
             setLoading(true);
-            const deviceStateData = await fetchDeviceStateThreshold(deviceId);
-            setDeviceState(deviceStateData);
 
-            const sensorData = await fetchSensorData(deviceId, deviceStateData);
-            setData(sensorData);
+            try {
+                const deviceStateData = await fetchDeviceStateThreshold(deviceId);
+                const sensorData = await fetchSensorData(deviceId, deviceStateData);
 
-            setLoading(false);
-            setIsFetching(false);
+                // Only update state if new data is different from current data
+                if (JSON.stringify(deviceState) !== JSON.stringify(deviceStateData)) {
+                    setDeviceState(deviceStateData);
+                }
+
+                if (JSON.stringify(data) !== JSON.stringify(sensorData)) {
+                    setData(sensorData);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+                setIsFetching(false);
+            }
         }
-    },[deviceId, isFetching]);
+    }, [deviceId, isFetching, deviceState, data]);
 
     // Load stored data when the component is mounted
     const loadStoredData = useCallback(async () => {
@@ -75,17 +86,11 @@ const SensorData = ({ route }) => {
         fetchAllData();
     }, [fetchAllData, loadStoredData]);
 
-    // Use focus effect to refresh data
     useFocusEffect(
         useCallback(() => {
             fetchAllData();
         }, [fetchAllData])
     );
-
-    // Memoized value for relay state
-    const getLatestRelayState = useMemo(() => {
-        return deviceState?.state || "N/A";
-    }, [deviceState]);
 
     const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
         return (sensor1 >= 4000 && sensor2 >= 4000) ||
@@ -116,8 +121,8 @@ const SensorData = ({ route }) => {
         const threshold2 = deviceState?.threshold_2 || 'N/A';
         const thresholdAvg = (threshold1 !== 'N/A' && threshold2 !== 'N/A') ? (Number(threshold1)) - 1000 : 'N/A';
 
-        return { state: getLatestRelayState, threshold1, threshold2, thresholdAvg };
-    }, [deviceState, getLatestRelayState]);
+        return { state: deviceState?.state || "N/A", threshold1, threshold2, thresholdAvg };
+    }, [deviceState]);
 
     if (loading) {
         return (
@@ -161,15 +166,15 @@ const SensorData = ({ route }) => {
                 )}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                // FlatList optimizations
                 initialNumToRender={10}
                 maxToRenderPerBatch={10}
                 windowSize={21}
-                removeClippedSubviews={true} // Reduce memory consumption
+                removeClippedSubviews={true}
             />
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -219,6 +224,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#FFF',
+        fontSize: 16,
         fontWeight: 'bold',
     },
     summaryCard: {
@@ -228,7 +234,6 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         width:200,
         alignSelf: 'flex-end',
-
     },
     summaryText: {
         fontSize: 16,
