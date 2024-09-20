@@ -35,6 +35,7 @@ const SensorData = ({ route }) => {
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
+    console.log('This is a admin',isAdmin);
 
     const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Image, Text, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RainAnimation from './RainAnimation/RainAnimation';
 
@@ -7,7 +7,7 @@ export default function LoginPage({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginId, setLoginId] = useState('');
-
+  const [loading, setLoading] = useState(false); // Loading state to handle login process
 
   useEffect(() => {
     // Check if the user is already logged in
@@ -28,9 +28,11 @@ export default function LoginPage({ navigation }) {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      Alert.alert('Validation Error', 'Username, password are required.');
+      Alert.alert('Validation Error', 'Username and password are required.');
       return;
     }
+
+    setLoading(true); // Start loading when login process begins
 
     try {
       const response = await fetch('http://103.145.50.185:2030/api/Auth/login', {
@@ -41,7 +43,6 @@ export default function LoginPage({ navigation }) {
         body: JSON.stringify({
           Username: username,
           password: password,
-          /* loginId: loginId, */
         }),
       });
 
@@ -53,7 +54,7 @@ export default function LoginPage({ navigation }) {
 
       if (data.isAdmin) {
         await AsyncStorage.setItem('isAdmin', 'true'); // Save isAdmin status
-          await AsyncStorage.setItem('loginId', data.loginId.toString()); // Save loginId as string
+        await AsyncStorage.setItem('loginId', data.loginId.toString()); // Save loginId as string
         Alert.alert('Admin Login Successful', `Admin Login UserName: ${data.username}`);
         navigation.navigate('AdminHome', { isAdmin: true });
       } else {
@@ -64,7 +65,19 @@ export default function LoginPage({ navigation }) {
       } 
     } catch (error) {
       console.error('Login error:', error); // Log the error for debugging
-      Alert.alert('Login Failed', 'Please verify username and password.');
+      Alert.alert('Login Failed', 'Please verify your username and password.');
+    } finally {
+      setLoading(false); // Stop loading when login process ends
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('loginId');
+      await AsyncStorage.removeItem('isAdmin');
+      navigation.navigate('LoginPage');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -90,20 +103,24 @@ export default function LoginPage({ navigation }) {
         onChangeText={setPassword}
       />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLogin}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('RegistrationPage')}
-        >
-          <Text style={styles.buttonText}>Signup</Text>
-        </TouchableOpacity>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#BFA100" />
+      ) : (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLogin}
+          >
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('RegistrationPage')}
+          >
+            <Text style={styles.buttonText}>Signup</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -160,4 +177,3 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 });
-

@@ -47,6 +47,7 @@ function App(): React.JSX.Element {
   const [initialRoute, setInitialRoute] = useState('Login');
   const [appState, setAppState] = useState(AppState.currentState);
   const [loginId, setLoginId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
 
 
@@ -123,8 +124,10 @@ function App(): React.JSX.Element {
       const loginId = await AsyncStorage.getItem('loginId'); // Fetch the loginId from AsyncStorage
       const isAdmin = await AsyncStorage.getItem('isAdmin');
       console.log('Login ID:', loginId); // Add this line to check the loginId
+      console.log('Admin:', isAdmin); // Add this line to check the loginId
       if (loginId) {
         setLoginId(loginId);  // Store loginId in state
+        setIsAdmin(isAdmin === 'true'); // Set isAdmin value
         setInitialRoute(isAdmin === 'true' ? 'AdminHome' : 'Welcome');
       }
     };
@@ -159,7 +162,7 @@ function App(): React.JSX.Element {
   const handleLogout = async (navigation) => {
     try {
       await AsyncStorage.clear();
-      navigation.navigate('Login');
+      navigation.navigate('LoginPage');
     } catch (e) {
       console.error('Failed to clear the async storage.', e);
     }
@@ -174,7 +177,7 @@ function App(): React.JSX.Element {
       <NavigationContainer>
       <Stack.Navigator initialRouteName={initialRoute}>
             <Stack.Screen
-              name="Login" //This is For login page
+              name="LoginPage" //This is For login page
               component={LoginPage}
               options={{ headerShown: false}}
             />
@@ -204,7 +207,7 @@ function App(): React.JSX.Element {
             <Stack.Screen
             name="AdminHome" //This is for AdminHome Page
             component={AdminHome}
-            initialParams={{ loginId: loginId }}
+            initialParams={{ loginId: loginId, isAdmin: isAdmin }}
             options={({ navigation }) => ({
               headerLeft: () => null,
               headerRight: () => (
@@ -261,7 +264,7 @@ function App(): React.JSX.Element {
 
             <Stack.Screen
               name="Switch" //This is for Admin Switch Page
-              component={Switch}
+              component={Switch }
               options={{ headerTitle: 'Switch' }}
             />
 

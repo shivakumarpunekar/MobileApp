@@ -2,66 +2,70 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, Switch, StyleSheet, Alert, ScrollView } from "react-native";
 import Battery from "./Battery";
 import SwitchAdmin from "./SwitchAdmin";
-import SwitchLabel from "../User/SwitchLabel";
 
 const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId, isAdmin } = route.params;
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false); // Represents switch state
   const [batteryPercentage, setBatteryPercentage] = useState(0);
+  console.log('This is a admin',isAdmin);
 
-  // Fetch sensor data and calculate battery percentage
-  const fetchSensorData = useCallback(async () => {
+  // Fetch sensor data (sensor1_value and sensor2_value) only
+  const fetchDeviceData = useCallback(async () => {
     if (deviceId) {
       try {
+        console.log('Fetching device data for deviceId:', deviceId);
         const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
         const data = await response.json();
-        if (data && data.length > 0) {
-          const { sensor1_value, sensor2_value } = data[0];
+        if (data) {
+          const { sensor1_value, sensor2_value } = data;
           const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
-          const percentage = Math.min(100, Math.max(0, calculatedFlowRate)); // Ensure percentage is between 0 and 100
+          const percentage = Math.min(100, Math.max(0, calculatedFlowRate));
           setBatteryPercentage(percentage);
         } else {
-          console.error('Sensor data not found or data is empty');
+          console.error('Device data not found or empty');
         }
       } catch (error) {
-        console.error('Error fetching sensor data:', error);
+        console.error('Error fetching device data:', error);
       }
     }
   }, [deviceId]);
 
-  useEffect(() => {
-    fetchSensorData(); // Fetch data immediately on mount
-    const interval = setInterval(fetchSensorData, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval); // Clear interval on component unmount
-  }, [fetchSensorData]);
-
-  // Fetch switch state and auto-refresh every second
-  const fetchSwitchState = useCallback(async () => {
-    try {
-      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
-      if (response.ok) {
+  // Fetch valveStatusOnOrOff only for the switch state
+  const fetchValveStatus = useCallback(async () => {
+    if (deviceId) {
+      try {
+        console.log('Fetching valve status for deviceId:', deviceId);
+        const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
         const data = await response.json();
-        const valveStatus = data[0];
-        setIsEnabled(valveStatus.valveStatusOnOrOff === 1);
-      } else {
-        console.error('Failed to fetch switch state');
-        Alert.alert('No device is found');
+  
+        // Log the entire response to inspect its structure
+        console.log('Full fetched valve status response:', data);
+  
+        if (Array.isArray(data) && data.length > 0 && typeof data[0].valveStatusOnOrOff !== 'undefined') {
+          console.log('Fetched valve status:', data[0].valveStatusOnOrOff);
+          setIsEnabled(data[0].valveStatusOnOrOff === 1); // Map valveStatusOnOrOff to switch state
+        } else {
+          console.error('Valve status not found or empty');
+        }
+      } catch (error) {
+        console.error('Error fetching valve status:', error);
       }
-    } catch (error) {
-      console.error('Error:', error);
     }
   }, [deviceId]);
 
   useEffect(() => {
-    fetchSwitchState(); // Fetch state immediately on mount
-    const interval = setInterval(fetchSwitchState, 1000); // Refresh every 1 second
-    return () => clearInterval(interval); // Clear interval on component unmount
-  }, [fetchSwitchState]);
+    fetchDeviceData(); // Fetch sensor data immediately on mount
+    fetchValveStatus(); // Fetch valve status immediately on mount
+    const interval = setInterval(() => {
+      fetchDeviceData(); // Fetch sensor data every 10 seconds
+      fetchValveStatus(); // Fetch valve status every 10 seconds
+    }, 10000);
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [fetchDeviceData, fetchValveStatus]);
 
-  // Toggle switch
+  // Toggle switch function with PUT request to update valveStatusOnOrOff
   const toggleSwitch = async () => {
-    const newValue = isEnabled ? 0 : 1;
-
+    const newValue = isEnabled ? 0 : 1; // Toggle to the opposite state
     Alert.alert(
       "Confirm Switch",
       newValue === 1 ? "Are you sure you want to turn ON the switch?" : "Are you sure you want to turn OFF the switch?",
@@ -74,8 +78,8 @@ const SwitchPage = ({ route, navigation }) => {
         {
           text: "OK",
           onPress: async () => {
-            setIsEnabled((previousState) => !previousState);
             try {
+              console.log('Toggling switch for deviceId:', deviceId);
               const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`, {
                 method: 'PUT',
                 headers: {
@@ -84,25 +88,24 @@ const SwitchPage = ({ route, navigation }) => {
                 },
                 body: JSON.stringify({
                   valveStatusOnOrOff: newValue,
-                  deviceId: deviceId,
+                  deviceId,
                   userProfileId: loginId,
                   createdDate: new Date().toISOString(),
                   updatedDate: new Date().toISOString(),
                 }),
               });
-
+    
+              const responseData = await response.json(); // Add this line to inspect the response
+  
               if (response.ok) {
-                console.log('Switch state updated successfully');
-                navigation.goBack();
-                Alert.alert(
-                  'Switch Updated',
-                  newValue === 1 ? 'Switch ON the water' : 'Switch OFF the water'
-                );
+                console.log('Switch state updated successfully for deviceId:', deviceId, responseData);
+                setIsEnabled(newValue === 1); // Update local state immediately
+                Alert.alert('Switch Updated', newValue === 1 ? 'Switch ON the water' : 'Switch OFF the water');
               } else {
-                console.error('Failed to update switch state');
+                console.error('Failed to update switch state for deviceId:', deviceId, responseData);
               }
             } catch (error) {
-              console.error('Error:', error);
+              console.error('Error toggling switch:', error);
             }
           }
         }
@@ -115,25 +118,25 @@ const SwitchPage = ({ route, navigation }) => {
     <ScrollView contentContainerStyle={styles.scrollView}>
       <View style={styles.container}>
 
-        {/* This is a Battery View */}
+        {/* Battery View */}
         <Battery deviceId={deviceId} />
 
-        {/* This is a Switch View */}
+        {/* Switch View */}
         <View style={styles.switchContainer}>
           <Text style={styles.switchText}>{isEnabled ? "ON" : "OFF"}</Text>
           <Switch
             trackColor={{ false: "red", true: "green" }}
             thumbColor={isEnabled ? "green" : "red"}
             ios_backgroundColor="#3e3e3e"
-            onValueChange={toggleSwitch}
-            value={isEnabled}
+            onValueChange={toggleSwitch} // Handle switch toggle
+            value={isEnabled} // Bind switch to valveStatusOnOrOff
             style={styles.switch}
-            // disabled={batteryPercentage > 75} // Disable switch if battery level is over 75%
           />
         </View>
-
-        {/* This is an Admin Switch View */}
-        <SwitchAdmin loginId={loginId} deviceId={deviceId} isAdmin={isAdmin} />
+        <View>
+          {/* Conditionally render SwitchAdmin if the user is an admin */}
+          {isAdmin && <SwitchAdmin deviceId={deviceId} isAdmin={isAdmin} />}
+        </View>
       </View>
     </ScrollView>
   );

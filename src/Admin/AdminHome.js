@@ -14,6 +14,7 @@ const Tab = createBottomTabNavigator();
 const AdminHome = ({ route }) => {
      
     const { isAdmin } = route.params; 
+    console.log('admin',isAdmin);
 
     return (
         <Tab.Navigator
@@ -47,7 +48,9 @@ const AdminHome = ({ route }) => {
             <Tab.Screen name="Home" component={AdminHomeScreen} options={{ headerShown: false }} />
             <Tab.Screen name="AdminProfileScreen" component={AdminProfileScreen} options={{ headerShown: false }} />
             <Tab.Screen name="PiChartScreen" component={PiChartScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="SensorDataButton" component={SensorDataButton} options={{ headerShown: false }} initialParams={{ isAdmin: true }} />
+            <Tab.Screen name="SensorDataButton" options={{ headerShown: false }}>
+                {(props) => <SensorDataButton {...props} isAdmin={isAdmin} />} 
+            </Tab.Screen>
             <Tab.Screen name="UserDevice" component={UserDevice} options={{ headerShown: false }} />
             <Tab.Screen name="download" component={DownloadExcel} options={{ headerShown: false }} />
             <Tab.Screen name="Threshold" component={Threshold} options={{ headerShown: false }} />
