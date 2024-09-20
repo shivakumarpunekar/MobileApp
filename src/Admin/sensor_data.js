@@ -38,6 +38,8 @@ const SensorData = ({ route }) => {
 
     const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
+    
+    const ITEM_HEIGHT = 150; // Define a constant for item height
 
     // Optimized fetch calls
     const fetchAllData = useCallback(async () => {
@@ -88,9 +90,15 @@ const SensorData = ({ route }) => {
 
     useFocusEffect(
         useCallback(() => {
-            fetchAllData();
+            let isMounted = true;  // Avoid memory leaks
+            if (isMounted) {
+                fetchAllData();
+            }
+            return () => {
+                isMounted = false;
+            };
         }, [fetchAllData])
-    );
+    );    
 
     const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
         return (sensor1 >= 4000 && sensor2 >= 4000) ||
@@ -117,12 +125,20 @@ const SensorData = ({ route }) => {
     }, [fetchAllData]);
 
     const summaryData = useMemo(() => {
-        const threshold1 = deviceState?.threshold_1 || 'N/A';
-        const threshold2 = deviceState?.threshold_2 || 'N/A';
-        const thresholdAvg = (threshold1 !== 'N/A' && threshold2 !== 'N/A') ? (Number(threshold1)) - 1000 : 'N/A';
+        const threshold1 = parseFloat(deviceState?.threshold_1) || 'N/A';
+        const threshold2 = parseFloat(deviceState?.threshold_2) || 'N/A';
+        const thresholdAvg = !isNaN(threshold1) && !isNaN(threshold2) ? (threshold1 + threshold2) / 2 : 'N/A';
 
         return { state: deviceState?.state || "N/A", threshold1, threshold2, thresholdAvg };
     }, [deviceState]);
+
+    const renderItem = ({ item }) => (
+        <SensorDataItem
+            item={item}
+            renderItemContainerStyle={renderItemContainerStyle}
+            renderTextStyle={renderTextStyle}
+        />
+    );
 
     if (loading) {
         return (
@@ -157,23 +173,22 @@ const SensorData = ({ route }) => {
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <SensorDataItem
-                        item={item}
-                        renderItemContainerStyle={renderItemContainerStyle}
-                        renderTextStyle={renderTextStyle}
-                    />
+                renderItem={renderItem}
+                initialNumToRender={10}
+                windowSize={5}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                updateCellsBatchingPeriod={50}
+                getItemLayout={(data, index) => (
+                    { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
                 )}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                initialNumToRender={10}
-                maxToRenderPerBatch={10}
-                windowSize={21}
-                removeClippedSubviews={true}
             />
         </View>
     );
 };
+
 
 
 const styles = StyleSheet.create({
