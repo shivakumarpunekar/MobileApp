@@ -7,7 +7,7 @@ const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId, isAdmin } = route.params;
   const [isEnabled, setIsEnabled] = useState(false); // Represents switch state
   const [batteryPercentage, setBatteryPercentage] = useState(0);
-  console.log('This is a admin',isAdmin);
+  console.log('This is an admin', isAdmin);
 
   // Fetch sensor data (sensor1_value and sensor2_value) only
   const fetchDeviceData = useCallback(async () => {
@@ -53,15 +53,26 @@ const SwitchPage = ({ route, navigation }) => {
     }
   }, [deviceId]);
 
+  // Use Promise.all to fetch both device data and valve status in parallel
+  const fetchAllData = useCallback(async () => {
+    if (deviceId) {
+      try {
+        console.log('Fetching both device data and valve status concurrently');
+        await Promise.all([fetchDeviceData(), fetchValveStatus()]);
+        console.log('Both fetches completed');
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+  }, [fetchDeviceData, fetchValveStatus, deviceId]);
+
   useEffect(() => {
-    fetchDeviceData(); // Fetch sensor data immediately on mount
-    fetchValveStatus(); // Fetch valve status immediately on mount
+    fetchAllData(); // Fetch both data and status immediately on mount
     const interval = setInterval(() => {
-      fetchDeviceData(); // Fetch sensor data every 10 seconds
-      fetchValveStatus(); // Fetch valve status every 10 seconds
-    }, 10000);
+      fetchAllData(); // Fetch both data and status every 5 seconds
+    }, 5000);
     return () => clearInterval(interval); // Cleanup on unmount
-  }, [fetchDeviceData, fetchValveStatus]);
+  }, [fetchAllData]);
 
   // Toggle switch function with PUT request to update valveStatusOnOrOff
   const toggleSwitch = async () => {
