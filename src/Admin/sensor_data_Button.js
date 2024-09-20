@@ -30,7 +30,6 @@ const SensorDataButton = ({ isAdmin }) => {
   const initialized = useRef(false);
   const navigation = useNavigation();
   const appState = useRef(AppState.currentState);
-  console.log('this is a admin', isAdmin);
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {

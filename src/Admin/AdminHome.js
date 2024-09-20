@@ -14,7 +14,6 @@ const Tab = createBottomTabNavigator();
 const AdminHome = ({ route }) => {
      
     const { isAdmin } = route.params; 
-    console.log('admin',isAdmin);
 
     return (
         <Tab.Navigator

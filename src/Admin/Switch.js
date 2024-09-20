@@ -7,7 +7,6 @@ const SwitchPage = ({ route, navigation }) => {
   const { deviceId, loginId, isAdmin } = route.params;
   const [isEnabled, setIsEnabled] = useState(false); // Represents switch state
   const [batteryPercentage, setBatteryPercentage] = useState(0);
-  console.log('This is a admin',isAdmin);
 
   // Fetch sensor data (sensor1_value and sensor2_value) only
   const fetchDeviceData = useCallback(async () => {
