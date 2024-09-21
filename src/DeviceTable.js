@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState } from 'react-native';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState, FlatList } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -8,16 +8,15 @@ import PushNotification from 'react-native-push-notification';
 import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
-import { fetchData } from './Api/api';  // Make sure to import fetchData here
+import { fetchData } from './Api/api';
 import WeatherComponent from './WeatherService/WeatherComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Function to send notifications
 const sendNotification = (title, message) => {
   PushNotification.localNotification({
     channelId: 'default-channel-id',
-    title: title,
-    message: message,
+    title,
+    message,
     importance: 'high',
     priority: 'high',
     soundName: 'default',
@@ -36,54 +35,47 @@ const DeviceTable = ({ loginId }) => {
   const [sensorData, setSensorData] = useState([]);
   const [appState, setAppState] = useState(AppState.currentState);
   const navigation = useNavigation();
-  
+
+  // Fetch and cache data in intervals with memoization
+  const fetchDataWithLoginId = useCallback(() => {
+    fetchData(loginId, setUserDevices, setSensorData);
+  }, [loginId]);
+
   useEffect(() => {
-    // Fetch data on initial load and periodically every 1 second
-    const fetchDataWithLoginId = () => {
-      fetchData(loginId, setUserDevices, setSensorData);  // Pass loginId and state setters
-    };
-  
     fetchDataWithLoginId();
   
     const interval = setInterval(() => {
       if (appState === 'active') {
         fetchDataWithLoginId();
       }
-    }, 1000);
-  
-    const appStateListener = AppState.addEventListener('change', (nextAppState) => {
-      setAppState(nextAppState);
-    });
+    }, 5000);  // Reduced API call interval
+
+    const appStateListener = AppState.addEventListener('change', setAppState);
   
     return () => {
       clearInterval(interval);
       appStateListener.remove();
     };
-  }, [loginId, appState]);
-  
+  }, [fetchDataWithLoginId, appState]);
 
   useEffect(() => {
-    const configureBackgroundFetch = () => {
-      BackgroundFetch.configure(
-        {
-          minimumFetchInterval: 1,
-          stopOnTerminate: false,
-          startOnBoot: true,
-        },
-        async (taskId) => {
-          fetchData();
-          BackgroundFetch.finish(taskId);
-        },
-        (error) => {
-          console.error("[BackgroundFetch] Failed to start:", error);
-        }
-      );
-    };
+    BackgroundFetch.configure(
+      {
+        minimumFetchInterval: 5, // Changed to 5 minutes
+        stopOnTerminate: false,
+        startOnBoot: true,
+      },
+      async (taskId) => {
+        fetchDataWithLoginId();
+        BackgroundFetch.finish(taskId);
+      },
+      (error) => {
+        console.error("[BackgroundFetch] Failed to start:", error);
+      }
+    );
+  }, [fetchDataWithLoginId]);
 
-    configureBackgroundFetch();
-  }, []);
-
-  const getSensorValues = (deviceId) => {
+  const getSensorValues = useCallback((deviceId) => {
     const deviceSensorData = sensorData.find(sensor => sensor.deviceId === deviceId);
     if (deviceSensorData) {
       return {
@@ -94,7 +86,7 @@ const DeviceTable = ({ loginId }) => {
       };
     }
     return { sensor1: null, sensor2: null, solenoidValveStatus: null, createdDateTime: null };
-  };
+  }, [sensorData]);
 
   useEffect(() => {
     const checkAndSendNotifications = async () => {
@@ -128,68 +120,61 @@ const DeviceTable = ({ loginId }) => {
     checkAndSendNotifications();
   }, [sensorData, userDevices]);
 
-  const handleButtonPress = (deviceId) => {
+  const handleButtonPress = useCallback((deviceId) => {
     navigation.navigate('SensorData', { deviceId, loginId });
-  };
+  }, [navigation, loginId]);
 
-  const renderButtonsInGrid = () => {
-    const rows = [];
-    for (let i = 0; i < userDevices.length; i += 3) {
-      rows.push(userDevices.slice(i, i + 3));
+  const renderDeviceItem = useCallback(({ item: device }) => {
+    const { deviceId } = device;
+    const { sensor1, sensor2, solenoidValveStatus, createdDateTime } = getSensorValues(deviceId);
+
+    let backgroundColor;
+    const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
+    const heartIconColor = formattedCreatedDateTime === moment().format('DD-MM-YYYY') ? '#00FF00' : '#FF0000';
+    const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000';
+
+    if (sensor1 === null || sensor2 === null) {
+      backgroundColor = '#808080';
+    } else if (
+      (sensor1 >= 4000 || sensor1 <= 1250) &&
+      (sensor2 >= 4000 || sensor2 <= 1250)
+    ) {
+      backgroundColor = '#FF0000';
+    } else if (
+      (sensor1 >= 4000 || sensor1 <= 1250) ||
+      (sensor2 >= 4000 || sensor2 <= 1250)
+    ) {
+      backgroundColor = '#FFA500';
+    } else {
+      backgroundColor = '#00FF00';
     }
 
-    const currentDate = moment().format('DD-MM-YYYY');
-
-    return rows.map((row, rowIndex) => (
-      <View key={rowIndex} style={styles.row}>
-        {row.map(device => {
-          const { deviceId } = device;
-          const { sensor1, sensor2, solenoidValveStatus, createdDateTime } = getSensorValues(deviceId);
-
-          let backgroundColor;
-          const formattedCreatedDateTime = createdDateTime ? moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY') : '';
-          const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
-          const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : '#FF0000';
-
-          if (sensor1 === null || sensor2 === null) {
-            backgroundColor = '#808080';
-          } else if (
-            (sensor1 >= 4000 || sensor1 <= 1250) &&
-            (sensor2 >= 4000 || sensor2 <= 1250)
-          ) {
-            backgroundColor = '#FF0000';
-          } else if (
-            (sensor1 >= 4000 || sensor1 <= 1250) ||
-            (sensor2 >= 4000 || sensor2 <= 1250)
-          ) {
-            backgroundColor = '#FFA500';
-          } else {
-            backgroundColor = '#00FF00';
-          }
-
-          return (
-            <View key={deviceId} style={styles.buttonContainer}>
-              <View style={styles.iconContainer}>
-                <Icon name="heart" size={30} color={heartIconColor} />
-                <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
-              </View>
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor }]}
-                onPress={() => handleButtonPress(deviceId)}
-              >
-                <Text style={styles.buttonText}>Device {deviceId}</Text>
-              </TouchableOpacity>
-            </View>
-          );
-        })}
+    return (
+      <View style={styles.buttonContainer}>
+        <View style={styles.iconContainer}>
+          <Icon name="heart" size={30} color={heartIconColor} />
+          <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
+        </View>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor }]}
+          onPress={() => handleButtonPress(deviceId)}
+        >
+          <Text style={styles.buttonText}>Device {deviceId}</Text>
+        </TouchableOpacity>
       </View>
-    ));
-  };
+    );
+  }, [getSensorValues, handleButtonPress]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.headerText}>Device Detail Links</Text>
-      {renderButtonsInGrid()}
+      <FlatList
+        data={userDevices}
+        renderItem={renderDeviceItem}
+        keyExtractor={device => device.deviceId.toString()}
+        numColumns={3} // Three devices per row
+        columnWrapperStyle={styles.row}
+      />
       <View style={styles.spacer} />
       <PlantStatus loginId={loginId} />
       <View style={styles.spacer} />
@@ -234,18 +219,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'black',
     textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  spacer: {
-    height: 20,
   },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 10,
   },
   valveIcon: {
     marginLeft: 10,
+  },
+  spacer: {
+    height: 20,
   },
 });
 

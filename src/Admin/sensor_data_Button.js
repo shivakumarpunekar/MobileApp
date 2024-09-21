@@ -107,11 +107,14 @@ const SensorDataButton = ({ isAdmin }) => {
   };
 
   const renderButtonsInGrid = () => {
+    const sortedDevices = [...devices].sort(); // Sort the devices in ascending order
     const rows = [];
-    for (let i = 0; i < devices.length; i += 50) {
-      const row = devices.slice(i, i + 50);
+  
+    for (let i = 0; i < sortedDevices.length; i += 50) {
+      const row = sortedDevices.slice(i, i + 50);
       rows.push(row);
     }
+  
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
         {row.map((deviceId) => {
@@ -119,10 +122,10 @@ const SensorDataButton = ({ isAdmin }) => {
           const sensor1 = deviceData ? deviceData.sensor1_value : null;
           const sensor2 = deviceData ? deviceData.sensor2_value : null;
           const { heartIconColor, valveIconColor } = deviceStatus[deviceId] || {};
-
+  
           let backgroundColor;
           let buttonText = `Device ${deviceId}`;
-
+  
           if (sensor1 === null || sensor2 === null) {
             backgroundColor = '#808080'; // Gray for no data
           } else if (
@@ -138,7 +141,7 @@ const SensorDataButton = ({ isAdmin }) => {
           } else {
             backgroundColor = '#00FF00'; // Green
           }
-
+  
           return (
             <View key={deviceId} style={styles.buttonContainer}>
               <View style={styles.iconContainer}>
@@ -158,6 +161,7 @@ const SensorDataButton = ({ isAdmin }) => {
       </View>
     ));
   };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

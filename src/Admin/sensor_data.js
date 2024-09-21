@@ -4,7 +4,6 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchDeviceStateThreshold, fetchSensorData } from "../Api/api";
 
-// Memoized item component to avoid unnecessary re-renders
 const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextStyle }) => (
     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
         <View style={styles.leftColumn}>
@@ -27,10 +26,11 @@ const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextS
     </View>
 ));
 
+const ITEM_HEIGHT = 100;
+
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const [deviceState, setDeviceState] = useState({});
-    const [isFetching, setIsFetching] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
@@ -38,67 +38,54 @@ const SensorData = ({ route }) => {
 
     const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
-    
-    const ITEM_HEIGHT = 150; // Define a constant for item height
 
-    // Optimized fetch calls
+    // Fetch data and save to cache
     const fetchAllData = useCallback(async () => {
-        if (!isFetching) {
-            setIsFetching(true);
-            setLoading(true);
-
-            try {
-                const deviceStateData = await fetchDeviceStateThreshold(deviceId);
-                const sensorData = await fetchSensorData(deviceId, deviceStateData);
-
-                // Only update state if new data is different from current data
-                if (JSON.stringify(deviceState) !== JSON.stringify(deviceStateData)) {
-                    setDeviceState(deviceStateData);
-                }
-
-                if (JSON.stringify(data) !== JSON.stringify(sensorData)) {
-                    setData(sensorData);
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-                setIsFetching(false);
-            }
-        }
-    }, [deviceId, isFetching, deviceState, data]);
-
-    // Load stored data when the component is mounted
-    const loadStoredData = useCallback(async () => {
+        setLoading(true);
         try {
-            const storedSensorData = await AsyncStorage.getItem(DATA_STORAGE_KEY);
-            const storedDeviceState = await AsyncStorage.getItem(STATE_STORAGE_KEY);
+            const deviceStateData = await fetchDeviceStateThreshold(deviceId);
+            const sensorData = await fetchSensorData(deviceId, deviceStateData);
 
-            if (storedSensorData) setData(JSON.parse(storedSensorData));
-            if (storedDeviceState) setDeviceState(JSON.parse(storedDeviceState));
+            // Save fetched data to state
+            setDeviceState(deviceStateData);
+            setData(sensorData);
+
+            // Save fetched data to cache (AsyncStorage)
+            await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(sensorData));
+            await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(deviceStateData));
         } catch (error) {
-            console.error('Error loading stored data:', error);
+            console.error('Error fetching data:', error);
         } finally {
             setLoading(false);
         }
     }, [deviceId]);
 
+    // Load data from cache
+    const loadStoredData = useCallback(async () => {
+        try {
+            const [storedSensorData, storedDeviceState] = await Promise.all([
+                AsyncStorage.getItem(DATA_STORAGE_KEY),
+                AsyncStorage.getItem(STATE_STORAGE_KEY)
+            ]);
+
+            if (storedSensorData) setData(JSON.parse(storedSensorData));
+            if (storedDeviceState) setDeviceState(JSON.parse(storedDeviceState));
+        } catch (error) {
+            console.error('Error loading stored data:', error);
+        }
+    }, [DATA_STORAGE_KEY, STATE_STORAGE_KEY]);
+
+    // Load cached data first, then fetch new data
     useEffect(() => {
-        loadStoredData();
-        fetchAllData();
-    }, [fetchAllData, loadStoredData]);
+        loadStoredData(); // Load cached data
+        fetchAllData();   // Fetch the latest data
+    }, [loadStoredData, fetchAllData]);
 
     useFocusEffect(
         useCallback(() => {
-            let isMounted = true;  // Avoid memory leaks
-            if (isMounted) {
-                fetchAllData();
-            }
-            return () => {
-                isMounted = false;
-            };
+            fetchAllData();
         }, [fetchAllData])
-    );    
+    );
 
     const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
         return (sensor1 >= 4000 && sensor2 >= 4000) ||
@@ -127,7 +114,7 @@ const SensorData = ({ route }) => {
     const summaryData = useMemo(() => {
         const threshold1 = parseFloat(deviceState?.threshold_1) || 'N/A';
         const threshold2 = parseFloat(deviceState?.threshold_2) || 'N/A';
-        const thresholdAvg = !isNaN(threshold1) && !isNaN(threshold2) ? (threshold1 + threshold2) / 2 : 'N/A';
+        const thresholdAvg = !isNaN(threshold1) && !isNaN(threshold2) ? (threshold1) - 1000 : 'N/A';
 
         return { state: deviceState?.state || "N/A", threshold1, threshold2, thresholdAvg };
     }, [deviceState]);
@@ -160,7 +147,7 @@ const SensorData = ({ route }) => {
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Switch', { deviceId, loginId, isAdmin })}>
                     <Text style={styles.buttonText}>Switch</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ValveStatus', { deviceId })}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Valva_status', { deviceId })}>
                     <Text style={styles.buttonText}>Valve Status</Text>
                 </TouchableOpacity>
             </View>
@@ -184,11 +171,11 @@ const SensorData = ({ route }) => {
                 )}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                showsVerticalScrollIndicator={false}
             />
         </View>
     );
 };
-
 
 
 const styles = StyleSheet.create({
@@ -247,12 +234,11 @@ const styles = StyleSheet.create({
         padding: 15,
         marginBottom: 10,
         borderRadius: 25,
-        width:200,
+        width: 200,
         alignSelf: 'flex-end',
     },
     summaryText: {
         fontSize: 16,
-        fontWeight: 'bold',
     },
 });
 

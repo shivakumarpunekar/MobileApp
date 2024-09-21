@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ScrollView, Text, StyleSheet, Dimensions } from "react-native";
+import { ScrollView, Text, StyleSheet, Dimensions, View } from "react-native";
 import { BarChart } from "react-native-chart-kit";
+import moment from 'moment-timezone';
 
 const { width } = Dimensions.get("window");
 
@@ -13,30 +14,29 @@ const Bargraph = ({ loginId }) => {
     try {
       const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
       const deviceData = await deviceResponse.json();
-  
+
       if (Array.isArray(deviceData) && deviceData.length > 0) {
         const newDeviceId = deviceData[0].deviceId;
         if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Update deviceId only if changed
-  
+
         const [sensor1Response, sensor2Response] = await Promise.all([
           fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`),
           fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`)
         ]);
-  
+
         const sensor1Values = await sensor1Response.json();
-        const newSensor1Data = filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value"));
-  
         const sensor2Values = await sensor2Response.json();
-        const newSensor2Data = filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"));
-  
-        setSensor1Data(newSensor1Data);
-        setSensor2Data(newSensor2Data);
+
+        /* console.log("Sensor 1 data:", sensor1Values); // Log for debugging
+        console.log("Sensor 2 data:", sensor2Values); // Log for debugging */
+
+        setSensor1Data(filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")));
+        setSensor2Data(filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value")));
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   }, [deviceId, loginId]);
-  
 
   useEffect(() => {
     fetchData(); // Fetch data on component mount
@@ -67,14 +67,11 @@ const Bargraph = ({ loginId }) => {
   };
 
   const filterDataByLastHour = (data) => {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const now = moment();
+    const oneHourAgo = now.clone().subtract(1, 'hours');
     return data.filter(entry => {
-      const [hours, minutes] = entry.timeKey.split(":").map(Number);
-      const entryTime = new Date();
-      entryTime.setHours(hours);
-      entryTime.setMinutes(minutes);
-      entryTime.setSeconds(0);
-      return entryTime >= oneHourAgo;
+      const entryTime = moment(entry.timeKey, "HH:mm");
+      return entryTime.isBetween(oneHourAgo, now);
     });
   };
 
@@ -89,7 +86,6 @@ const Bargraph = ({ loginId }) => {
       };
     }
 
-    // Map each timeKey to its label
     const labels = data.map(entry => entry.timeKey);
     const chartData = data.map(entry => entry.value);
 
