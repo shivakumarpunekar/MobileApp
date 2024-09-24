@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated } from "react-native";
 
-const SwitchAdmin = ({ deviceId, isAdmin }) => {
+const SwitchAdmin = ({ deviceId, isAdmin, onStatusChange }) => {
   const [status, setStatus] = useState("Auto");
   const animationValue = useRef(new Animated.Value(0)).current;
 
@@ -21,13 +21,9 @@ const SwitchAdmin = ({ deviceId, isAdmin }) => {
       const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`);
       if (response.ok) {
         const data = await response.json();
-        setStatus(
-          data.adminValveStatus === 1
-            ? "On"
-            : data.adminValveStatus === 0
-            ? "Off"
-            : "Auto"
-        );
+        const newStatus = data.adminValveStatus === 1 ? "On" : data.adminValveStatus === 0 ? "Off" : "Auto";
+        setStatus(newStatus);
+        onStatusChange(newStatus); // Call the callback to update SwitchPage
         animateButton(data.adminValveStatus === 1);
       } else {
         console.error('Failed to fetch switch state');

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -78,7 +79,8 @@ const ProfilePage = ({ loginId }) => {
 
   if (loading && !data) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -86,7 +88,7 @@ const ProfilePage = ({ loginId }) => {
 
   if (error) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>Error: {error.message}</Text>
       </View>
     );
@@ -131,90 +133,27 @@ const ProfilePage = ({ loginId }) => {
               </ImageBackground>
             </View>
             <View style={styles.content}>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="calendar"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Date of Birth</Text>
-                <Text style={styles.sectionContent}>
-                  {formatDate(data.dateOfBirth)}
-                </Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="phone"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Mobile Number</Text>
-                <Text style={styles.sectionContent}>{data.mobileNumber}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="user"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>User Name</Text>
-                <Text style={styles.sectionContent}>{data.userName}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="lock"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Password</Text>
-                <Text style={styles.sectionContent}>
-                  {'*'.repeat(data.password.length)}
-                </Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="globe"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Country</Text>
-                <Text style={styles.sectionContent}>{data.country}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="map-marker"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>State</Text>
-                <Text style={styles.sectionContent}>{data.state}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="map"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>City</Text>
-                <Text style={styles.sectionContent}>{data.city}</Text>
-              </View>
-              <View style={styles.section}>
-                <Icon
-                  style={styles.sectionIcon}
-                  name="map-pin"
-                  size={30}
-                  color="#BFA100"
-                />
-                <Text style={styles.sectionTitle}>Pincode</Text>
-                <Text style={styles.sectionContent}>{data.pincode}</Text>
-              </View>
+              {[
+                { icon: 'calendar', label: 'Date of Birth', value: formatDate(data.dateOfBirth) },
+                { icon: 'phone', label: 'Mobile Number', value: data.mobileNumber },
+                { icon: 'user', label: 'User Name', value: data.userName },
+                { icon: 'lock', label: 'Password', value: '*'.repeat(data.password.length) },
+                { icon: 'globe', label: 'Country', value: data.country },
+                { icon: 'map-marker', label: 'State', value: data.state },
+                { icon: 'map', label: 'City', value: data.city },
+                { icon: 'map-pin', label: 'Pincode', value: data.pincode }
+              ].map((item, index) => (
+                <View key={index} style={styles.section}>
+                  <Icon
+                    style={styles.sectionIcon}
+                    name={item.icon}
+                    size={30}
+                    color="#BFA100"
+                  />
+                  <Text style={styles.sectionTitle}>{item.label}</Text>
+                  <Text style={styles.sectionContent}>{item.value}</Text>
+                </View>
+              ))}
             </View>
           </>
         ) : (
@@ -228,6 +167,12 @@ const ProfilePage = ({ loginId }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F6F3E7',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#F6F3E7',
   },
   curvedBackground: {
