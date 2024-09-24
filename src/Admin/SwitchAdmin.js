@@ -37,12 +37,13 @@ const SwitchAdmin = ({ deviceId, isAdmin, onStatusChange }) => {
 
   const updateSwitchState = async (newStatus) => {
     try {
+      const adminValveStatus = newStatus === "On" ? 1 : newStatus === "Off" ? 0 : 2; // 2 for Auto
       const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ adminValveStatus: newStatus === "On" ? 1 : newStatus === "Off" ? 0 : 2 }),
+        body: JSON.stringify({ adminValveStatus }),
       });
       if (response.ok) {
         Alert.alert('Success', `Switch turned ${newStatus}`);
@@ -108,17 +109,17 @@ const SwitchAdmin = ({ deviceId, isAdmin, onStatusChange }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'lightblue',
-        padding: 20,
-        borderRadius: 50, // Increase border radius for a more pronounced curve
-        elevation: 3, // For shadow on Android
-        shadowColor: '#000', // For shadow on iOS
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        alignItems: 'center', // Centering content horizontally
-        justifyContent: 'center', // Centering content vertically
-        marginTop: 50,
-        width: 350,
+    padding: 20,
+    borderRadius: 50, // Increase border radius for a more pronounced curve
+    elevation: 3, // For shadow on Android
+    shadowColor: '#000', // For shadow on iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    alignItems: 'center', // Centering content horizontally
+    justifyContent: 'center', // Centering content vertically
+    marginTop: 50,
+    width: 350,
   },
   statusRow: {
     flexDirection: 'row', // Arrange buttons in a row
