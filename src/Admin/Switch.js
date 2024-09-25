@@ -9,6 +9,7 @@ const SwitchPage = ({ route, navigation }) => {
   const [batteryPercentage, setBatteryPercentage] = useState(0);
   const [adminValveStatus, setAdminValveStatus] = useState("Auto"); // Track admin status
   const [userValveStatus, setUserValveStatus] = useState("Auto"); // Track user status
+  const [isAdminSetValveStatus, setIsAdminSetValveStatus] = useState(false); // New state for isAdminSetValveStatus
 
   // Handle status change from SwitchAdmin
   const handleStatusChange = (newStatus) => {
@@ -33,14 +34,16 @@ const SwitchPage = ({ route, navigation }) => {
     }
   }, [deviceId]);
 
-  // Fetch valve status (on or off)
+  // Fetch valve status (on or off) and isAdminSetValveStatus
   const fetchValveStatus = useCallback(async () => {
     if (deviceId) {
       try {
         const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/device/${deviceId}`);
         const data = await response.json();
-        if (Array.isArray(data) && data.length > 0 && typeof data[0].valveStatusOnOrOff !== 'undefined') {
-          setIsEnabled(data[0].valveStatusOnOrOff === 1);
+        if (Array.isArray(data) && data.length > 0) {
+          const { valveStatusOnOrOff, isAdminSetValveStatus } = data[0];
+          setIsEnabled(valveStatusOnOrOff === 1);
+          setIsAdminSetValveStatus(isAdminSetValveStatus); // Update isAdminSetValveStatus state
         }
       } catch (error) {
         console.error('Error fetching valve status:', error);
@@ -69,8 +72,7 @@ const SwitchPage = ({ route, navigation }) => {
 
   // Toggle the valve switch
   const toggleSwitch = async () => {
-    // Allow toggling only if admin is in Auto mode or the user is allowed
-    if (adminValveStatus === "Auto" || userValveStatus === "On") {
+    if (isAdminSetValveStatus) {
       const newValue = isEnabled ? 0 : 1;
       Alert.alert(
         "Confirm Switch",
@@ -116,9 +118,6 @@ const SwitchPage = ({ route, navigation }) => {
     }
   };
 
-  // Determine if the switch is enabled based on admin valve status
-  const isSwitchEnabled = adminValveStatus === "Auto" || userValveStatus === "On";
-
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
       <View style={styles.container}>
@@ -135,7 +134,7 @@ const SwitchPage = ({ route, navigation }) => {
             onValueChange={toggleSwitch}
             value={isEnabled}
             style={styles.switch}
-            disabled={!isSwitchEnabled} // Disable switch if admin status is not Auto and user status is not On
+            disabled={!isAdminSetValveStatus} // Disable switch if isAdminSetValveStatus is false
           />
         </View>
 
