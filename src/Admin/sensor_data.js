@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchDeviceStateThreshold, fetchSensorData } from "../Api/api";
@@ -31,7 +31,6 @@ const ITEM_HEIGHT = 100;
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
     const [deviceState, setDeviceState] = useState({});
-    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
@@ -39,28 +38,25 @@ const SensorData = ({ route }) => {
     const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
 
-    // Fetch data and save to cache
+    // Fetch data and save to cache asynchronously
     const fetchAllData = useCallback(async () => {
-        setLoading(true);
         try {
-            const deviceStateData = await fetchDeviceStateThreshold(deviceId);
-            const sensorData = await fetchSensorData(deviceId, deviceStateData);
+            const [deviceStateData, sensorData] = await Promise.all([
+                fetchDeviceStateThreshold(deviceId),
+                fetchSensorData(deviceId)
+            ]);
 
-            // Save fetched data to state
+            // Update state and save to cache
             setDeviceState(deviceStateData);
             setData(sensorData);
-
-            // Save fetched data to cache (AsyncStorage)
             await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(sensorData));
             await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(deviceStateData));
         } catch (error) {
             console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
         }
     }, [deviceId]);
 
-    // Load data from cache
+    // Load data from cache for faster UI load
     const loadStoredData = useCallback(async () => {
         try {
             const [storedSensorData, storedDeviceState] = await Promise.all([
@@ -75,18 +71,28 @@ const SensorData = ({ route }) => {
         }
     }, [DATA_STORAGE_KEY, STATE_STORAGE_KEY]);
 
-    // Load cached data first, then fetch new data
+    // Initial data loading - cache first, then fetch new data
     useEffect(() => {
         loadStoredData(); // Load cached data
-        fetchAllData();   // Fetch the latest data
+        fetchAllData();   // Fetch new data in background
+
+        // Auto-refresh data every 30 seconds
+        const intervalId = setInterval(() => {
+            fetchAllData();
+        }, 1000); // 1000 ms = 1 seconds
+
+        // Clear interval on component unmount
+        return () => clearInterval(intervalId);
     }, [loadStoredData, fetchAllData]);
 
+    // Fetch data when the screen is focused
     useFocusEffect(
         useCallback(() => {
             fetchAllData();
         }, [fetchAllData])
     );
 
+    // Styles based on sensor values
     const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
         return (sensor1 >= 4000 && sensor2 >= 4000) ||
                (sensor1 <= 1250 && sensor2 <= 1250) ||
@@ -114,7 +120,7 @@ const SensorData = ({ route }) => {
     const summaryData = useMemo(() => {
         const threshold1 = parseFloat(deviceState?.threshold_1) || 'N/A';
         const threshold2 = parseFloat(deviceState?.threshold_2) || 'N/A';
-        const thresholdAvg = !isNaN(threshold1) && !isNaN(threshold2) ? (threshold1) - 1000 : 'N/A';
+        const thresholdAvg = !isNaN(threshold1) && !isNaN(threshold2) ? (threshold1 - 1000) : 'N/A';
 
         return { state: deviceState?.state || "N/A", threshold1, threshold2, thresholdAvg };
     }, [deviceState]);
@@ -126,14 +132,6 @@ const SensorData = ({ route }) => {
             renderTextStyle={renderTextStyle}
         />
     );
-
-    if (loading) {
-        return (
-            <View style={styles.loader}>
-                <ActivityIndicator size="large" color="#BFA100" />
-            </View>
-        );
-    }
 
     return (
         <View style={styles.container}>
@@ -177,7 +175,6 @@ const SensorData = ({ route }) => {
     );
 };
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -203,11 +200,6 @@ const styles = StyleSheet.create({
     },
     itemTextWhite: {
         color: '#FFF',
-    },
-    loader: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
     },
     header: {
         flexDirection: 'row',
@@ -239,6 +231,8 @@ const styles = StyleSheet.create({
     },
     summaryText: {
         fontSize: 16,
+        color: '#FFF',
+        textAlign: 'end',
     },
 });
 
