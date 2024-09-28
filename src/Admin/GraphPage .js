@@ -1,12 +1,27 @@
-import React, { useEffect, useState, useCallback, memo } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Memoizing LineChart, YAxis, and XAxis components to prevent unnecessary re-renders
-const MemoizedLineChart = memo(LineChart);
-const MemoizedYAxis = memo(YAxis);
-const MemoizedXAxis = memo(XAxis);
+const MemoizedLineChart = React.memo(LineChart);
+const MemoizedYAxis = React.memo(YAxis);
+const MemoizedXAxis = React.memo(XAxis);
+
+const Legend = React.memo(({ items }) => {
+    return (
+        <View style={styles.legendContainer}>
+            {items.map((item, index) => (
+                <View key={index} style={styles.legendItem}>
+                    <View style={[styles.legendColorBox, { backgroundColor: item.color }]} />
+                    <Text style={styles.legendText}>{item.label}</Text>
+                </View>
+            ))}
+        </View>
+    );
+});
 
 const GraphPage = ({ route }) => {
     const { deviceId } = route.params;
@@ -15,8 +30,12 @@ const GraphPage = ({ route }) => {
     const [xLabels, setXLabels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const isFirstLoad = useRef(true);
+    const intervalRef = useRef(null);
 
     const screenWidth = Dimensions.get('window').width;
+
+    const DATA_STORAGE_KEY = `graphData_${deviceId}`;
 
     // Memoized function to format time and prevent unnecessary re-renders
     const formatCreatedTime = useCallback((timestamp) => {
@@ -26,52 +45,86 @@ const GraphPage = ({ route }) => {
         return `${date.getHours()}:${String(minutes).padStart(2, '0')}`;
     }, []);
 
-    useEffect(() => {
-        const fetchLiveData = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-                const data = await response.json();
+    // Fetch data and save to cache asynchronously
+    const fetchLiveData = useCallback(async () => {
+        try {
+            const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
+            const data = await response.json();
 
-                if (data && data.length > 0) {
-                    const filteredData = data.filter((entry) => {
-                        const oneHourAgo = new Date().getTime() - 60 * 60 * 1000;
-                        return new Date(entry.createdDateTime).getTime() >= oneHourAgo;
-                    });
+            if (data && data.length > 0) {
+                const filteredData = data.filter((entry) => {
+                    const oneHourAgo = new Date().getTime() - 60 * 60 * 1000;
+                    return new Date(entry.timestamp).getTime() >= oneHourAgo;
+                });
 
-                    const sensor1 = filteredData.map((entry) => ({
-                        ...entry,
-                        sensor1_value: entry.sensor1_value,
-                    }));
+                const sensor1 = filteredData.map((entry) => ({
+                    ...entry,
+                    sensor1_value: entry.sensor1_value,
+                }));
 
-                    const sensor2 = filteredData.map((entry) => ({
-                        ...entry,
-                        sensor2_value: entry.sensor2_value,
-                    }));
+                const sensor2 = filteredData.map((entry) => ({
+                    ...entry,
+                    sensor2_value: entry.sensor2_value,
+                }));
 
-                    setSensor1Data(sensor1.reverse());
-                    setSensor2Data(sensor2.reverse());
+                setSensor1Data(sensor1.reverse());
+                setSensor2Data(sensor2.reverse());
 
-                    const newXLabels = sensor1.map((entry, index) =>
-                        index % 2 === 0 ? formatCreatedTime(entry.createdDateTime) : ''
-                    );
-                    setXLabels(newXLabels);
-                } else {
-                    setError('No data available for this device.');
+                const newXLabels = sensor1.map((entry, index) =>
+                    index % 2 === 0 ? formatCreatedTime(entry.timestamp) : ''
+                );
+                setXLabels(newXLabels);
+
+                await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify({ sensor1, sensor2, newXLabels }));
+
+                if (isFirstLoad.current) {
+                    setLoading(false);
+                    isFirstLoad.current = false;
                 }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setError('Error fetching data.');
-            } finally {
+            } else {
+                setError('No data available for this device.');
                 setLoading(false);
             }
-        };
-
-        fetchLiveData();
-        const interval = setInterval(fetchLiveData, 10000);
-
-        return () => clearInterval(interval);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError('Error fetching data.');
+            setLoading(false);
+        }
     }, [deviceId, formatCreatedTime]);
+
+    // Load data from cache for faster UI load
+    const loadStoredData = useCallback(async () => {
+        try {
+            const storedData = await AsyncStorage.getItem(DATA_STORAGE_KEY);
+            if (storedData) {
+                const { sensor1, sensor2, newXLabels } = JSON.parse(storedData);
+                setSensor1Data(sensor1);
+                setSensor2Data(sensor2);
+                setXLabels(newXLabels);
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Error loading stored data:', error);
+        }
+    }, [DATA_STORAGE_KEY]);
+
+    useEffect(() => {
+        loadStoredData(); // Load cached data
+        fetchLiveData();  // Fetch new data in background
+
+        // Auto-refresh data every 10 seconds
+        intervalRef.current = setInterval(fetchLiveData, 10000);
+
+        // Clear interval on component unmount
+        return () => clearInterval(intervalRef.current);
+    }, [loadStoredData, fetchLiveData]);
+
+    // Fetch data when the screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            fetchLiveData();
+        }, [fetchLiveData])
+    );
 
     const getLineColor = useCallback((sensorValue) => sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green', []);
     const getChartBackgroundColor = useCallback((sensorValue) => sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9', []);
@@ -96,9 +149,15 @@ const GraphPage = ({ route }) => {
         );
     }
 
+    const legendItems = [
+        { label: 'Sensor 1', color: getLineColor(sensor1LatestValue) },
+        { label: 'Sensor 2', color: getLineColor(sensor2LatestValue) },
+    ];
+
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.container}>
+                <Legend items={legendItems} />
                 <Text style={styles.title}>Sensor-1 Values</Text>
                 <ScrollView horizontal>
                     <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1LatestValue), width: screenWidth - 40 }]}>
@@ -107,6 +166,8 @@ const GraphPage = ({ route }) => {
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
+                            min={0}
+                            max={4000}
                         />
                         <View style={styles.chart}>
                             <MemoizedLineChart
@@ -114,6 +175,8 @@ const GraphPage = ({ route }) => {
                                 data={sensor1Data.map(entry => entry.sensor1_value)}
                                 svg={{ stroke: getLineColor(sensor1LatestValue) }}
                                 contentInset={styles.contentInset}
+                                yMin={0}
+                                yMax={4000}
                             >
                                 <Grid svg={{ stroke: '#ddd' }} />
                             </MemoizedLineChart>
@@ -121,7 +184,7 @@ const GraphPage = ({ route }) => {
                                 style={styles.xAxis}
                                 data={sensor1Data.map(entry => entry.sensor1_value)}
                                 scale={scale.scaleBand}
-                                formatLabel={(value, index) => xLabels[index] || ''}
+                                formatLabel={(_, index) => xLabels[index] || ''}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />
@@ -137,6 +200,8 @@ const GraphPage = ({ route }) => {
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
+                            min={0}
+                            max={4000}
                         />
                         <View style={styles.chart}>
                             <MemoizedLineChart
@@ -144,6 +209,8 @@ const GraphPage = ({ route }) => {
                                 data={sensor2Data.map(entry => entry.sensor2_value)}
                                 svg={{ stroke: getLineColor(sensor2LatestValue) }}
                                 contentInset={styles.contentInset}
+                                yMin={0}
+                                yMax={4000}
                             >
                                 <Grid svg={{ stroke: '#ddd' }} />
                             </MemoizedLineChart>
@@ -151,7 +218,7 @@ const GraphPage = ({ route }) => {
                                 style={styles.xAxis}
                                 data={sensor2Data.map(entry => entry.sensor2_value)}
                                 scale={scale.scaleBand}
-                                formatLabel={(value, index) => xLabels[index] || ''}
+                                formatLabel={(_, index) => xLabels[index] || ''}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />
@@ -197,8 +264,9 @@ const styles = StyleSheet.create({
         bottom: 20,
     },
     axisText: {
-        fontSize: 10,
-        fill: 'grey',
+        fontSize: 12, // Adjust font size
+        fill: 'blue', // Change text color
+        fontWeight: 'bold', // Make text bold
     },
     chart: {
         flex: 1,
@@ -220,6 +288,25 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontSize: 16,
+    },
+    legendContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    legendItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    legendColorBox: {
+        width: 20,
+        height: 20,
+        marginRight: 5,
+    },
+    legendText: {
+        fontSize: 14,
     },
 });
 

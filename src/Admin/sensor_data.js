@@ -79,7 +79,7 @@ const SensorData = ({ route }) => {
         // Auto-refresh data every 30 seconds
         const intervalId = setInterval(() => {
             fetchAllData();
-        }, 1000); // 1000 ms = 1 seconds
+        }, 30000); // 30000 ms = 30 seconds
 
         // Clear interval on component unmount
         return () => clearInterval(intervalId);
