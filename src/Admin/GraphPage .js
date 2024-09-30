@@ -41,7 +41,7 @@ const GraphPage = ({ route }) => {
     // Parse and format timestamp
     const formatCreatedTime = useCallback((createdDateTime) => {
         const date = new Date(createdDateTime);
-        return dateFns.format(date, 'HH:mm:ss');
+        return dateFns.format(date, 'HH:mm');
     }, []);
 
     const filterXLabelsFor2Minutes = useCallback((labels) => {
@@ -67,7 +67,7 @@ const GraphPage = ({ route }) => {
                 setSensor1Data(sensor1.reverse());
                 setSensor2Data(sensor2.reverse());
 
-                const newXLabels = sensor1.map((entry) => formatCreatedTime(entry.createdDateTime));
+                const newXLabels = sensor1.map((entry) => formatCreatedTime(entry.timestamp));
                 setXLabels(filterXLabelsFor2Minutes(newXLabels)); // Set filtered labels
 
                 await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify({ sensor1, sensor2, newXLabels }));
@@ -105,10 +105,12 @@ const GraphPage = ({ route }) => {
     useEffect(() => {
         loadStoredData();
         fetchLiveData();
-
         intervalRef.current = setInterval(fetchLiveData, 1000);
+        return () => {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        };
 
-        return () => clearInterval(intervalRef.current);
     }, [loadStoredData, fetchLiveData]);
 
     useFocusEffect(
@@ -145,6 +147,11 @@ const GraphPage = ({ route }) => {
         { label: 'Sensor 2', color: getLineColor(sensor2LatestValue) },
     ];
 
+    // Slice data to get only the last 10 records
+    const sensor1DataSlice = sensor1Data.slice(-10);
+    const sensor2DataSlice = sensor2Data.slice(-10);
+    const xLabelsSlice = xLabels.slice(-10);
+
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.container}>
@@ -155,7 +162,7 @@ const GraphPage = ({ route }) => {
                 <ScrollView horizontal>
                     <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1LatestValue), width: screenWidth - 40 }]}>
                         <MemoizedYAxis
-                            data={sensor1Data.map((entry) => entry.sensor1_value)}
+                            data={sensor1DataSlice.map((entry) => entry.sensor1_value)}
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
@@ -165,7 +172,7 @@ const GraphPage = ({ route }) => {
                         <View style={styles.chart}>
                             <MemoizedLineChart
                                 style={styles.lineChart}
-                                data={sensor1Data.map((entry) => entry.sensor1_value)}
+                                data={sensor1DataSlice.map((entry) => entry.sensor1_value)}
                                 svg={{ stroke: getLineColor(sensor1LatestValue) }}
                                 contentInset={styles.contentInset}
                                 yMin={0}
@@ -175,9 +182,11 @@ const GraphPage = ({ route }) => {
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor1Data.map((entry) => new Date(entry.createdDateTime))}
+                                data={sensor1DataSlice.map((entry) => new Date(entry.timestamp))}  // Mapping the timestamp to Date
                                 scale={scale.scaleTime}
-                                formatLabel={(_, index) => xLabels[index] || ''}
+                                formatLabel={(value, index) => {
+                                    return dateFns.format(new Date(value), 'HH:mm');
+                                }}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />
@@ -190,7 +199,7 @@ const GraphPage = ({ route }) => {
                 <ScrollView horizontal>
                     <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor2LatestValue), width: screenWidth - 40 }]}>
                         <MemoizedYAxis
-                            data={sensor2Data.map((entry) => entry.sensor2_value)}
+                            data={sensor2DataSlice.map((entry) => entry.sensor2_value)}
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
@@ -200,7 +209,7 @@ const GraphPage = ({ route }) => {
                         <View style={styles.chart}>
                             <MemoizedLineChart
                                 style={styles.lineChart}
-                                data={sensor2Data.map((entry) => entry.sensor2_value)}
+                                data={sensor2DataSlice.map((entry) => entry.sensor2_value)}
                                 svg={{ stroke: getLineColor(sensor2LatestValue) }}
                                 contentInset={styles.contentInset}
                                 yMin={0}
@@ -210,9 +219,11 @@ const GraphPage = ({ route }) => {
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor2Data.map((entry) => new Date(entry.createdDateTime))}
+                                data={sensor2DataSlice.map((entry) => new Date(entry.timestamp))}  // Mapping the timestamp to Date
                                 scale={scale.scaleTime}
-                                formatLabel={(_, index) => xLabels[index] || ''}
+                                formatLabel={(value, index) => {
+                                    return dateFns.format(new Date(value), 'HH:mm');
+                                }}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />
@@ -223,6 +234,7 @@ const GraphPage = ({ route }) => {
         </ScrollView>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
