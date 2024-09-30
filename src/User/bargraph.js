@@ -27,9 +27,6 @@ const Bargraph = ({ loginId }) => {
         const sensor1Values = await sensor1Response.json();
         const sensor2Values = await sensor2Response.json();
 
-        /* console.log("Sensor 1 data:", sensor1Values); // Log for debugging
-        console.log("Sensor 2 data:", sensor2Values); // Log for debugging */
-
         setSensor1Data(filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")));
         setSensor2Data(filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value")));
       }
@@ -46,11 +43,11 @@ const Bargraph = ({ loginId }) => {
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [fetchData]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 2) => {
+  const groupDataByInterval = (data, sensorKey, intervalMinutes = 1) => {
     const groupedData = {};
 
     data.forEach(entry => {
-      const date = new Date(entry.createdDateTime);
+      const date = new Date(entry.timestamp);
       const minutes = Math.floor(date.getMinutes() / intervalMinutes) * intervalMinutes;
       const timeKey = `${date.getHours()}:${minutes.toString().padStart(2, '0')}`;
 

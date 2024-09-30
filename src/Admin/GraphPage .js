@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
 import * as scale from 'd3-scale';
+import * as dateFns from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -37,32 +38,28 @@ const GraphPage = ({ route }) => {
 
     const DATA_STORAGE_KEY = `graphData_${deviceId}`;
 
-    // Memoized function to format time and prevent unnecessary re-renders
-    const formatCreatedTime = useCallback((timestamp) => {
-        const date = new Date(timestamp);
-        let minutes = date.getMinutes();
-        minutes = minutes % 2 === 0 ? minutes : (minutes + 1) % 60;
-        return `${date.getHours()}:${String(minutes).padStart(2, '0')}`;
+    // Parse and format timestamp
+    const formatCreatedTime = useCallback((createdDateTime) => {
+        const date = new Date(createdDateTime);
+        return dateFns.format(date, 'HH:mm:ss');
     }, []);
 
-    // Fetch data and save to cache asynchronously
+    const filterXLabelsFor2Minutes = useCallback((labels) => {
+        return labels.filter((_, index) => index % 2 === 0); // Show every 2nd label
+    }, []);
+
     const fetchLiveData = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
             const data = await response.json();
 
             if (data && data.length > 0) {
-                const filteredData = data.filter((entry) => {
-                    const oneHourAgo = new Date().getTime() - 60 * 60 * 1000;
-                    return new Date(entry.timestamp).getTime() >= oneHourAgo;
-                });
-
-                const sensor1 = filteredData.map((entry) => ({
+                const sensor1 = data.map((entry) => ({
                     ...entry,
                     sensor1_value: entry.sensor1_value,
                 }));
 
-                const sensor2 = filteredData.map((entry) => ({
+                const sensor2 = data.map((entry) => ({
                     ...entry,
                     sensor2_value: entry.sensor2_value,
                 }));
@@ -70,10 +67,8 @@ const GraphPage = ({ route }) => {
                 setSensor1Data(sensor1.reverse());
                 setSensor2Data(sensor2.reverse());
 
-                const newXLabels = sensor1.map((entry, index) =>
-                    index % 2 === 0 ? formatCreatedTime(entry.timestamp) : ''
-                );
-                setXLabels(newXLabels);
+                const newXLabels = sensor1.map((entry) => formatCreatedTime(entry.createdDateTime));
+                setXLabels(filterXLabelsFor2Minutes(newXLabels)); // Set filtered labels
 
                 await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify({ sensor1, sensor2, newXLabels }));
 
@@ -90,9 +85,8 @@ const GraphPage = ({ route }) => {
             setError('Error fetching data.');
             setLoading(false);
         }
-    }, [deviceId, formatCreatedTime]);
+    }, [deviceId, formatCreatedTime, filterXLabelsFor2Minutes]);
 
-    // Load data from cache for faster UI load
     const loadStoredData = useCallback(async () => {
         try {
             const storedData = await AsyncStorage.getItem(DATA_STORAGE_KEY);
@@ -100,34 +94,31 @@ const GraphPage = ({ route }) => {
                 const { sensor1, sensor2, newXLabels } = JSON.parse(storedData);
                 setSensor1Data(sensor1);
                 setSensor2Data(sensor2);
-                setXLabels(newXLabels);
+                setXLabels(filterXLabelsFor2Minutes(newXLabels)); // Filter cached data
                 setLoading(false);
             }
         } catch (error) {
             console.error('Error loading stored data:', error);
         }
-    }, [DATA_STORAGE_KEY]);
+    }, [DATA_STORAGE_KEY, filterXLabelsFor2Minutes]);
 
     useEffect(() => {
-        loadStoredData(); // Load cached data
-        fetchLiveData();  // Fetch new data in background
+        loadStoredData();
+        fetchLiveData();
 
-        // Auto-refresh data every 10 seconds
-        intervalRef.current = setInterval(fetchLiveData, 10000);
+        intervalRef.current = setInterval(fetchLiveData, 1000);
 
-        // Clear interval on component unmount
         return () => clearInterval(intervalRef.current);
     }, [loadStoredData, fetchLiveData]);
 
-    // Fetch data when the screen is focused
     useFocusEffect(
         useCallback(() => {
             fetchLiveData();
         }, [fetchLiveData])
     );
 
-    const getLineColor = useCallback((sensorValue) => sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green', []);
-    const getChartBackgroundColor = useCallback((sensorValue) => sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9', []);
+    const getLineColor = useCallback((sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green'), []);
+    const getChartBackgroundColor = useCallback((sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9'), []);
 
     const sensor1LatestValue = sensor1Data.length > 0 ? sensor1Data[0].sensor1_value : 0;
     const sensor2LatestValue = sensor2Data.length > 0 ? sensor2Data[0].sensor2_value : 0;
@@ -158,32 +149,34 @@ const GraphPage = ({ route }) => {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.container}>
                 <Legend items={legendItems} />
+
+                {/* Sensor 1 Chart */}
                 <Text style={styles.title}>Sensor-1 Values</Text>
                 <ScrollView horizontal>
                     <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1LatestValue), width: screenWidth - 40 }]}>
                         <MemoizedYAxis
-                            data={sensor1Data.map(entry => entry.sensor1_value)}
+                            data={sensor1Data.map((entry) => entry.sensor1_value)}
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
                             min={0}
-                            max={4000}
+                            max={4095}
                         />
                         <View style={styles.chart}>
                             <MemoizedLineChart
                                 style={styles.lineChart}
-                                data={sensor1Data.map(entry => entry.sensor1_value)}
+                                data={sensor1Data.map((entry) => entry.sensor1_value)}
                                 svg={{ stroke: getLineColor(sensor1LatestValue) }}
                                 contentInset={styles.contentInset}
                                 yMin={0}
-                                yMax={4000}
+                                yMax={4095}
                             >
                                 <Grid svg={{ stroke: '#ddd' }} />
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor1Data.map(entry => entry.sensor1_value)}
-                                scale={scale.scaleBand}
+                                data={sensor1Data.map((entry) => new Date(entry.createdDateTime))}
+                                scale={scale.scaleTime}
                                 formatLabel={(_, index) => xLabels[index] || ''}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
@@ -192,32 +185,33 @@ const GraphPage = ({ route }) => {
                     </View>
                 </ScrollView>
 
+                {/* Sensor 2 Chart */}
                 <Text style={styles.title}>Sensor-2 Values</Text>
                 <ScrollView horizontal>
                     <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor2LatestValue), width: screenWidth - 40 }]}>
                         <MemoizedYAxis
-                            data={sensor2Data.map(entry => entry.sensor2_value)}
+                            data={sensor2Data.map((entry) => entry.sensor2_value)}
                             style={styles.yAxis}
                             contentInset={styles.contentInset}
                             svg={styles.axisText}
                             min={0}
-                            max={4000}
+                            max={4095}
                         />
                         <View style={styles.chart}>
                             <MemoizedLineChart
                                 style={styles.lineChart}
-                                data={sensor2Data.map(entry => entry.sensor2_value)}
+                                data={sensor2Data.map((entry) => entry.sensor2_value)}
                                 svg={{ stroke: getLineColor(sensor2LatestValue) }}
                                 contentInset={styles.contentInset}
                                 yMin={0}
-                                yMax={4000}
+                                yMax={4095}
                             >
                                 <Grid svg={{ stroke: '#ddd' }} />
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor2Data.map(entry => entry.sensor2_value)}
-                                scale={scale.scaleBand}
+                                data={sensor2Data.map((entry) => new Date(entry.createdDateTime))}
+                                scale={scale.scaleTime}
                                 formatLabel={(_, index) => xLabels[index] || ''}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
@@ -233,52 +227,55 @@ const GraphPage = ({ route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F6F3E7',
-        justifyContent: 'center',
-        alignItems: 'center',
         padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
+        backgroundColor: '#f5f5f5',
     },
     chartContainer: {
         flexDirection: 'row',
-        height: 300,
-        backgroundColor: '#fff',
-        borderRadius: 10,
         padding: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 5,
-    },
-    yAxis: {
-        width: 60,
-    },
-    contentInset: {
-        top: 20,
-        bottom: 20,
-    },
-    axisText: {
-        fontSize: 12, // Adjust font size
-        fill: 'blue', // Change text color
-        fontWeight: 'bold', // Make text bold
+        borderRadius: 10,
     },
     chart: {
         flex: 1,
-        marginLeft: 10,
     },
     lineChart: {
         flex: 1,
-        minWidth: 10,
+        marginLeft: 10,
+    },
+    yAxis: {
+        marginBottom: 30,
     },
     xAxis: {
         marginHorizontal: -10,
+        height: 30,
+    },
+    contentInset: { top: 20, bottom: 20 },
+    axisText: {
+        fontSize: 10,
+        fill: 'black',
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    legendContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 10,
+    },
+    legendItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 10,
+    },
+    legendColorBox: {
+        width: 10,
         height: 10,
+        marginRight: 5,
+    },
+    legendText: {
+        fontSize: 12,
     },
     centered: {
         flex: 1,
@@ -288,25 +285,6 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontSize: 16,
-    },
-    legendContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: 10,
-    },
-    legendColorBox: {
-        width: 20,
-        height: 20,
-        marginRight: 5,
-    },
-    legendText: {
-        fontSize: 14,
     },
 });
 
