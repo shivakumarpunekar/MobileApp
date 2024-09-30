@@ -182,7 +182,7 @@ const GraphPage = ({ route }) => {
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor1DataSlice.map((entry) => new Date(entry.timestamp))}  // Mapping the timestamp to Date
+                                data={sensor1DataSlice.map((entry) => new Date(entry.createdDateTime))}  // Mapping the timestamp to Date
                                 scale={scale.scaleTime}
                                 formatLabel={(value, index) => {
                                     return dateFns.format(new Date(value), 'HH:mm');
@@ -219,7 +219,7 @@ const GraphPage = ({ route }) => {
                             </MemoizedLineChart>
                             <MemoizedXAxis
                                 style={styles.xAxis}
-                                data={sensor2DataSlice.map((entry) => new Date(entry.timestamp))}  // Mapping the timestamp to Date
+                                data={sensor2DataSlice.map((entry) => new Date(entry.createdDateTime))}  // Mapping the timestamp to Date
                                 scale={scale.scaleTime}
                                 formatLabel={(value, index) => {
                                     return dateFns.format(new Date(value), 'HH:mm');
@@ -261,7 +261,10 @@ const styles = StyleSheet.create({
         marginHorizontal: -10,
         height: 30,
     },
-    contentInset: { top: 20, bottom: 20 },
+    contentInset: { 
+        top: 20, 
+        bottom: 20 
+    },
     axisText: {
         fontSize: 10,
         fill: 'black',
