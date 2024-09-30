@@ -38,7 +38,7 @@ const Bargraph = ({ loginId }) => {
   useEffect(() => {
     fetchData(); // Fetch data on component mount
 
-    const intervalId = setInterval(fetchData, 2000); // 2-second interval for real-time updates
+    const intervalId = setInterval(fetchData, 30000); // 30-second interval for real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [fetchData]);
@@ -147,7 +147,7 @@ const chartConfig = {
   backgroundGradientTo: "#ffffff",
   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
   labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  barPercentage: 0.5,
+  barPercentage: 0.5, // Increase this value to make bars thicker and reduce space between bars
   decimalPlaces: 0,
   propsForBackgroundLines: {
     strokeDasharray: '', // Remove dashed background lines
@@ -164,6 +164,7 @@ const chartConfig = {
   yAxisMax: 4500,
   yAxisMin: 0,
 };
+
 
 const styles = StyleSheet.create({
   container: {
