@@ -135,35 +135,36 @@ export const fetchData = async (loginId, setUserDevices, setSensorData) => {
   }
 };
 
-// Fetch login and device data
-export const fetchLoginAndDevice = async (loginId, setDeviceId) => {
-  try {
-    const response = await apiClient.get(`/api/UserDevice/byProfile/${loginId}`);
-    if (response.data.length > 0 && response.data[0].deviceId) {
-      setDeviceId(response.data[0].deviceId);
-    } else {
-      console.error('Device ID not found or data is empty');
-    }
-  } catch (error) {
-    console.error('Error fetching login and device data:', error);
-  }
-};
+// // Fetch login and device data
+// export const fetchLoginAndDevice = async (loginId, setDeviceId) => {
+//   try {
+//     const response = await apiClient.get(`/api/UserDevice/byProfile/${loginId}`);
+//     if (response.data.length > 0 && response.data[0].deviceId) {
+//       setDeviceId(response.data[0].deviceId);
+//     } else {
+//       console.error('Device ID not found or data is empty');
+//     }
+//   } catch (error) {
+//     console.error('Error fetching login and device data:', error);
+//   }
+// };
 
-// Fetch water data
-export const fetchWaterData = async (loginId, deviceId, setFlowRate) => {
-  try {
-    const response = await apiClient.get(`/api/sensor_data/profile/${loginId}/device/${deviceId}`);
-    if (response.data && response.data.length > 0) {
-      const { sensor1_value, sensor2_value } = response.data[0];
-      const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
-      setFlowRate(calculatedFlowRate);
-    } else {
-      console.error('Sensor data not found or data is empty');
-    }
-  } catch (error) {
-    console.error('Error fetching water data:', error);
-  }
-};
+// // Fetch water data
+// export const fetchWaterData = async (loginId, deviceId, setFlowRate) => {
+//   try {
+//     const response = await apiClient.get(`/api/sensor_data/profile/${loginId}/device/${deviceId}`);
+//     if (response.data && response.data.length > 0) {
+//       const { sensor1_value, sensor2_value } = response.data[0];
+//       const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
+//       setFlowRate(calculatedFlowRate);
+//     } else {
+//       console.error('Sensor data not found or data is empty');
+//     }
+//   } catch (error) {
+//     console.error('Error fetching water data:', error);
+//   }
+// };
+
 
 // Error handler
 const handleApiError = (error) => {

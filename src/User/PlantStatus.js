@@ -2,36 +2,34 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import moment from "moment";
-import { fetchLoginAndDevice, fetchWaterData } from "../Api/api";
+import { fetchData, fetchWaterData } from "../Api/api";
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
 const PlantStatus = ({ loginId }) => {
-    const [selectedDate, setSelectedDate] = useState(moment());
     const [flowRate, setFlowRate] = useState(0);
-    const [deviceId, setDeviceId] = useState(null);
+    const [deviceId, setDeviceId] = useState(null);  // Track device ID
     const animatedValue = useState(new Animated.Value(0))[0];
 
-    // Fetch deviceId based on loginId
+    // Fetch deviceId and flow rate based on loginId
     useEffect(() => {
-        if (loginId) {
-            fetchLoginAndDevice(loginId, setDeviceId);
-        }
-    }, [loginId]);
+        const fetchDeviceData = async () => {
+            if (loginId) {
+                await fetchData(loginId, setDeviceId, setFlowRate);  // Fetch device ID and flow rate
+            }
+        };
 
-    // Fetch water data based on deviceId and update flow rate
-    useEffect(() => {
-        if (deviceId) {
-            fetchWaterData(loginId, deviceId, setFlowRate);
+        fetchDeviceData();
 
-            const interval = setInterval(() => {
-                fetchWaterData(loginId, deviceId, setFlowRate);
-            }, 5000); // Refresh every 5 seconds
+        // Set interval for refreshing water data
+        const interval = setInterval(() => {
+            if (deviceId) {
+                fetchData(deviceId, setFlowRate);  // Refresh the flow rate every 30 seconds
+            }
+        }, 30000); // Refresh every 30 seconds
 
-            // Clear the interval on component unmount
-            return () => clearInterval(interval);
-        }
-    }, [deviceId, loginId]);
+        return () => clearInterval(interval);
+    }, [loginId, deviceId]);  // Ensure the effect re-runs when deviceId is updated
 
     // Animate the water icon based on flow rate
     useEffect(() => {

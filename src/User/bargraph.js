@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ScrollView, Text, StyleSheet, Dimensions, View } from "react-native";
+import { ScrollView, Text, StyleSheet, Dimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import moment from 'moment-timezone';
 
@@ -38,18 +38,19 @@ const Bargraph = ({ loginId }) => {
   useEffect(() => {
     fetchData(); // Fetch data on component mount
 
-    const intervalId = setInterval(fetchData, 30000); // 30-second interval for real-time updates
+    const intervalId = setInterval(fetchData, 1000); // 1-second interval for real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [fetchData]);
 
-  const groupDataByInterval = (data, sensorKey, intervalMinutes = 1) => {
+  // Update this function to group data by second instead of minute
+  const groupDataByInterval = (data, sensorKey, intervalSeconds = 15) => {
     const groupedData = {};
 
     data.forEach(entry => {
       const date = new Date(entry.timestamp);
-      const minutes = Math.floor(date.getMinutes() / intervalMinutes) * intervalMinutes;
-      const timeKey = `${date.getHours()}:${minutes.toString().padStart(2, '0')}`;
+      const seconds = Math.floor(date.getSeconds() / intervalSeconds) * intervalSeconds;
+      const timeKey = `${date.getHours()}:${date.getMinutes()}:${seconds.toString().padStart(2, '0')}`;
 
       if (!groupedData[timeKey]) {
         groupedData[timeKey] = [];
@@ -111,7 +112,7 @@ const Bargraph = ({ loginId }) => {
         <BarChart
           data={getBarChartData(sensor1Data)}
           width={width * 2} // Adjust width to make the chart scrollable horizontally
-          height={220}
+          height={300}
           yAxisLabel=""
           chartConfig={chartConfig}
           fromZero={true}
@@ -156,15 +157,14 @@ const chartConfig = {
     fontSize: 12,
   },
   propsForLabels: {
-    fontSize: 10, // Adjust the font size
-    rotation: 45, // Rotate labels 45 degrees for better visibility
+    fontSize: 12, // Adjust the font size
+    rotation: 0, // Rotate labels 0 degrees for better visibility
     anchor: 'middle',
-    dx: 10, // Adjust label offset as needed
+    dx: 0, // Adjust label offset as needed
   },
   yAxisMax: 4500,
   yAxisMin: 0,
 };
-
 
 const styles = StyleSheet.create({
   container: {
