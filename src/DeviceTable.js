@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState, FlatList } from 'react-native';
-import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
@@ -8,21 +7,7 @@ import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
 import { fetchData } from './Api/api';
-import WeatherComponent from './WeatherService/WeatherComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// const sendNotification = (title, message) => {
-//   PushNotification.localNotification({
-//     channelId: 'default-channel-id',
-//     title,
-//     message,
-//     importance: 'high',
-//     priority: 'high',
-//     soundName: 'default',
-//     playSound: true,
-//     vibrate: true,
-//   });
-// };
 
 const DeviceTable = ({ loginId }) => {
   if (!loginId) {
@@ -35,23 +20,21 @@ const DeviceTable = ({ loginId }) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const navigation = useNavigation();
 
-  // Fetch and cache data in intervals with memoization
   const fetchDataWithLoginId = useCallback(() => {
     fetchData(loginId, setUserDevices, setSensorData);
   }, [loginId]);
 
   useEffect(() => {
-    // Fetch data immediately
     fetchDataWithLoginId();
-  
+
     const interval = setInterval(() => {
       if (appState === 'active') {
         fetchDataWithLoginId();
       }
-    }, 5000);  // Reduced API call interval
+    }, 30000);  // Increased API call interval to 30 seconds
 
     const appStateListener = AppState.addEventListener('change', setAppState);
-  
+
     return () => {
       clearInterval(interval);
       appStateListener.remove();
@@ -61,7 +44,7 @@ const DeviceTable = ({ loginId }) => {
   useEffect(() => {
     BackgroundFetch.configure(
       {
-        minimumFetchInterval: 5, // Changed to 5 minutes
+        minimumFetchInterval: 15, // Changed to 15 minutes
         stopOnTerminate: false,
         startOnBoot: true,
       },
@@ -172,13 +155,11 @@ const DeviceTable = ({ loginId }) => {
         data={userDevices}
         renderItem={renderDeviceItem}
         keyExtractor={device => device.deviceId.toString()}
-        numColumns={3} // Three devices per row
+        numColumns={3}
         columnWrapperStyle={styles.row}
       />
       <View style={styles.spacer} />
       <PlantStatus loginId={loginId} />
-      {/* <View style={styles.spacer} />
-      <WeatherComponent /> */}
       <Bargraph loginId={loginId} />
     </ScrollView>
   );

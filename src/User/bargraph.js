@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { ScrollView, Text, StyleSheet, Dimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import moment from 'moment-timezone';
+import debounce from 'lodash.debounce';
 
 const { width } = Dimensions.get("window");
 
 const Bargraph = ({ loginId }) => {
-  const [sensor1Data, setSensor1Data] = useState([]);
-  const [sensor2Data, setSensor2Data] = useState([]);
+  const [sensorData, setSensorData] = useState({ sensor1: [], sensor2: [] });
   const [deviceId, setDeviceId] = useState("");
 
   const fetchData = useCallback(async () => {
@@ -27,40 +27,43 @@ const Bargraph = ({ loginId }) => {
         const sensor1Values = await sensor1Response.json();
         const sensor2Values = await sensor2Response.json();
 
-        setSensor1Data(filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")));
-        setSensor2Data(filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value")));
+        setSensorData({
+          sensor1: filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")),
+          sensor2: filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"))
+        });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   }, [deviceId, loginId]);
 
-  useEffect(() => {
-    fetchData(); // Fetch data on component mount
+  const debouncedFetchData = useMemo(() => debounce(fetchData, 100), [fetchData]);
 
-    const intervalId = setInterval(fetchData, 1000); // 1-second interval for real-time updates
+  useEffect(() => {
+    debouncedFetchData(); // Fetch data on component mount
+
+    const intervalId = setInterval(debouncedFetchData, 100); // Fraction of a second interval for real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, [fetchData]);
+  }, [debouncedFetchData]);
 
-  // Update this function to group data by second instead of minute
-  const groupDataByInterval = (data, sensorKey, intervalSeconds = 15) => {
-    const groupedData = {};
+  const groupDataByInterval = (data, sensorKey, intervalSeconds = 60) => {
+    const groupedData = new Map();
 
     data.forEach(entry => {
       const date = new Date(entry.timestamp);
       const seconds = Math.floor(date.getSeconds() / intervalSeconds) * intervalSeconds;
       const timeKey = `${date.getHours()}:${date.getMinutes()}:${seconds.toString().padStart(2, '0')}`;
 
-      if (!groupedData[timeKey]) {
-        groupedData[timeKey] = [];
+      if (!groupedData.has(timeKey)) {
+        groupedData.set(timeKey, []);
       }
-      groupedData[timeKey].push(entry[sensorKey]);
+      groupedData.get(timeKey).push(entry[sensorKey]);
     });
 
-    return Object.keys(groupedData).map(timeKey => ({
+    return Array.from(groupedData.entries()).map(([timeKey, values]) => ({
       timeKey,
-      value: groupedData[timeKey].reduce((sum, val) => sum + val, 0) / groupedData[timeKey].length, // Average value
+      value: values.reduce((sum, val) => sum + val, 0) / values.length, // Average value
     }));
   };
 
@@ -68,7 +71,7 @@ const Bargraph = ({ loginId }) => {
     const now = moment();
     const oneHourAgo = now.clone().subtract(1, 'hours');
     return data.filter(entry => {
-      const entryTime = moment(entry.timeKey, "HH:mm");
+      const entryTime = moment(entry.timeKey, "HH:mm:ss");
       return entryTime.isBetween(oneHourAgo, now);
     });
   };
@@ -110,7 +113,7 @@ const Bargraph = ({ loginId }) => {
       <Text style={styles.title}>Sensor 1</Text>
       <ScrollView horizontal>
         <BarChart
-          data={getBarChartData(sensor1Data)}
+          data={getBarChartData(sensorData.sensor1)}
           width={width * 2} // Adjust width to make the chart scrollable horizontally
           height={300}
           yAxisLabel=""
@@ -126,7 +129,7 @@ const Bargraph = ({ loginId }) => {
       <Text style={styles.title}>Sensor 2</Text>
       <ScrollView horizontal>
         <BarChart
-          data={getBarChartData(sensor2Data)}
+          data={getBarChartData(sensorData.sensor2)}
           width={width * 2} // Adjust width to make the chart scrollable horizontally
           height={220}
           yAxisLabel=""

@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchDeviceStateThreshold, fetchSensorData } from "../Api/api";
+import debounce from 'lodash.debounce';
 
 const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextStyle }) => (
     <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
@@ -39,7 +40,7 @@ const SensorData = ({ route }) => {
     const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
 
     // Fetch data and save to cache asynchronously
-    const fetchAllData = useCallback(async () => {
+    const fetchAllData = useCallback(debounce(async () => {
         try {
             const [deviceStateData, sensorData] = await Promise.all([
                 fetchDeviceStateThreshold(deviceId),
@@ -49,12 +50,16 @@ const SensorData = ({ route }) => {
             // Update state and save to cache
             setDeviceState(deviceStateData);
             setData(sensorData);
-            await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(sensorData));
-            await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(deviceStateData));
+            if (sensorData) {
+                await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(sensorData));
+            }
+            if (deviceStateData) {
+                await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(deviceStateData));
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    }, [deviceId]);
+    }, 300), [deviceId]);
 
     // Load data from cache for faster UI load
     const loadStoredData = useCallback(async () => {
@@ -160,13 +165,10 @@ const SensorData = ({ route }) => {
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderItem}
                 initialNumToRender={10}
-                windowSize={5}
-                removeClippedSubviews={true}
-                maxToRenderPerBatch={5}
-                updateCellsBatchingPeriod={50}
-                getItemLayout={(data, index) => (
+                getItemLayout={(_, index) => (
                     { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
                 )}
+                updateCellsBatchingPeriod={50}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 showsVerticalScrollIndicator={false}

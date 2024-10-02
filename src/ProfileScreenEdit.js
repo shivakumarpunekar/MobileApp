@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -44,7 +44,17 @@ const ProfileScreenEdit = ({ route }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSave = async () => {
+  const validateMobileNumber = useCallback(() => {
+    const mobileRegex = /^\d{10}$/;
+    if (!mobileRegex.test(mobileNumber)) {
+      setErrorMessage('Mobile number must be exactly 10 digits.');
+      return false;
+    }
+    setErrorMessage('');
+    return true;
+  }, [mobileNumber]);
+
+  const handleSave = useCallback(async () => {
     if (!validateMobileNumber()) {
       return;
     }
@@ -67,6 +77,7 @@ const ProfileScreenEdit = ({ route }) => {
         pincode,
         profileImage: profileImage ? profileImage : null,
       };
+
       const profileUpdateResponse = await fetch(
         `http://103.145.50.185:2030/api/userprofiles/${userProfileId}`,
         {
@@ -79,13 +90,11 @@ const ProfileScreenEdit = ({ route }) => {
       );
 
       if (profileUpdateResponse.status === 204) {
-        // No content response, update successful
         Alert.alert('Profile updated successfully');
         navigation.goBack();
         return;
       }
 
-      // Handle other status codes (200, etc.) here
       const profileUpdateResponseJson = await profileUpdateResponse.json();
 
       if (!profileUpdateResponse.ok) {
@@ -97,22 +106,27 @@ const ProfileScreenEdit = ({ route }) => {
     } catch (error) {
       Alert.alert('Error updating profile');
     }
-  };
+  }, [
+    userProfileId,
+    guId,
+    firstName,
+    middleName,
+    lastName,
+    email,
+    dateOfBirth,
+    mobileNumber,
+    userName,
+    password,
+    country,
+    state,
+    city,
+    pincode,
+    profileImage,
+    validateMobileNumber,
+    navigation,
+  ]);
 
-
-  // This is a mobileNumber Verification
-  const validateMobileNumber = () => {
-    const mobileRegex = /^\d{10}$/;
-    if (!mobileRegex.test(mobileNumber)) {
-      setErrorMessage('Mobile number must be exactly 10 digits.');
-      return false;
-    }
-    setErrorMessage('');
-    return true;
-  };
-
-  // For Profile Image Change
-  const handleImagePicker = async () => {
+  const handleImagePicker = useCallback(async () => {
     try {
       const result = await launchImageLibrary({ mediaType: 'photo' });
       if (!result.didCancel && result.assets.length > 0) {
@@ -121,7 +135,7 @@ const ProfileScreenEdit = ({ route }) => {
     } catch (error) {
       Alert.alert('Error', error.message);
     }
-  };
+  }, []);
 
   return (
     <ScrollView>

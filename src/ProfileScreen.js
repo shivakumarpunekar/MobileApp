@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -28,11 +28,10 @@ const ProfilePage = ({ loginId }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const storageKey = `profileData_${loginId}`;
+  const storageKey = useMemo(() => `profileData_${loginId}`, [loginId]);
 
   // Fetch data function with optimization
   const fetchData = useCallback(async () => {
-    setLoading(true);
     try {
       const userProfileId = await fetchuserProfileIdByLoginId(loginId);
       if (!userProfileId) {
@@ -46,7 +45,7 @@ const ProfilePage = ({ loginId }) => {
     } finally {
       setLoading(false);
     }
-  }, [loginId]);
+  }, [loginId, storageKey]);
 
   // Pull to refresh handler
   const onRefresh = useCallback(() => {
@@ -61,14 +60,15 @@ const ProfilePage = ({ loginId }) => {
         const cachedData = await AsyncStorage.getItem(storageKey);
         if (cachedData) {
           setData(JSON.parse(cachedData));
+          setLoading(false); // Set loading to false if cached data is found
         }
-        await fetchData(); // Fetch latest data in the background
+        fetchData(); // Fetch latest data in the background
       } catch (e) {
         console.error('Error loading data:', e);
       }
     };
     initializeData();
-  }, [loginId, fetchData]);
+  }, [storageKey, fetchData]);
 
   // Fetch data on screen focus
   useFocusEffect(
