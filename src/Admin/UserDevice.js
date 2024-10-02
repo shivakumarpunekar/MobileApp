@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, FlatList, StyleSheet, Dimensions, TextInput, TouchableOpacity, Modal, Button } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -13,6 +13,9 @@ const UserDevice = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredDevice, setFilteredProfiles] = useState([]);
     const [cellWidth, setCellWidth] = useState(0);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedDevice, setSelectedDevice] = useState(null);
+    const [newStatus, setNewStatus] = useState(null);
 
     const windowWidth = Dimensions.get('window').width;
 
@@ -31,7 +34,6 @@ const UserDevice = ({ navigation }) => {
     }, [searchQuery, userProfiles]);
 
     useEffect(() => {
-        // Calculate the cell width based on screen width and number of columns
         const numberOfColumns = 4; // Adjust this to match your needs
         const width = (windowWidth - 40) / numberOfColumns; // Subtract padding/margin as needed
         setCellWidth(width);
@@ -65,12 +67,55 @@ const UserDevice = ({ navigation }) => {
         setFilteredProfiles(filtered);
     };
 
-    const renderUserdevice = ({ item, index }) => (
+    const updateDeviceStatus = async (deviceId, newStatus) => {
+        try {
+            const response = await fetch(`http://103.145.50.185:2030/api/UserDevice/byDevice/${deviceId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newStatus),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            await response.json();
+        } catch (error) {
+            console.error('Error updating device status:', error);
+        }
+    };
+
+    const toggleDeviceStatus = (index) => {
+        const device = filteredDevice[index];
+        setSelectedDevice(device);
+        setNewStatus(device.deviceStatus);
+        setModalVisible(true);
+    };
+
+    const handleStatusChange = async () => {
+        const updatedProfiles = [...userProfiles];
+        const updatedDevice = { ...selectedDevice, deviceStatus: newStatus };
+
+        // Update device status in the backend
+        await updateDeviceStatus(updatedDevice.deviceId, newStatus);
+
+        // Update local state
+        const deviceIndex = updatedProfiles.findIndex(d => d.deviceId === updatedDevice.deviceId);
+        updatedProfiles[deviceIndex] = updatedDevice;
+        setUserProfiles(updatedProfiles);
+        setFilteredProfiles(updatedProfiles);
+        setModalVisible(false);
+    };
+
+    const renderUserDevice = ({ item, index }) => (
         <View style={[styles.userDeviceRow, { backgroundColor: index % 2 === 0 ? '#fff' : '#F6F3E7' }]}>
             <Text style={[styles.cell, { width: cellWidth }]}>{item.userProfileId}</Text>
             <Text style={[styles.cell, { width: cellWidth }]}>{item.deviceId}</Text>
             <Text style={[styles.cell, { width: cellWidth }]}>{item.deviceStatus}</Text>
             <Text style={[styles.cell, { width: cellWidth }]}>{formatDate(item.createdDate)}</Text>
+            <TouchableOpacity onPress={() => toggleDeviceStatus(index)}>
+                <Icon style={styles.editButton} name="edit" size={20} color="#000" />
+            </TouchableOpacity>
         </View>
     );
 
@@ -88,7 +133,7 @@ const UserDevice = ({ navigation }) => {
             <ScrollView horizontal>
                 <View style={{ flex: 1 }}>
                     <View style={[styles.headerRow, { backgroundColor: '#F6F3E7' }]}>
-                        {['userProfileId', 'DeviceId', 'deviceStatus', 'createdDate'].map((title, index) => (
+                        {['User Profile ID', 'Device ID', 'Device Status', 'Created Date', 'Edit'].map((title, index) => (
                             <Text
                                 key={index}
                                 style={[styles.headerCell, { width: cellWidth }]}
@@ -99,7 +144,7 @@ const UserDevice = ({ navigation }) => {
                     </View>
                     <FlatList
                         data={filteredDevice}
-                        renderItem={renderUserdevice}
+                        renderItem={renderUserDevice}
                         keyExtractor={keyExtractor}
                         style={{ flex: 1 }}
                     />
@@ -113,6 +158,38 @@ const UserDevice = ({ navigation }) => {
             >
                 <Icon name="add" size={24} color="#fff" />
             </TouchableOpacity>
+
+            {/* Modal for Device Status Update */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Update Device Status</Text>
+                        <View style={styles.buttonContainer}>
+                            <Button
+                                title="Active"
+                                onPress={() => setNewStatus(1)}
+                                color={newStatus === 1 ? "green" : "#000"}
+                            />
+                            <Button
+                                title="Inactive"
+                                onPress={() => setNewStatus(0)}
+                                color={newStatus === 0 ? "red" : "#000"}
+                            />
+                        </View>
+                        <TouchableOpacity style={styles.modalButton} onPress={handleStatusChange}>
+                            <Text style={styles.modalButtonText}>OK</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                            <Text style={styles.modalButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -163,6 +240,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         padding: 10,
     },
+    editButton: {
+        justifyContent: 'end',
+        alignItems: 'end',
+        padding: 10,
+    },
     floatingButton: {
         position: 'absolute',
         bottom: 20,
@@ -177,6 +259,42 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 3,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        marginBottom: 20,
+        fontWeight: 'bold',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginBottom: 20,
+    },
+    modalButton: {
+        backgroundColor: '#BFA100',
+        borderRadius: 5,
+        padding: 10,
+        alignItems: 'center',
+        width: '80%',
+        marginVertical: 5,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
 
