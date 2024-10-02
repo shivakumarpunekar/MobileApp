@@ -245,9 +245,9 @@ function App(): React.JSX.Element {
             options={{ headerTitle: 'Valva_status_detail' }}
           />
           <Stack.Screen
-            name="UserDeviceRegistation"
+            name="UserDeviceRegistration"
             component={UserDeviceRegistation}
-            options={{ headerTitle: 'Device Registation' }}
+            options={{ headerTitle: 'Device Registration' }}
           />
           <Stack.Screen
             name="Tresholdreg"
