@@ -51,27 +51,33 @@ const GraphPage = ({ route }) => {
     const fetchLiveData = useCallback(async () => {
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
+            
+            // Check if the response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
             const data = await response.json();
-
+            
             if (data && data.length > 0) {
                 const sensor1 = data.map((entry) => ({
                     ...entry,
                     sensor1_value: entry.sensor1_value,
                 }));
-
+    
                 const sensor2 = data.map((entry) => ({
                     ...entry,
                     sensor2_value: entry.sensor2_value,
                 }));
-
+    
                 setSensor1Data(sensor1.reverse());
                 setSensor2Data(sensor2.reverse());
-
+    
                 const newXLabels = sensor1.map((entry) => formatCreatedTime(entry.timestamp));
                 setXLabels(filterXLabelsFor2Minutes(newXLabels)); // Set filtered labels
-
+    
                 await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify({ sensor1, sensor2, newXLabels }));
-
+    
                 if (isFirstLoad.current) {
                     setLoading(false);
                     isFirstLoad.current = false;
@@ -86,6 +92,7 @@ const GraphPage = ({ route }) => {
             setLoading(false);
         }
     }, [deviceId, formatCreatedTime, filterXLabelsFor2Minutes]);
+    
 
     const loadStoredData = useCallback(async () => {
         try {
@@ -184,7 +191,7 @@ const GraphPage = ({ route }) => {
                                 style={styles.xAxis}
                                 data={sensor1DataSlice.map((entry) => new Date(entry.timestamp))}  // Using timestamp here
                                 scale={scale.scaleTime}
-                                formatLabel={(value, index) => dateFns.format(new Date(value), 'HH:mm')}
+                                formatLabel={(value) => dateFns.format(new Date(value), 'HH:mm')}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />
@@ -219,7 +226,7 @@ const GraphPage = ({ route }) => {
                                 style={styles.xAxis}
                                 data={sensor2DataSlice.map((entry) => new Date(entry.createdDateTime))}  // Mapping the timestamp to Date
                                 scale={scale.scaleTime}
-                                formatLabel={(value, index) => dateFns.format(new Date(value), 'HH:mm')}
+                                formatLabel={(value) => dateFns.format(new Date(value), 'HH:mm')}
                                 contentInset={{ left: 10, right: 10 }}
                                 svg={styles.axisText}
                             />

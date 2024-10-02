@@ -1,75 +1,26 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
-import PushNotification from 'react-native-push-notification';
 
 const CACHE_KEY = 'sensorDataCache';
-
-const sendNotification = (deviceId, message) => {
-  PushNotification.localNotification({
-    channelId: 'default-channel-id',
-    title: 'Device Status Alert',
-    message: `Device ${deviceId}: ${message}`,
-    importance: 'high',
-    priority: 'high',
-    soundName: 'default',
-    playSound: true,
-    vibrate: true,
-  });
-};
 
 const SensorDataButton = ({ isAdmin }) => {
   const [data, setData] = useState([]);
   const [devices, setDevices] = useState([]);
   const [deviceStatus, setDeviceStatus] = useState({});
-  const previousStatus = useRef({});
-  const initialized = useRef(false);
   const navigation = useNavigation();
-
-  useEffect(() => {
-    const handleStatusChange = (deviceId, heartIconColor, valveIconColor) => {
-      const prevStatus = previousStatus.current[deviceId] || {};
-      if (initialized.current) {
-        if (prevStatus.heartIconColor !== heartIconColor) {
-          sendNotification(deviceId, heartIconColor === '#00FF00' ? 'is running smoothly' : 'has stopped');
-        }
-        if (prevStatus.valveIconColor !== valveIconColor) {
-          sendNotification(deviceId, valveIconColor === '#00FF00' ? 'is running smoothly' : 'has stopped');
-        }
-      }
-      previousStatus.current[deviceId] = { heartIconColor, valveIconColor };
-    };
-
-    devices.forEach((deviceId) => {
-      const deviceData = data.find((item) => item.deviceId === deviceId);
-      if (deviceData) {
-        const { solenoidValveStatus, createdDateTime } = deviceData;
-        const currentDate = moment().format('DD-MM-YYYY');
-        const formattedCreatedDateTime = moment(createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
-        const heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000';
-        const valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
-        
-        setDeviceStatus((prevStatus) => ({
-          ...prevStatus,
-          [deviceId]: { heartIconColor, valveIconColor },
-        }));
-
-        handleStatusChange(deviceId, heartIconColor, valveIconColor);
-      }
-    });
-
-    if (!initialized.current) initialized.current = true;
-  }, [data, devices]);
 
   const fetchData = async () => {
     try {
       const response = await axios.get('http://103.145.50.185:2030/api/sensor_data/top100perdevice');
       const fetchedData = response.data;
       setData(fetchedData);
+
+      // Ensure unique devices from fetched data
       const uniqueDevices = [...new Set(fetchedData.map((item) => item.deviceId))];
       setDevices(uniqueDevices);
 
@@ -86,6 +37,8 @@ const SensorDataButton = ({ isAdmin }) => {
       if (cachedData) {
         const parsedData = JSON.parse(cachedData);
         setData(parsedData);
+
+        // Ensure unique devices from cached data
         const uniqueDevices = [...new Set(parsedData.map((item) => item.deviceId))];
         setDevices(uniqueDevices);
       } else {
@@ -107,41 +60,45 @@ const SensorDataButton = ({ isAdmin }) => {
   };
 
   const renderButtonsInGrid = () => {
-    const sortedDevices = [...devices].sort(); // Sort the devices in ascending order
+    const sortedDevices = [...devices].sort((a, b) => a - b); // Sort devices numerically
     const rows = [];
-  
+
     for (let i = 0; i < sortedDevices.length; i += 50) {
       const row = sortedDevices.slice(i, i + 50);
       rows.push(row);
     }
-  
+
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
         {row.map((deviceId) => {
           const deviceData = data.find((item) => item.deviceId === deviceId);
           const sensor1 = deviceData ? deviceData.sensor1_value : null;
           const sensor2 = deviceData ? deviceData.sensor2_value : null;
-          const { heartIconColor, valveIconColor } = deviceStatus[deviceId] || {};
-  
+          const solenoidValveStatus = deviceData ? deviceData.solenoidValveStatus : null;
+
+          // Determine colors based on sensor values and valve status
           let backgroundColor;
-          let buttonText = `Device ${deviceId}`;
-  
+          let heartIconColor = '#FF0000'; // Red if no data
+          let valveIconColor = '#808080'; // Default gray
+
+          if (deviceData) {
+            const currentDate = moment().format('DD-MM-YYYY');
+            const formattedCreatedDateTime = moment(deviceData.createdDateTime, 'DD-MM-YYYY HH:mm:ss').format('DD-MM-YYYY');
+            heartIconColor = formattedCreatedDateTime === currentDate ? '#00FF00' : '#FF0000'; // Green if date matches today
+
+            valveIconColor = solenoidValveStatus === 'On' ? '#00FF00' : solenoidValveStatus === 'Off' ? '#FF0000' : '#808080';
+          }
+
           if (sensor1 === null || sensor2 === null) {
             backgroundColor = '#808080'; // Gray for no data
-          } else if (
-            (sensor1 >= 4000 || sensor1 <= 1250) &&
-            (sensor2 >= 4000 || sensor2 <= 1250)
-          ) {
-            backgroundColor = '#ff0000'; // Red
-          } else if (
-            (sensor1 >= 4000 || sensor1 <= 1250) ||
-            (sensor2 >= 4000 || sensor2 <= 1250)
-          ) {
+          } else if ((sensor1 >= 4000 || sensor1 <= 1250) && (sensor2 >= 4000 || sensor2 <= 1250)) {
+            backgroundColor = '#FF0000'; // Red
+          } else if (sensor1 >= 4000 || sensor1 <= 1250 || sensor2 >= 4000 || sensor2 <= 1250) {
             backgroundColor = '#FFA500'; // Yellow
           } else {
             backgroundColor = '#00FF00'; // Green
           }
-  
+
           return (
             <View key={deviceId} style={styles.buttonContainer}>
               <View style={styles.iconContainer}>
@@ -151,9 +108,9 @@ const SensorDataButton = ({ isAdmin }) => {
               <TouchableOpacity
                 key={deviceId}
                 style={[styles.button, { backgroundColor }]}
-                onPress={() => handleButtonPress(deviceId, isAdmin)}
+                onPress={() => handleButtonPress(deviceId)}
               >
-                <Text style={styles.buttonText}>{buttonText}</Text>
+                <Text style={styles.buttonText}>{`Device ${deviceId}`}</Text>
               </TouchableOpacity>
             </View>
           );
@@ -161,7 +118,6 @@ const SensorDataButton = ({ isAdmin }) => {
       </View>
     ));
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

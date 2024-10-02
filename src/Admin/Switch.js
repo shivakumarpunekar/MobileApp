@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, Text, Switch, StyleSheet, Alert, ScrollView } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Battery from "./Battery";
 import SwitchAdmin from "./SwitchAdmin";
 
@@ -25,6 +26,7 @@ const SwitchPage = ({ route, navigation }) => {
         const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
         const percentage = Math.min(100, Math.max(0, calculatedFlowRate));
         setBatteryPercentage(percentage);
+        await AsyncStorage.setItem(`@deviceData_${deviceId}`, JSON.stringify(data));
       }
     } catch (error) {
       console.error('Error fetching device data:', error);
@@ -40,6 +42,7 @@ const SwitchPage = ({ route, navigation }) => {
         const { valveStatusOnOrOff, isAdminSetValveStatus } = data[0];
         setIsEnabled(valveStatusOnOrOff === 1);
         setIsAdminSetValveStatus(isAdminSetValveStatus);
+        await AsyncStorage.setItem(`@valveStatus_${deviceId}`, JSON.stringify(data[0]));
       }
     } catch (error) {
       console.error('Error fetching valve status:', error);
@@ -55,9 +58,34 @@ const SwitchPage = ({ route, navigation }) => {
     }
   }, [fetchDeviceData, fetchValveStatus, deviceId]);
 
+  const loadCachedData = useCallback(async () => {
+    try {
+      const cachedDeviceData = await AsyncStorage.getItem(`@deviceData_${deviceId}`);
+      const cachedValveStatus = await AsyncStorage.getItem(`@valveStatus_${deviceId}`);
+
+      if (cachedDeviceData) {
+        const data = JSON.parse(cachedDeviceData);
+        const { sensor1_value, sensor2_value } = data;
+        const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
+        const percentage = Math.min(100, Math.max(0, calculatedFlowRate));
+        setBatteryPercentage(percentage);
+      }
+
+      if (cachedValveStatus) {
+        const data = JSON.parse(cachedValveStatus);
+        const { valveStatusOnOrOff, isAdminSetValveStatus } = data;
+        setIsEnabled(valveStatusOnOrOff === 1);
+        setIsAdminSetValveStatus(isAdminSetValveStatus);
+      }
+    } catch (error) {
+      console.error('Error loading cached data:', error);
+    }
+  }, [deviceId]);
+
   useEffect(() => {
+    loadCachedData();
     fetchAllData();
-  }, [fetchAllData]);
+  }, [loadCachedData, fetchAllData]);
 
   const toggleSwitch = useCallback(async () => {
     if (!isAdminSetValveStatus) {

@@ -47,7 +47,7 @@ const Bargraph = ({ loginId }) => {
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [debouncedFetchData]);
 
-  const groupDataByInterval = (data, sensorKey, intervalSeconds = 60) => {
+  const groupDataByInterval = (data, sensorKey, intervalSeconds = 120) => {
     const groupedData = new Map();
 
     data.forEach(entry => {
