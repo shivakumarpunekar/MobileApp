@@ -3,40 +3,36 @@ import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import moment from "moment";
 import { fetchData, fetchWaterData } from "../Api/api";
-import { debounce } from "lodash";
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
 const PlantStatus = ({ loginId }) => {
+    const [selectedDate, setSelectedDate] = useState(moment());
     const [flowRate, setFlowRate] = useState(0);
     const [deviceId, setDeviceId] = useState(null);
     const animatedValue = useState(new Animated.Value(0))[0];
 
-    const fetchDeviceData = useCallback(async () => {
-        if (loginId) {
-            await fetchData(loginId, setDeviceId, setFlowRate);
-        }
-    }, [loginId]);
-
-    const fetchWaterDataDebounced = useMemo(() => debounce(async (deviceId) => {
-        if (deviceId) {
-            await fetchWaterData(deviceId, setFlowRate);
-        }
-    }, 500), []);
-
+    // Fetch deviceId and flow rate based on loginId
     useEffect(() => {
+        const fetchDeviceData = async () => {
+            if (loginId) {
+                await fetchData(loginId, setDeviceId, setFlowRate);  // Fetch device ID and flow rate
+            }
+        };
+
         fetchDeviceData();
 
+        // Set interval for refreshing water data
         const interval = setInterval(() => {
-            fetchWaterDataDebounced(deviceId);
-        }, 60000);
+            if (deviceId) {
+                fetchData(deviceId, setFlowRate);  // Refresh the flow rate every 30 seconds
+            }
+        }, 30000); // Refresh every 30 seconds
 
-        return () => {
-            clearInterval(interval);
-            fetchWaterDataDebounced.cancel();
-        };
-    }, [fetchDeviceData, fetchWaterDataDebounced, deviceId]);
+        return () => clearInterval(interval);
+    }, [loginId, deviceId]);  // Ensure the effect re-runs when deviceId is updated
 
+    // Animate the water icon based on flow rate
     useEffect(() => {
         Animated.timing(animatedValue, {
             toValue: flowRate < 1250 ? 0 : flowRate > 3800 ? 1 : 0.5,
