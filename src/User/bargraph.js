@@ -1,48 +1,49 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { ScrollView, Text, StyleSheet, Dimensions } from "react-native";
-import { BarChart } from "react-native-chart-kit";
+import { ScrollView, Text, StyleSheet, View } from "react-native";
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import moment from 'moment-timezone';
 import debounce from 'lodash.debounce';
 
-const { width } = Dimensions.get("window");
-
 const Bargraph = ({ loginId }) => {
-  const [sensorData, setSensorData] = useState({ sensor1: [], sensor2: [] });
-  const [deviceId, setDeviceId] = useState("");
+  const [deviceData, setDeviceData] = useState([]); // Array to hold multiple devices and their sensor data
 
   const fetchData = useCallback(async () => {
     try {
       const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
-      const deviceData = await deviceResponse.json();
+      const deviceList = await deviceResponse.json();
 
-      if (Array.isArray(deviceData) && deviceData.length > 0) {
-        const newDeviceId = deviceData[0].deviceId;
-        if (newDeviceId !== deviceId) setDeviceId(newDeviceId); // Update deviceId only if changed
+      if (Array.isArray(deviceList) && deviceList.length > 0) {
+        const newDeviceData = await Promise.all(
+          deviceList.map(async (device) => {
+            const [sensor1Response, sensor2Response] = await Promise.all([
+              fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor1`),
+              fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor2`)
+            ]);
 
-        const [sensor1Response, sensor2Response] = await Promise.all([
-          fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor1`),
-          fetch(`http://103.145.50.185:2030/api/sensor_data/device/${newDeviceId}/sensor2`)
-        ]);
+            const sensor1Values = await sensor1Response.json();
+            const sensor2Values = await sensor2Response.json();
 
-        const sensor1Values = await sensor1Response.json();
-        const sensor2Values = await sensor2Response.json();
-
-        setSensorData({
-          sensor1: filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")),
-          sensor2: filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"))
-        });
+            return {
+              deviceId: device.deviceId,
+              deviceName: device.deviceName || `Device ${device.deviceId}`, // Add device name or use a default
+              sensor1: filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")),
+              sensor2: filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"))
+            };
+          })
+        );
+        setDeviceData(newDeviceData);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [deviceId, loginId]);
+  }, [loginId]);
 
   const debouncedFetchData = useMemo(() => debounce(fetchData, 100), [fetchData]);
 
   useEffect(() => {
     debouncedFetchData(); // Fetch data on component mount
 
-    const intervalId = setInterval(debouncedFetchData, 100); // Fraction of a second interval for real-time updates
+    const intervalId = setInterval(debouncedFetchData, 100); // Real-time updates
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [debouncedFetchData]);
@@ -76,109 +77,99 @@ const Bargraph = ({ loginId }) => {
     });
   };
 
-  const getBarChartData = (data) => {
+  const getAverageValue = (data) => {
     if (!data || data.length === 0) {
-      return {
-        labels: [],
-        datasets: [{
-          data: [],
-          colors: []
-        }]
-      };
+      return 0;
     }
 
-    const labels = data.map(entry => entry.timeKey);
-    const chartData = data.map(entry => entry.value);
+    const total = data.reduce((sum, entry) => sum + entry.value, 0);
+    return total / data.length;
+  };
 
-    // Normalize chart data to fit within the 0-4500 range
-    const normalizedData = chartData.map(value => Math.min(value, 4500)); // Clamp values to 4500
-
-    return {
-      labels: labels,
-      datasets: [
-        {
-          data: normalizedData,
-          colors: normalizedData.map(value => {
-            if (value > 3800) return () => `rgba(255, 0, 0, 1)`; // Red for values above 3800
-            if (value > 1250) return () => `rgba(0, 255, 0, 1)`; // Green for values 1251-3800
-            return () => `rgba(255, 0, 0, 1)`; // Red for values 0-1250
-          }),
-        },
-      ],
-    };
+  const getPercentage = (value, max = 4500) => {
+    return (value / max) * 100;
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Sensor 1</Text>
-      <ScrollView horizontal>
-        <BarChart
-          data={getBarChartData(sensorData.sensor1)}
-          width={width * 2} // Adjust width to make the chart scrollable horizontally
-          height={300}
-          yAxisLabel=""
-          chartConfig={chartConfig}
-          fromZero={true}
-          withCustomBarColorFromData={true}
-          flatColor={true}
-          yAxisInterval={1}
-          showBarTops={false}
-        />
-      </ScrollView>
+      {deviceData.map((device, index) => (
+        <View key={device.deviceId} style={styles.deviceContainer}>
+          <Text style={styles.deviceTitle}>{device.deviceName}</Text>
 
-      <Text style={styles.title}>Sensor 2</Text>
-      <ScrollView horizontal>
-        <BarChart
-          data={getBarChartData(sensorData.sensor2)}
-          width={width * 2} // Adjust width to make the chart scrollable horizontally
-          height={220}
-          yAxisLabel=""
-          chartConfig={chartConfig}
-          fromZero={true}
-          withCustomBarColorFromData={true}
-          flatColor={true}
-          yAxisInterval={1}
-          showBarTops={false}
-        />
-      </ScrollView>
+          <View style={styles.row}>
+            <View style={styles.progressContainer}>
+              <Text style={styles.title}>Sensor 1</Text>
+              <AnimatedCircularProgress
+                size={150}
+                width={12}
+                fill={getPercentage(getAverageValue(device.sensor1))}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {() => (
+                  <Text style={styles.progressText}>
+                    {`${getPercentage(getAverageValue(device.sensor1)).toFixed(2)}%`}
+                  </Text>
+                )}
+              </AnimatedCircularProgress>
+            </View>
+
+            <View style={styles.progressContainer}>
+              <Text style={styles.title}>Sensor 2</Text>
+              <AnimatedCircularProgress
+                size={150}
+                width={12}
+                fill={getPercentage(getAverageValue(device.sensor2))}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {() => (
+                  <Text style={styles.progressText}>
+                    {`${getPercentage(getAverageValue(device.sensor2)).toFixed(2)}%`}
+                  </Text>
+                )}
+              </AnimatedCircularProgress>
+            </View>
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
-};
-
-const chartConfig = {
-  backgroundColor: "#F6F3E7",
-  backgroundGradientFrom: "#ffffff",
-  backgroundGradientTo: "#ffffff",
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  barPercentage: 0.5, // Increase this value to make bars thicker and reduce space between bars
-  decimalPlaces: 0,
-  propsForBackgroundLines: {
-    strokeDasharray: '', // Remove dashed background lines
-  },
-  propsForYAxisLabels: {
-    fontSize: 12,
-  },
-  propsForLabels: {
-    fontSize: 12, // Adjust the font size
-    rotation: 0, // Rotate labels 0 degrees for better visibility
-    anchor: 'middle',
-    dx: 0, // Adjust label offset as needed
-  },
-  yAxisMax: 4500,
-  yAxisMin: 0,
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 1,
-    flexGrow: 1,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deviceContainer: {
+    marginBottom: 40,
+    width: '100%',
+    alignItems: 'center',
+  },
+  deviceTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 20,
+  },
+  progressContainer: {
+    alignItems: 'center',
+  },
+  progressText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
