@@ -1,126 +1,54 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchDeviceStateThreshold, fetchSensorData } from "../Api/api";
-import debounce from 'lodash.debounce';
-
-const SensorDataItem = React.memo(({ item, renderItemContainerStyle, renderTextStyle }) => (
-    <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
-        <View style={styles.leftColumn}>
-            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                Device Id: {item.deviceId}
-            </Text>
-            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                Sensor-1: {item.sensor1_value}
-            </Text>
-            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                Sensor-2: {item.sensor2_value}
-            </Text>
-            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                Valve Status: {item.solenoidValveStatus}
-            </Text>
-            <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>
-                Date Time: {item.createdDateTime}
-            </Text>
-        </View>
-    </View>
-));
-
-const ITEM_HEIGHT = 100;
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { useNavigation } from '@react-navigation/native';
 
 const SensorData = ({ route }) => {
     const [data, setData] = useState([]);
-    const [deviceState, setDeviceState] = useState({});
-    const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
     const { deviceId, loginId, isAdmin } = route.params;
+    const [deviceState, setDeviceState] = useState({});
 
-    const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
-    const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
-
-    // Fetch data and save to cache asynchronously
-    const fetchAllData = useCallback(debounce(async () => {
+    // Function to fetch sensor data
+    const fetchSensorData = async () => {
         try {
-            const [deviceStateData, sensorData] = await Promise.all([
-                fetchDeviceStateThreshold(deviceId),
-                fetchSensorData(deviceId)
-            ]);
 
-            // Update state and save to cache
-            setDeviceState(deviceStateData);
-            setData(sensorData);
-            if (sensorData) {
-                await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(sensorData));
+            const cachedData = await AsyncStorage.getItem(`sensorData_${deviceId}`);
+            if (cachedData !== null) {
+                setData(JSON.parse(cachedData));
             }
-            if (deviceStateData) {
-                await AsyncStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(deviceStateData));
-            }
+
+            const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
+            const result = await response.json();
+            const latestData = result.slice(0, 30);
+            // Store fetched data to AsyncStorage
+            await AsyncStorage.setItem(`sensorData_${deviceId}`, JSON.stringify(latestData));
+            setData(latestData);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Failed to fetch sensor data:', error);
         }
-    }, 300), [deviceId]);
+    };
 
-    // Load data from cache for faster UI load
-    const loadStoredData = useCallback(async () => {
+    // Function to fetch relay duration data
+    const fetchRelayData = async () => {
         try {
-            const [storedSensorData, storedDeviceState] = await Promise.all([
-                AsyncStorage.getItem(DATA_STORAGE_KEY),
-                AsyncStorage.getItem(STATE_STORAGE_KEY)
-            ]);
 
-            if (storedSensorData) setData(JSON.parse(storedSensorData));
-            if (storedDeviceState) setDeviceState(JSON.parse(storedDeviceState));
+            // Try to get relay data from AsyncStorage first
+            const cachedRelayData = await AsyncStorage.getItem(`relayData_${deviceId}`);
+            if (cachedRelayData !== null) {
+                setDeviceState(JSON.parse(cachedRelayData));
+            }
+
+            const response = await fetch(`http://103.145.50.185:2030/api/DeviceStateThreshold/${deviceId}`);
+            const result = await response.json();
+
+            // Store fetched relay data to AsyncStorage
+            await AsyncStorage.setItem(`relayData_${deviceId}`, JSON.stringify(result));
+            setDeviceState(result);
         } catch (error) {
-            console.error('Error loading stored data:', error);
+            console.error('Failed to fetch relay data:', error);
         }
-    }, [DATA_STORAGE_KEY, STATE_STORAGE_KEY]);
-
-    // Initial data loading - cache first, then fetch new data
-    useEffect(() => {
-        loadStoredData(); // Load cached data
-        fetchAllData();   // Fetch new data in background
-
-        // Auto-refresh data every 30 seconds
-        const intervalId = setInterval(() => {
-            fetchAllData();
-        }, 30000); // 30000 ms = 30 seconds
-
-        // Clear interval on component unmount
-        return () => clearInterval(intervalId);
-    }, [loadStoredData, fetchAllData]);
-
-    // Fetch data when the screen is focused
-    useFocusEffect(
-        useCallback(() => {
-            fetchAllData();
-        }, [fetchAllData])
-    );
-
-    // Styles based on sensor values
-    const renderItemContainerStyle = useCallback((sensor1, sensor2) => {
-        return (sensor1 >= 4000 && sensor2 >= 4000) ||
-               (sensor1 <= 1250 && sensor2 <= 1250) ||
-               (sensor1 >= 4000 && sensor2 <= 1250) ||
-               (sensor1 <= 1250 && sensor2 >= 4000)
-            ? styles.itemContainerRed
-            : styles.itemContainerGreen;
-    }, []);
-
-    const renderTextStyle = useCallback((sensor1, sensor2) => {
-        return (sensor1 >= 4000 && sensor2 >= 4000) ||
-               (sensor1 <= 1250 && sensor2 <= 1250) ||
-               (sensor1 >= 4000 && sensor2 <= 1250) ||
-               (sensor1 <= 1250 && sensor2 >= 4000)
-            ? styles.itemTextWhite
-            : styles.itemTextBlack;
-    }, []);
-
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await fetchAllData();
-        setRefreshing(false);
-    }, [fetchAllData]);
+    };
 
     const summaryData = useMemo(() => {
         const threshold1 = parseFloat(deviceState?.threshold_1) || 'N/A';
@@ -130,13 +58,38 @@ const SensorData = ({ route }) => {
         return { state: deviceState?.state || "N/A", threshold1, threshold2, thresholdAvg };
     }, [deviceState]);
 
-    const renderItem = ({ item }) => (
-        <SensorDataItem
-            item={item}
-            renderItemContainerStyle={renderItemContainerStyle}
-            renderTextStyle={renderTextStyle}
-        />
-    );
+    useEffect(() => {
+        fetchSensorData();
+        fetchRelayData();
+        const intervalId = setInterval(() => {
+            fetchSensorData();
+            fetchRelayData();
+        }, 1000); // Fetch data every 1 second
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const renderItemContainerStyle = (sensor1, sensor2) => {
+        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
+            (sensor1 <= 1250 && sensor2 <= 1250) ||
+            (sensor1 >= 4000 && sensor2 <= 1250) ||
+            (sensor1 <= 1250 && sensor2 >= 4000)) {
+            return styles.itemContainerRed;
+        } else {
+            return styles.itemContainerGreen;
+        }
+    };
+
+    const renderTextStyle = (sensor1, sensor2) => {
+        if ((sensor1 >= 4000 && sensor2 >= 4000) ||
+            (sensor1 <= 1250 && sensor2 <= 1250) ||
+            (sensor1 >= 4000 && sensor2 <= 1250) ||
+            (sensor1 <= 1250 && sensor2 >= 4000)) {
+            return styles.itemTextWhite;
+        } else {
+            return styles.itemTextBlack;
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -163,15 +116,15 @@ const SensorData = ({ route }) => {
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={renderItem}
-                initialNumToRender={10}
-                getItemLayout={(_, index) => (
-                    { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+                renderItem={({ item }) => (
+                    <View style={[styles.itemContainer, renderItemContainerStyle(item.sensor1_value, item.sensor2_value)]}>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Device Id: {item.deviceId}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-1: {item.sensor1_value}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Sensor-2: {item.sensor2_value}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Valve Status: {item.solenoidValveStatus}</Text>
+                        <Text style={[styles.itemText, renderTextStyle(item.sensor1_value, item.sensor2_value)]}>Date Time: {item.createdDateTime}</Text>
+                    </View>
                 )}
-                updateCellsBatchingPeriod={50}
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                showsVerticalScrollIndicator={false}
             />
         </View>
     );
@@ -181,47 +134,51 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#F6F3E7',
+        backgroundColor: '#F6F3E7'
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    button: {
+        backgroundColor: '#BFA100',
+        padding: 10,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
     },
     itemContainer: {
-        marginBottom: 10,
-        padding: 15,
-        borderRadius: 10,
+        marginBottom: 20,
+        padding: 10,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 8,
     },
     itemContainerGreen: {
-        backgroundColor: '#7ff000',
+        backgroundColor: '#7fff00',
     },
     itemContainerRed: {
         backgroundColor: '#ff0000',
     },
     itemText: {
-        fontSize: 14,
+        fontSize: 16,
+    },
+    itemTextWhite: {
+        color: '#fff',
     },
     itemTextBlack: {
         color: '#000',
-    },
-    itemTextWhite: {
-        color: '#FFF',
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    button: {
-        backgroundColor: '#BFA100',
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
     summaryCard: {
         backgroundColor: 'orange',

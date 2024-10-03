@@ -3,25 +3,11 @@ import { StyleSheet, ScrollView, Text, TouchableOpacity, View, AppState, FlatLis
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
-import PushNotification from 'react-native-push-notification';
 import BackgroundFetch from 'react-native-background-fetch';
 import PlantStatus from './User/PlantStatus';
 import Bargraph from './User/bargraph';
 import { fetchData } from './Api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// const sendNotification = (title, message) => {
-//   PushNotification.localNotification({
-//     channelId: 'default-channel-id',
-//     title,
-//     message,
-//     importance: 'high',
-//     priority: 'high',
-//     soundName: 'default',
-//     playSound: true,
-//     vibrate: true,
-//   });
-// };
 
 const DeviceTable = ({ loginId }) => {
   if (!loginId) {
@@ -104,7 +90,7 @@ const DeviceTable = ({ loginId }) => {
           if (valveIconColor !== prevValveColor) {
             const valveTitle = 'aairos Technologies';
             const valveMessage = `Device ${valveIconColor === '#FF0000' ? 'has stopped watering' : 'is started watering'}`;
-            sendNotification(valveTitle, valveMessage);
+            /* sendNotification(valveTitle, valveMessage); */
           }
 
           parsedPreviousStatus[deviceId] = { valveIconColor };
@@ -174,8 +160,6 @@ const DeviceTable = ({ loginId }) => {
       />
       <View style={styles.spacer} />
       <PlantStatus loginId={loginId} />
-      {/* <View style={styles.spacer} />
-      <WeatherComponent /> */}
       <Bargraph loginId={loginId} />
     </ScrollView>
   );

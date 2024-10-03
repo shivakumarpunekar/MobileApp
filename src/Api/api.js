@@ -75,44 +75,6 @@ export const fetchuserProfileIdByLoginId = async (loginId) => {
   }
 };
 
-// Fetch device state and threshold
-export const fetchDeviceStateThreshold = async (deviceId) => {
-  const STATE_STORAGE_KEY = `deviceState_${deviceId}`;
-  try {
-    const cachedData = await getCachedData(STATE_STORAGE_KEY);
-    if (cachedData) return cachedData;
-
-    const response = await apiClient.get(`/api/DeviceStateThreshold/${deviceId}`);
-    const result = response.data;
-    await cacheData(STATE_STORAGE_KEY, result);
-    return result;
-  } catch (error) {
-    console.error('Failed to fetch device state and threshold:', error);
-  }
-};
-
-// Fetch sensor data
-export const fetchSensorData = async (deviceId, deviceState) => {
-  const DATA_STORAGE_KEY = `sensorData_${deviceId}`;
-  try {
-    const cachedData = await getCachedData(DATA_STORAGE_KEY);
-    if (cachedData) return cachedData;
-
-    const response = await apiClient.get(`/api/sensor_data/device/${deviceId}`);
-    const result = response.data;
-    const latestData = result.slice(0, 30);
-    const updatedData = latestData.map(item => ({
-      ...item,
-      threshold_1: deviceState?.threshold_1,
-      threshold_2: deviceState?.threshold_2,
-    }));
-    await cacheData(DATA_STORAGE_KEY, updatedData);
-    return updatedData;
-  } catch (error) {
-    console.error('Failed to fetch sensor data:', error);
-  }
-};
-
 // Fetch user devices and sensor data
 export const fetchData = async (loginId, setUserDevices, setSensorData) => {
   if (!loginId) {
@@ -135,36 +97,32 @@ export const fetchData = async (loginId, setUserDevices, setSensorData) => {
   }
 };
 
-// // Fetch login and device data
-// export const fetchLoginAndDevice = async (loginId, setDeviceId) => {
-//   try {
-//     const response = await apiClient.get(`/api/UserDevice/byProfile/${loginId}`);
-//     if (response.data.length > 0 && response.data[0].deviceId) {
-//       setDeviceId(response.data[0].deviceId);
-//     } else {
-//       console.error('Device ID not found or data is empty');
-//     }
-//   } catch (error) {
-//     console.error('Error fetching login and device data:', error);
-//   }
-// };
+// Fetch all data after login
+export const fetchAllDataAfterLogin = async (loginId) => {
+  try {
+    const userProfileId = await fetchuserProfileIdByLoginId(loginId);
+    const userProfile = await fetchDataByIdFromApi(userProfileId);
+    const userDevices = await apiClient.get(`/api/UserDevice/byProfile/${loginId}`).then(res => res.data);
 
-// // Fetch water data
-// export const fetchWaterData = async (loginId, deviceId, setFlowRate) => {
-//   try {
-//     const response = await apiClient.get(`/api/sensor_data/profile/${loginId}/device/${deviceId}`);
-//     if (response.data && response.data.length > 0) {
-//       const { sensor1_value, sensor2_value } = response.data[0];
-//       const calculatedFlowRate = (sensor1_value + sensor2_value) / 2;
-//       setFlowRate(calculatedFlowRate);
-//     } else {
-//       console.error('Sensor data not found or data is empty');
-//     }
-//   } catch (error) {
-//     console.error('Error fetching water data:', error);
-//   }
-// };
+    const deviceIds = userDevices.map(device => device.deviceId);
+    const deviceStates = await Promise.all(deviceIds.map(deviceId => fetchDeviceStateThreshold(deviceId)));
+    const sensorData = await Promise.all(deviceIds.map(deviceId => fetchSensorData(deviceId, deviceStates.find(state => state.deviceId === deviceId))));
 
+    // Cache all fetched data
+    await cacheData(`userProfile_${userProfileId}`, userProfile);
+    await cacheData(`userDevices_${loginId}`, userDevices);
+    deviceStates.forEach(async (state, index) => {
+      await cacheData(`deviceState_${deviceIds[index]}`, state);
+    });
+    sensorData.forEach(async (data, index) => {
+      await cacheData(`sensorData_${deviceIds[index]}`, data);
+    });
+
+    console.log('All data fetched and cached successfully');
+  } catch (error) {
+    console.error('Error fetching all data after login:', error);
+  }
+};
 
 // Error handler
 const handleApiError = (error) => {
