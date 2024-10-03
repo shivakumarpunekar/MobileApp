@@ -19,6 +19,8 @@ target 'AAIROS' do
   config = use_native_modules!
 
   pod 'ReactCommon', :path => '../node_modules/react-native/ReactCommon'
+  pod 'lottie-ios', '4.4.1'
+  pod 'lottie-react-native', :path => '../node_modules/lottie-react-native'
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

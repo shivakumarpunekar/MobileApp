@@ -135,7 +135,7 @@ const DeviceTable = ({ loginId }) => {
     return (
       <View style={styles.buttonContainer}>
         <View style={styles.iconContainer}>
-          <Icon name="heart" size={30} color={heartIconColor} />
+          <Icon name="heartbeat" size={30} color={heartIconColor} />
           <Icon name="tachometer" size={30} color={valveIconColor} style={styles.valveIcon} />
         </View>
         <TouchableOpacity
