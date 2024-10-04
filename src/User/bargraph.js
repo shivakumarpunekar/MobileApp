@@ -105,7 +105,7 @@ const Bargraph = ({ loginId }) => {
     if (value === max) return 0;   // 0% when value is at the maximum
 
     // Calculate the percentage
-    return ((value - min) / (max - min)) * 100;
+    return 100-(((value - min) / (max - min)) * 100);
   };
 
   return (

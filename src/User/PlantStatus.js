@@ -73,11 +73,11 @@ const PlantStatus = ({ loginId }) => {
     // Handle water flow status text dynamically based on flow rate
     const handleWaterFlow = (flowRate) => {
         if (flowRate < 1250) {
-            return "Soil is more Moisture";
+            return "Soil is more Moist";
         } else if (flowRate > 3800) {
             return "Soil is Dry";
         } else {
-            return "Soil is Moisture";
+            return "Soil is Moist";
         }
     };
 
@@ -88,7 +88,7 @@ const PlantStatus = ({ loginId }) => {
                     const animatedColor = getAnimatedColor(device.animatedValue);
                     return (
                         <View key={device.deviceId} style={styles.waterCard}>
-                            <Text style={styles.waterHeader}>Water level for Device {device.deviceId}</Text>
+                            <Text style={styles.waterHeader}>Device {device.deviceId}</Text>
 
                             <View style={styles.waterRow}>
                                 <Text style={styles.waterText}>{handleWaterFlow(device.flowRate)}</Text>
@@ -124,12 +124,11 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        marginLeft: 50,
     },
     waterCard: {
         padding: 20,
         borderRadius: 10,
-        backgroundColor: 'gray',
+        backgroundColor: '#00e0ff',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#fff',
+        color: '#000',
     },
     waterRow: {
         flexDirection: 'row',
@@ -151,7 +150,7 @@ const styles = StyleSheet.create({
     waterText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
+        color: '#000',
     },
 });
 
