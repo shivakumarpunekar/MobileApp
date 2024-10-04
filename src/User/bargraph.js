@@ -15,26 +15,36 @@ const Bargraph = ({ loginId }) => {
       if (Array.isArray(deviceList) && deviceList.length > 0) {
         const newDeviceData = await Promise.all(
           deviceList.map(async (device) => {
-            const [sensor1Response, sensor2Response] = await Promise.all([
-              fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor1`),
-              fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor2`)
-            ]);
+            try {
+              const [sensor1Response, sensor2Response] = await Promise.all([
+                fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor1`),
+                fetch(`http://103.145.50.185:2030/api/sensor_data/device/${device.deviceId}/sensor2`)
+              ]);
 
-            const sensor1Values = await sensor1Response.json();
-            const sensor2Values = await sensor2Response.json();
+              const sensor1Values = await sensor1Response.json();
+              const sensor2Values = await sensor2Response.json();
 
-            return {
-              deviceId: device.deviceId,
-              deviceName: device.deviceName || `Device ${device.deviceId}`, // Add device name or use a default
-              sensor1: filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")),
-              sensor2: filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"))
-            };
+              return {
+                deviceId: device.deviceId,
+                deviceName: device.deviceName || `Device ${device.deviceId}`, // Add device name or use a default
+                sensor1: filterDataByLastHour(groupDataByInterval(sensor1Values, "sensor1_value")),
+                sensor2: filterDataByLastHour(groupDataByInterval(sensor2Values, "sensor2_value"))
+              };
+            } catch (error) {
+              console.error(`Error fetching sensor data for device ${device.deviceId}:`, error);
+              return {
+                deviceId: device.deviceId,
+                deviceName: device.deviceName || `Device ${device.deviceId}`,
+                sensor1: [],
+                sensor2: [],
+              };
+            }
           })
         );
         setDeviceData(newDeviceData);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching devices:", error);
     }
   }, [loginId]);
 
@@ -43,12 +53,15 @@ const Bargraph = ({ loginId }) => {
   useEffect(() => {
     debouncedFetchData(); // Fetch data on component mount
 
-    const intervalId = setInterval(debouncedFetchData, 100); // Real-time updates
+    const intervalId = setInterval(debouncedFetchData, 100); // Real-time updates every 0.1 seconds
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    return () => {
+      clearInterval(intervalId); // Cleanup interval on unmount
+      debouncedFetchData.cancel(); // Cancel any pending debounced calls
+    };
   }, [debouncedFetchData]);
 
-  const groupDataByInterval = (data, sensorKey, intervalSeconds = 120) => {
+  const groupDataByInterval = (data, sensorKey, intervalSeconds = 1) => {
     const groupedData = new Map();
 
     data.forEach(entry => {
@@ -86,19 +99,25 @@ const Bargraph = ({ loginId }) => {
     return total / data.length;
   };
 
-  const getPercentage = (value, max = 4500) => {
-    return (value / max) * 100;
+  const getPercentage = (value, min = 0, max = 4095) => {
+    // Ensure the values are within the bounds
+    if (value === min) return 100; // 100% when value is at the minimum
+    if (value === max) return 0;   // 0% when value is at the maximum
+
+    // Calculate the percentage
+    return ((value - min) / (max - min)) * 100;
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {deviceData.map((device, index) => (
+      {deviceData.map((device) => (
         <View key={device.deviceId} style={styles.deviceContainer}>
           <Text style={styles.deviceTitle}>{device.deviceName}</Text>
 
           <View style={styles.row}>
             <View style={styles.progressContainer}>
               <Text style={styles.title}>Sensor 1</Text>
+              <Text style={styles.title}>Moisture</Text>
               <AnimatedCircularProgress
                 size={150}
                 width={12}
@@ -116,6 +135,7 @@ const Bargraph = ({ loginId }) => {
 
             <View style={styles.progressContainer}>
               <Text style={styles.title}>Sensor 2</Text>
+              <Text style={styles.title}>Moisture</Text>
               <AnimatedCircularProgress
                 size={150}
                 width={12}

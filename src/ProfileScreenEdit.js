@@ -102,7 +102,6 @@ const ProfileScreenEdit = ({ route }) => {
       }
 
       Alert.alert('Profile updated successfully');
-      navigation.goBack();
     } catch (error) {
       Alert.alert('Error updating profile');
     }

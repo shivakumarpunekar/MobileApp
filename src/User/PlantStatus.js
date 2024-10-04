@@ -123,11 +123,13 @@ const styles = StyleSheet.create({
         padding: 20,
         marginBottom: 15,
         flexDirection: 'row',
+        alignItems: 'center',
+        marginLeft: 50,
     },
     waterCard: {
         padding: 20,
         borderRadius: 10,
-        backgroundColor: 'lightyellow',
+        backgroundColor: 'gray',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        color: '#fff',
     },
     waterRow: {
         flexDirection: 'row',
@@ -148,6 +151,7 @@ const styles = StyleSheet.create({
     waterText: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#fff',
     },
 });
 
