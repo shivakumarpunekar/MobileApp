@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Animated, ScrollView } from "react-native";
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; 
-import moment from "moment";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const AnimatedIcon = Animated.createAnimatedComponent(MaterialCommunityIcons);
 
 const PlantStatus = ({ loginId }) => {
     const [devices, setDevices] = useState([]); // Store all devices and their flow rates
-    const animatedValues = useState(new Animated.Value(0))[0];
 
     // Fetch device IDs based on loginId and update the state with device data
     useEffect(() => {
@@ -29,9 +27,9 @@ const PlantStatus = ({ loginId }) => {
                         if (sensorData && sensorData.length > 0) {
                             const { sensor1_value, sensor2_value } = sensorData[0];
                             const flowRate = (sensor1_value + sensor2_value) / 2;
-                            return { deviceId: device.deviceId, flowRate };
+                            return { deviceId: device.deviceId, flowRate, animatedValue: new Animated.Value(0) };
                         }
-                        return { deviceId: device.deviceId, flowRate: 0 };
+                        return { deviceId: device.deviceId, flowRate: 0, animatedValue: new Animated.Value(0) };
                     }));
                     setDevices(deviceData);  // Store all devices and their flow rates
                 } else {
@@ -55,20 +53,22 @@ const PlantStatus = ({ loginId }) => {
 
     // Animate the water icon based on flow rate for each device
     useEffect(() => {
-        devices.forEach((device, index) => {
-            Animated.timing(animatedValues, {
+        devices.forEach((device) => {
+            Animated.timing(device.animatedValue, {
                 toValue: device.flowRate < 1250 ? 0 : device.flowRate > 3800 ? 1 : 0.5,
-                duration: 10000,
+                duration: 1000, // Adjust the duration to make the transition faster or slower
                 useNativeDriver: false,
             }).start();
         });
     }, [devices]);
 
     // Dynamic color interpolation based on flow rate
-    const animatedColor = animatedValues.interpolate({
-        inputRange: [0, 0.5, 1],
-        outputRange: ["#FF0000", "#00FF00", "#FF0000"],
-    });
+    const getAnimatedColor = (animatedValue) => {
+        return animatedValue.interpolate({
+            inputRange: [0, 0.5, 1],
+            outputRange: ["#FF0000", "#00FF00", "#FF0000"], // Red for extreme, green for moderate
+        });
+    };
 
     // Handle water flow status text dynamically based on flow rate
     const handleWaterFlow = (flowRate) => {
@@ -83,33 +83,36 @@ const PlantStatus = ({ loginId }) => {
 
     return (
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-        <View style={styles.container}>
-            
-                {devices.map((device, index) => (
-                    <View key={device.deviceId} style={styles.waterCard}> 
-                        <Text style={styles.waterHeader}>Water level for Device {device.deviceId}</Text>
-                        
-                        <View style={styles.waterRow}>
-                            <Text style={styles.waterText}>{handleWaterFlow(device.flowRate)}</Text>
-                            
-                            <AnimatedIcon 
-                                name="water" 
-                                size={40} 
-                                style={{ 
-                                    color: animatedColor, 
-                                    transform: [{ 
-                                        scale: animatedValues.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [0.8, 1.2],  // Adjusted scale range
-                                        }) 
-                                    }] 
-                                }} 
-                            />
+            <View style={styles.container}>
+                {devices.map((device, index) => {
+                    const animatedColor = getAnimatedColor(device.animatedValue);
+                    return (
+                        <View key={device.deviceId} style={styles.waterCard}>
+                            <Text style={styles.waterHeader}>Water level for Device {device.deviceId}</Text>
+
+                            <View style={styles.waterRow}>
+                                <Text style={styles.waterText}>{handleWaterFlow(device.flowRate)}</Text>
+
+                                <AnimatedIcon
+                                    name="water"
+                                    size={40}
+                                    style={{
+                                        color: animatedColor,
+                                        transform: [
+                                            {
+                                                scale: device.animatedValue.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: [0.8, 1.2],  // Adjusted scale range for subtle animation
+                                                })
+                                            }
+                                        ]
+                                    }}
+                                />
+                            </View>
                         </View>
-                    </View>
-                ))}
-            
-        </View>
+                    );
+                })}
+            </View>
         </ScrollView>
     );
 };
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
     waterCard: {
         padding: 20,
         borderRadius: 10,
-        backgroundColor: '#e0f7fa',
+        backgroundColor: 'lightyellow',
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
