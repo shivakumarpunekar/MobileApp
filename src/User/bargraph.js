@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { ScrollView, Text, StyleSheet, View } from "react-native";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import moment from 'moment-timezone';
-import debounce from 'lodash.debounce';
 
 const Bargraph = ({ loginId }) => {
   const [deviceData, setDeviceData] = useState([]); // Array to hold multiple devices and their sensor data
 
+  // Function to fetch data for the devices
   const fetchData = useCallback(async () => {
     try {
       const deviceResponse = await fetch(`http://103.145.50.185:2030/api/UserDevice/byProfile/${loginId}`);
@@ -23,7 +23,6 @@ const Bargraph = ({ loginId }) => {
 
               const sensor1Values = await sensor1Response.json();
               const sensor2Values = await sensor2Response.json();
-
               return {
                 deviceId: device.deviceId,
                 deviceName: device.deviceName || `Device ${device.deviceId}`, // Add device name or use a default
@@ -48,19 +47,15 @@ const Bargraph = ({ loginId }) => {
     }
   }, [loginId]);
 
-  const debouncedFetchData = useMemo(() => debounce(fetchData, 100), [fetchData]);
-
   useEffect(() => {
-    debouncedFetchData(); // Fetch data on component mount
+    fetchData();
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Increase the interval to 5 seconds
+    return () => clearInterval(intervalId);
+  }, [fetchData]);
 
-    const intervalId = setInterval(debouncedFetchData, 100); // Real-time updates every 0.1 seconds
-
-    return () => {
-      clearInterval(intervalId); // Cleanup interval on unmount
-      debouncedFetchData.cancel(); // Cancel any pending debounced calls
-    };
-  }, [debouncedFetchData]);
-
+  // Group data by interval
   const groupDataByInterval = (data, sensorKey, intervalSeconds = 1) => {
     const groupedData = new Map();
 
@@ -81,6 +76,7 @@ const Bargraph = ({ loginId }) => {
     }));
   };
 
+  // Filter data by last hour
   const filterDataByLastHour = (data) => {
     const now = moment();
     const oneHourAgo = now.clone().subtract(1, 'hours');
@@ -90,6 +86,7 @@ const Bargraph = ({ loginId }) => {
     });
   };
 
+  // Get the average value from data
   const getAverageValue = (data) => {
     if (!data || data.length === 0) {
       return 0;
@@ -99,13 +96,23 @@ const Bargraph = ({ loginId }) => {
     return total / data.length;
   };
 
+  // Calculate percentage (for sensor value to percentage conversion)
   const getPercentage = (value, min = 0, max = 4095) => {
-    // Ensure the values are within the bounds
     if (value === min) return 100; // 100% when value is at the minimum
     if (value === max) return 0;   // 0% when value is at the maximum
 
-    // Calculate the percentage
-    return 100-(((value - min) / (max - min)) * 100);
+    return 100 - (((value - min) / (max - min)) * 100);
+  };
+
+  // Determine moisture level (Low, Moderate, High) based on percentage
+  const getMoistureLevel = (percentage) => {
+    if (percentage <= 20) {
+      return 'Low';
+    } else if (percentage > 20 && percentage <= 80) {
+      return 'Moderate';
+    } else {
+      return 'High';
+    }
   };
 
   return (
@@ -115,41 +122,57 @@ const Bargraph = ({ loginId }) => {
           <Text style={styles.deviceTitle}>{device.deviceName}</Text>
 
           <View style={styles.row}>
-            <View style={styles.progressContainer}>
-              <Text style={styles.title}>Sensor 1</Text>
-              <Text style={styles.title}>Moisture</Text>
-              <AnimatedCircularProgress
-                size={150}
-                width={12}
-                fill={getPercentage(getAverageValue(device.sensor1))}
-                tintColor="#00e0ff"
-                backgroundColor="#3d5875"
-              >
-                {() => (
-                  <Text style={styles.progressText}>
-                    {`${getPercentage(getAverageValue(device.sensor1)).toFixed(2)}%`}
-                  </Text>
-                )}
-              </AnimatedCircularProgress>
-            </View>
+          <View style={styles.progressContainer}>
+            <Text style={styles.title}>Sensor 1</Text>
+            <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor1)))}</Text>
 
-            <View style={styles.progressContainer}>
-              <Text style={styles.title}>Sensor 2</Text>
-              <Text style={styles.title}>Moisture</Text>
-              <AnimatedCircularProgress
-                size={150}
-                width={12}
-                fill={getPercentage(getAverageValue(device.sensor2))}
-                tintColor="#00e0ff"
-                backgroundColor="#3d5875"
-              >
-                {() => (
+            <AnimatedCircularProgress
+              size={150}
+              width={12}
+              fill={getPercentage(getAverageValue(device.sensor1))}
+              tintColor="#00e0ff"
+              backgroundColor="#3d5875"
+            >
+              {() => {
+                const sensorValue = getAverageValue(device.sensor1);
+                const percentage = getPercentage(sensorValue);
+                // Assuming device.sensor1 contains a timestamp field
+    const latestSensorData = device.sensor1[device.sensor1.length - 1]; // Get the latest data point
+    const timestamp = latestSensorData ? latestSensorData.timeKey : 'N/A'; // Extract timestamp or use 'N/A'
+                
+                return (
                   <Text style={styles.progressText}>
-                    {`${getPercentage(getAverageValue(device.sensor2)).toFixed(2)}%`}
+                    {`${percentage.toFixed(2)}%`}
                   </Text>
-                )}
-              </AnimatedCircularProgress>
-            </View>
+                );
+              }}
+            </AnimatedCircularProgress>
+          </View>
+
+          <View style={styles.progressContainer}>
+            <Text style={styles.title}>Sensor 2</Text>
+            <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor2)))}</Text>
+
+            <AnimatedCircularProgress
+              size={150}
+              width={12}
+              fill={getPercentage(getAverageValue(device.sensor2))}
+              tintColor="#00e0ff"
+              backgroundColor="#3d5875"
+            >
+              {() => {
+                const sensorValue = getAverageValue(device.sensor2);
+                const percentage = getPercentage(sensorValue);
+                                
+                return (
+                  <Text style={styles.progressText}>
+                    {`${percentage.toFixed(2)}%`}
+                  </Text>
+                );
+              }}
+            </AnimatedCircularProgress>
+          </View>
+
           </View>
         </View>
       ))}
@@ -157,6 +180,7 @@ const Bargraph = ({ loginId }) => {
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -165,11 +189,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deviceContainer: {
-    marginBottom: 40,
-    width: '100%',
-    alignItems: 'center',
+    backgroundColor: '#6a89a7',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
+    elevation: 10,
+    shadowColor: 'red',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   deviceTitle: {
+    color: '#fff',
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
@@ -180,6 +211,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
@@ -188,6 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressText: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
