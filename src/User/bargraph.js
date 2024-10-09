@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { ScrollView, Text, StyleSheet, View } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { ScrollView, Text, StyleSheet, View, Dimensions } from "react-native";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import moment from 'moment-timezone';
+
+// Get screen dimensions
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const Bargraph = ({ loginId }) => {
   const [deviceData, setDeviceData] = useState([]); // Array to hold multiple devices and their sensor data
@@ -122,56 +125,53 @@ const Bargraph = ({ loginId }) => {
           <Text style={styles.deviceTitle}>{device.deviceName}</Text>
 
           <View style={styles.row}>
-          <View style={styles.progressContainer}>
-            <Text style={styles.title}>Sensor 1</Text>
-            <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor1)))}</Text>
+            <View style={styles.progressContainer}>
+              <Text style={styles.title}>Sensor 1</Text>
+              <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor1)))}</Text>
 
-            <AnimatedCircularProgress
-              size={150}
-              width={12}
-              fill={getPercentage(getAverageValue(device.sensor1))}
-              tintColor="#00e0ff"
-              backgroundColor="#3d5875"
-            >
-              {() => {
-                const sensorValue = getAverageValue(device.sensor1);
-                const percentage = getPercentage(sensorValue);
-                // Assuming device.sensor1 contains a timestamp field
-    const latestSensorData = device.sensor1[device.sensor1.length - 1]; // Get the latest data point
-    const timestamp = latestSensorData ? latestSensorData.timeKey : 'N/A'; // Extract timestamp or use 'N/A'
-                
-                return (
-                  <Text style={styles.progressText}>
-                    {`${percentage.toFixed(2)}%`}
-                  </Text>
-                );
-              }}
-            </AnimatedCircularProgress>
-          </View>
-
-          <View style={styles.progressContainer}>
-            <Text style={styles.title}>Sensor 2</Text>
-            <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor2)))}</Text>
-
-            <AnimatedCircularProgress
-              size={150}
-              width={12}
-              fill={getPercentage(getAverageValue(device.sensor2))}
-              tintColor="#00e0ff"
-              backgroundColor="#3d5875"
-            >
-              {() => {
-                const sensorValue = getAverageValue(device.sensor2);
-                const percentage = getPercentage(sensorValue);
+              <AnimatedCircularProgress
+                size={screenWidth * 0.3} // 40% of the screen width
+                width={screenWidth * 0.03} // 3% of the screen width
+                fill={getPercentage(getAverageValue(device.sensor1))}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {() => {
+                  const sensorValue = getAverageValue(device.sensor1);
+                  const percentage = getPercentage(sensorValue);
                                 
-                return (
-                  <Text style={styles.progressText}>
-                    {`${percentage.toFixed(2)}%`}
-                  </Text>
-                );
-              }}
-            </AnimatedCircularProgress>
-          </View>
+                  return (
+                    <Text style={styles.progressText}>
+                      {`${percentage.toFixed(2)}%`}
+                    </Text>
+                  );
+                }}
+              </AnimatedCircularProgress>
+            </View>
+
+            <View style={styles.progressContainer}>
+              <Text style={styles.title}>Sensor 2</Text>
+              <Text style={styles.title}>{getMoistureLevel(getPercentage(getAverageValue(device.sensor2)))}</Text>
+
+              <AnimatedCircularProgress
+                size={screenWidth * 0.3} // 40% of the screen width
+                width={screenWidth * 0.03} // 3% of the screen width
+                fill={getPercentage(getAverageValue(device.sensor2))}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {() => {
+                  const sensorValue = getAverageValue(device.sensor2);
+                  const percentage = getPercentage(sensorValue);
+                                
+                  return (
+                    <Text style={styles.progressText}>
+                      {`${percentage.toFixed(2)}%`}
+                    </Text>
+                  );
+                }}
+              </AnimatedCircularProgress>
+            </View>
 
           </View>
         </View>
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     alignItems: 'center',
+    width: screenWidth * 0.4, // 40% of screen width
   },
   progressText: {
     color: '#fff',
