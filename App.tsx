@@ -142,13 +142,16 @@ function App(): React.JSX.Element {
 
   const handleLogout = async (navigation) => {
     try {
-      await AsyncStorage.clear();
-      navigation.navigate('LoginPage');
-    } catch (e) {
-      console.error('Failed to clear the async storage.', e);
+      await AsyncStorage.multiRemove(['loginId', 'isAdmin']);
+      console.log("Logout successful, navigating to LoginPage");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'LoginPage' }],
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
-
   return (
     <SafeAreaView style={[styles.container, backgroundStyle]}>
       <StatusBar
