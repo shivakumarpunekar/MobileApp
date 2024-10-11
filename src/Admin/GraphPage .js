@@ -1,18 +1,15 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts'; // Ensure you have installed the types
+import { LineChart, Grid, XAxis, YAxis } from 'react-native-svg-charts';
 import * as dateFns from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-
-const MemoizedLineChart = React.memo(LineChart);
-const MemoizedYAxis = React.memo(YAxis);
-const MemoizedXAxis = React.memo(XAxis);
 
 const GraphPage = ({ route }) => {
     const { deviceId } = route.params;
     const [sensor1Data, setSensor1Data] = useState([]);
     const [sensor2Data, setSensor2Data] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const intervalRef = useRef(null);
     const screenWidth = Dimensions.get('window').width;
@@ -23,91 +20,100 @@ const GraphPage = ({ route }) => {
     const loadDataFromStorage = async () => {
         try {
             const storedData = await AsyncStorage.getItem(DATA_STORAGE_KEY);
-            if (storedData !== null) {
+            if (storedData) {
                 const parsedData = JSON.parse(storedData);
                 setSensor1Data(parsedData.sensor1Data || []);
                 setSensor2Data(parsedData.sensor2Data || []);
             }
         } catch (error) {
             console.error('Error loading data from AsyncStorage:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
     // Save data to AsyncStorage
-    const saveDataToStorage = async () => {
+    const saveDataToStorage = async (data) => {
         try {
-            const dataToStore = JSON.stringify({ sensor1Data, sensor2Data });
-            await AsyncStorage.setItem(DATA_STORAGE_KEY, dataToStore);
+            await AsyncStorage.setItem(DATA_STORAGE_KEY, JSON.stringify(data));
         } catch (error) {
             console.error('Error saving data to AsyncStorage:', error);
         }
     };
 
-    const fetchLiveData = useCallback(async () => {
+    const fetchLiveData = async () => {
         try {
-            console.log('Fetching live data...');
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
+            
+            // Log the status and response for debugging
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     
             const data = await response.json();
-            console.log('Fetched data:', data);
-    
+            console.log('Fetched data:', data); // Log the fetched data
+            
             if (data && data.length > 0) {
-                setSensor1Data(prevData => [
-                    ...prevData.slice(-9), // Keep only the last 9 elements
-                    ...data.map(entry => ({
-                        sensor1_value: entry.sensor1_value,
-                        timestamp: new Date(entry.timestamp).getTime(),
-                    })),
-                ]);
-                setSensor2Data(prevData => [
-                    ...prevData.slice(-9), // Keep only the last 9 elements
-                    ...data.map(entry => ({
-                        sensor2_value: entry.sensor2_value,
-                        timestamp: new Date(entry.timestamp).getTime(),
-                    })),
-                ]);
+                const newSensor1Data = data.map(entry => ({
+                    sensor1_value: entry.sensor1_value,
+                    timestamp: new Date(entry.timestamp).getTime(),
+                }));
+                const newSensor2Data = data.map(entry => ({
+                    sensor2_value: entry.sensor2_value,
+                    timestamp: new Date(entry.timestamp).getTime(),
+                }));
+    
+                setSensor1Data(newSensor1Data.slice(15)); // Only store the last 5 records
+                setSensor2Data(newSensor2Data.slice(15));
+    
+                saveDataToStorage({
+                    sensor1Data: newSensor1Data.slice(15),
+                    sensor2Data: newSensor2Data.slice(15),
+                });
             } else {
                 setError('No data available for this device.');
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching live data:', error);
             setError('Error fetching data.');
         }
-    }, [deviceId]);
+    };
 
     useFocusEffect(
-        useCallback(() => {
-            loadDataFromStorage(); // Load data when the screen comes into focus
-            fetchLiveData();
-            intervalRef.current = setInterval(fetchLiveData, 5000); // Fetch every 5 seconds
-            
-            // Clean up on blur (when the page is left)
+        React.useCallback(() => {
+            loadDataFromStorage(); // Load cached data
+            fetchLiveData(); // Fetch live data
+
+            // Set up the interval for live data fetching
+            intervalRef.current = setInterval(fetchLiveData, 10000); // Fetch every 10 seconds
+
+            // Clean up when the component unmounts or loses focus
             return () => {
-                clearInterval(intervalRef.current); // Clear interval to stop data fetching
-                saveDataToStorage(); // Save data to AsyncStorage before unmounting
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
             };
-        }, [fetchLiveData])
+        }, [deviceId]) // Add deviceId to dependencies if needed
     );
 
     const getLineColor = (sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green');
     const getChartBackgroundColor = (sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9');
 
-    const sensor1DataSlice = sensor1Data.slice(-10); 
-    const sensor2DataSlice = sensor2Data.slice(-10); 
+    const createXLabels = (data) => data.map((entry) => dateFns.format(new Date(entry.timestamp), 'HH:mm:ss'));
 
-    // Create X-axis labels using timestamps
-    const createXLabels = (data) => data.map((entry) => dateFns.format(new Date(entry.timestamp), 'HH:mm'));
+    const xLabelsSensor1 = createXLabels(sensor1Data);
+    const xLabelsSensor2 = createXLabels(sensor2Data);
 
-    const xLabelsSensor1 = createXLabels(sensor1DataSlice);
-    const xLabelsSensor2 = createXLabels(sensor2DataSlice);
+    // Custom chart width based on data length for scrollable effect
+    const chartWidth = Math.max(screenWidth, sensor1Data.length * 60); // Dynamic width based on data points
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={styles.container}>
-                {error ? (
+                {loading ? (
+                    <View style={styles.centered}>
+                        <Text>Loading data...</Text>
+                    </View>
+                ) : error ? (
                     <View style={styles.centered}>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>
@@ -116,9 +122,9 @@ const GraphPage = ({ route }) => {
                         {/* Sensor 1 Chart */}
                         <Text style={styles.title}>Sensor-1 Values</Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1DataSlice.length ? sensor1DataSlice[0].sensor1_value : 0), width: screenWidth - 40 }]}>
-                                <MemoizedYAxis
-                                    data={sensor1DataSlice.map((entry) => entry.sensor1_value)}
+                            <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1Data.length ? sensor1Data[0].sensor1_value : 0), width: chartWidth }]}>
+                                <YAxis
+                                    data={sensor1Data.map((entry) => entry.sensor1_value)}
                                     style={styles.yAxis}
                                     contentInset={styles.contentInset}
                                     svg={styles.axisText}
@@ -126,22 +132,23 @@ const GraphPage = ({ route }) => {
                                     max={4095}
                                 />
                                 <View style={styles.chart}>
-                                    <MemoizedLineChart
+                                    <LineChart
                                         style={styles.lineChart}
-                                        data={sensor1DataSlice.map((entry) => entry.sensor1_value)}
-                                        svg={{ stroke: getLineColor(sensor1DataSlice.length ? sensor1DataSlice[0].sensor1_value : 0) }}
+                                        data={sensor1Data.map((entry) => entry.sensor1_value)}
+                                        svg={{ stroke: getLineColor(sensor1Data.length ? sensor1Data[0].sensor1_value : 0) }}
                                         contentInset={styles.contentInset}
                                         yMin={0}
                                         yMax={4095}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />
-                                    </MemoizedLineChart>
-                                    <MemoizedXAxis
+                                    </LineChart>
+                                    <XAxis
                                         style={styles.xAxis}
-                                        data={sensor1DataSlice.map((_, index) => index)}
+                                        data={sensor1Data.map((_, index) => index)}
                                         formatLabel={(value) => xLabelsSensor1[value] || ''}
-                                        contentInset={{ left: 10, right: 10 }}
+                                        contentInset={{ left: 25, right: 25 }}
                                         svg={styles.axisText}
+                                        numberOfTicks={sensor1Data.length}
                                     />
                                 </View>
                             </View>
@@ -150,9 +157,9 @@ const GraphPage = ({ route }) => {
                         {/* Sensor 2 Chart */}
                         <Text style={styles.title}>Sensor-2 Values</Text>
                         <ScrollView horizontal>
-                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor2DataSlice.length ? sensor2DataSlice[0].sensor2_value : 0), width: screenWidth - 40 }]}>
-                                <MemoizedYAxis
-                                    data={sensor2DataSlice.map((entry) => entry.sensor2_value)}
+                            <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor2Data.length ? sensor2Data[0].sensor2_value : 0), width: chartWidth }]}>
+                                <YAxis
+                                    data={sensor2Data.map((entry) => entry.sensor2_value)}
                                     style={styles.yAxis}
                                     contentInset={styles.contentInset}
                                     svg={styles.axisText}
@@ -160,22 +167,23 @@ const GraphPage = ({ route }) => {
                                     max={4095}
                                 />
                                 <View style={styles.chart}>
-                                    <MemoizedLineChart
+                                    <LineChart
                                         style={styles.lineChart}
-                                        data={sensor2DataSlice.map((entry) => entry.sensor2_value)}
-                                        svg={{ stroke: getLineColor(sensor2DataSlice.length ? sensor2DataSlice[0].sensor2_value : 0) }}
+                                        data={sensor2Data.map((entry) => entry.sensor2_value)}
+                                        svg={{ stroke: getLineColor(sensor2Data.length ? sensor2Data[0].sensor2_value : 0) }}
                                         contentInset={styles.contentInset}
                                         yMin={0}
                                         yMax={4095}
                                     >
                                         <Grid svg={{ stroke: '#ddd' }} />
-                                    </MemoizedLineChart>
-                                    <MemoizedXAxis
+                                    </LineChart>
+                                    <XAxis
                                         style={styles.xAxis}
-                                        data={sensor2DataSlice.map((_, index) => index)}
+                                        data={sensor2Data.map((_, index) => index)}
                                         formatLabel={(value) => xLabelsSensor2[value] || ''}
-                                        contentInset={{ left: 10, right: 10 }}
+                                        contentInset={{ left: 25, right: 25 }}
                                         svg={styles.axisText}
+                                        numberOfTicks={sensor2Data.length}
                                     />
                                 </View>
                             </View>
