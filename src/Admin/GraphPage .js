@@ -5,7 +5,7 @@ import * as dateFns from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
-const GraphPage = ({ route }) => {
+const GraphPage = ({ route, navigation }) => {
     const { deviceId } = route.params;
     const [sensor1Data, setSensor1Data] = useState([]);
     const [sensor2Data, setSensor2Data] = useState([]);
@@ -42,16 +42,14 @@ const GraphPage = ({ route }) => {
     };
 
     const fetchLiveData = async () => {
+        console.log('Fetching live data...');
         try {
             const response = await fetch(`http://103.145.50.185:2030/api/sensor_data/device/${deviceId}`);
-            
-            // Log the status and response for debugging
-            console.log('Response status:', response.status);
-            
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            
             const data = await response.json();
-            console.log('Fetched data:', data); // Log the fetched data
+            console.log('Raw API response:', data); // Log raw API response
             
             if (data && data.length > 0) {
                 const newSensor1Data = data.map(entry => ({
@@ -63,12 +61,15 @@ const GraphPage = ({ route }) => {
                     timestamp: new Date(entry.timestamp).getTime(),
                 }));
     
-                setSensor1Data(newSensor1Data.slice(15)); // Only store the last 5 records
-                setSensor2Data(newSensor2Data.slice(15));
+                console.log('Parsed sensor1 data:', newSensor1Data); // Log parsed data
+                console.log('Parsed sensor2 data:', newSensor2Data); // Log parsed data
+    
+                setSensor1Data(newSensor1Data.slice(-5)); // Store last 5 records
+                setSensor2Data(newSensor2Data.slice(-5));
     
                 saveDataToStorage({
-                    sensor1Data: newSensor1Data.slice(15),
-                    sensor2Data: newSensor2Data.slice(15),
+                    sensor1Data: newSensor1Data.slice(-5),
+                    sensor2Data: newSensor2Data.slice(-5),
                 });
             } else {
                 setError('No data available for this device.');
@@ -78,22 +79,26 @@ const GraphPage = ({ route }) => {
             setError('Error fetching data.');
         }
     };
+    
 
     useFocusEffect(
         React.useCallback(() => {
+            console.log('Page is entered');
             loadDataFromStorage(); // Load cached data
-            fetchLiveData(); // Fetch live data
-
+            fetchLiveData(); // Fetch live data immediately
+        
             // Set up the interval for live data fetching
-            intervalRef.current = setInterval(fetchLiveData, 10000); // Fetch every 10 seconds
-
-            // Clean up when the component unmounts or loses focus
+            intervalRef.current = setInterval(fetchLiveData, 10000); // Fetch every 10 second
+        
             return () => {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current); // Clean up when unmounting or losing focus
+                    intervalRef.current = false;
+                }
+                console.log('Navigating back. GraphPage is unfocused.');
             };
-        }, [deviceId]) // Add deviceId to dependencies if needed
-    );
+        }, [deviceId]) // Add deviceId as a dependency if necessary
+    );    
 
     const getLineColor = (sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? 'red' : 'green');
     const getChartBackgroundColor = (sensorValue) => (sensorValue >= 4000 || sensorValue <= 1250 ? '#FFCDD2' : '#C8E6C9');
@@ -103,7 +108,6 @@ const GraphPage = ({ route }) => {
     const xLabelsSensor1 = createXLabels(sensor1Data);
     const xLabelsSensor2 = createXLabels(sensor2Data);
 
-    // Custom chart width based on data length for scrollable effect
     const chartWidth = Math.max(screenWidth, sensor1Data.length * 60); // Dynamic width based on data points
 
     return (
@@ -119,7 +123,6 @@ const GraphPage = ({ route }) => {
                     </View>
                 ) : (
                     <>
-                        {/* Sensor 1 Chart */}
                         <Text style={styles.title}>Sensor-1 Values</Text>
                         <ScrollView horizontal>
                             <View style={[styles.chartContainer, { backgroundColor: getChartBackgroundColor(sensor1Data.length ? sensor1Data[0].sensor1_value : 0), width: chartWidth }]}>
@@ -154,7 +157,6 @@ const GraphPage = ({ route }) => {
                             </View>
                         </ScrollView>
 
-                        {/* Sensor 2 Chart */}
                         <Text style={styles.title}>Sensor-2 Values</Text>
                         <ScrollView horizontal>
                             <View style={[styles.chartContainer, { marginTop: 20, backgroundColor: getChartBackgroundColor(sensor2Data.length ? sensor2Data[0].sensor2_value : 0), width: chartWidth }]}>
