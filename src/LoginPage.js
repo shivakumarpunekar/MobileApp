@@ -52,7 +52,8 @@ export default function LoginPage({ navigation }) {
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        /* throw new Error('Login failed'); */
+        console.error('Login failed:', response);
       }
 
       const data = await response.json();
