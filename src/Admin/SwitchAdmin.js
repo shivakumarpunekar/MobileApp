@@ -19,31 +19,46 @@ const SwitchAdmin = ({ deviceId, isAdmin, onStatusChange }) => {
 
   const fetchSwitchState = async () => {
     try {
-        const response = await apiClient.get(`/api/ValveStatus/admin/device/${deviceId}`);
-        const newStatus = response.data.AdminValveStatus === 1 ? 'On' : response.data.AdminValveStatus === 0 ? 'Off' : 'Auto';
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const newStatus = data.adminValveStatus === 1 ? "On" : data.adminValveStatus === 0 ? "Off" : "Auto";
         setStatus(newStatus);
-        onStatusChange(newStatus);
-        animateButton(newStatus === 'On');
+        onStatusChange(newStatus); // Call the callback to update SwitchPage
+        animateButton(data.adminValveStatus === 1);
+      } else {
+        console.error('Failed to fetch switch state');
+        Alert.alert('No device is found');
+      }
     } catch (error) {
-        console.error('Error:', error.response?.data || error.message);
-        Alert.alert('Error fetching switch state');
+      console.error('Error:', error);
+      Alert.alert('Error fetching switch state');
     }
-};
+  };
 
 
   const updateSwitchState = async (newStatus) => {
     try {
-      const adminValveStatus = newStatus === 'On' ? 1 : newStatus === 'Off' ? 0 : 2;
-      const response = await apiClient.put(`/ValveStatus/admin/device/${deviceId}`, { adminValveStatus });
-      if (response.status === 200) {
-          Alert.alert('Success', `Switch turned ${newStatus}`);
-          setStatus(newStatus);
-          animateButton(newStatus === 'On');
+      const adminValveStatus = newStatus === "On" ? 1 : newStatus === "Off" ? 0 : 2; // 2 for Auto
+      const response = await fetch(`http://103.145.50.185:2030/api/ValveStatus/admin/device/${deviceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ adminValveStatus }),
+      });
+      if (response.ok) {
+        Alert.alert('Success', `Switch turned ${newStatus}`);
+        setStatus(newStatus);
+        animateButton(newStatus === "On");
+      } else {
+        console.error('Failed to update switch state');
+        Alert.alert('Failed to update switch state');
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error updating switch state');
-  }   
+    }
   };
 
   const animateButton = (newState) => {
