@@ -51,7 +51,7 @@ const SensorDataButton = ({ isAdmin }) => {
 
   useEffect(() => {
     loadCachedData(); // Load data from cache on first load
-    const interval = setInterval(fetchData, 60000); // Fetch data every 60 seconds
+    const interval = setInterval(fetchData, 10000); // Fetch data every 10 seconds
     return () => clearInterval(interval);
   }, []);
 
